@@ -1,0 +1,59 @@
+openapi: 3.1.0
+info:
+  title: Taskbench API
+  summary: REST API for Taskbench
+  description: The REST API for Taskbench -- a smart task manager based on the Gettings Things Done system.
+  version: 1.0.0
+paths:
+  /tasks:
+    get:
+      summary: List all tasks for the user
+      responses:
+        "200":
+          description: List of all tasks with categories for the user
+        "401":
+          description: The user is not authorized to request tasks
+    post:
+      summary: Create a new task for the user
+      responses:
+        "200":
+          description: The task was successfully created
+        "401":
+          description: The user is not authorized to create tasks
+    delete:
+      summary: Delete a task for the user
+      responses:
+        "200":
+          description: The task was successfully deleted
+        "401":
+          description: The user is not authorized to delete tasks
+        "404":
+          description: The task was not found
+    put:
+      summary: Create or update an existing task
+      responses:
+        "200":
+          description: The task was successfully created or updated
+        "401":
+          description: The user is not authorized to update tasks
+  /ai:
+    get:
+      summary: Get a list of AI suggestions based on the current user input
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: object
+              required:
+                - input
+              properties:
+                input:
+                  type: string
+      responses:
+        "200":
+          description: A list of AI suggestions
+        "401":
+          description: The user is not authorized to request AI suggestions
+        "403":
+          description: The user's subscription plan does not allow to request AI suggestions
