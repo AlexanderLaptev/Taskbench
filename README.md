@@ -36,4 +36,4 @@
 [OpenAPI](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/openapi.yaml)
 
 ## Видео
-Презентация технического задания [rutube](https://rutube.ru/video/private/28b51d1e9849401dfcaa63298a0dcf9c/?r=wd&p=4zDlEhm9HK6rTGxWsY9P9A) [youtube](https://youtu.be/Q_z2xZhO-a8)
+Презентация технического задания: [Rutube](https://rutube.ru/video/private/28b51d1e9849401dfcaa63298a0dcf9c/?r=wd&p=4zDlEhm9HK6rTGxWsY9P9A) [Youtube](https://youtu.be/Q_z2xZhO-a8)
