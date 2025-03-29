@@ -41,3 +41,6 @@
 
 ## Видео
 Презентация технического задания: [Rutube](https://rutube.ru/video/private/28b51d1e9849401dfcaa63298a0dcf9c/?r=wd&p=4zDlEhm9HK6rTGxWsY9P9A) [Youtube](https://youtu.be/Q_z2xZhO-a8)
+
+## Взаимная проверка
+[1 этап](https://docs.google.com/spreadsheets/d/1hiSlOW6U4yV-wwUU5y3ilLhBi4rmfq6X/edit?usp=sharing&ouid=109337802298818983707&rtpof=true&sd=true)
