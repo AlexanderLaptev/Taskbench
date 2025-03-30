@@ -44,7 +44,11 @@
 [1 этап](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%A7%D0%B5%D0%BA%D0%BB%D0%B8%D1%81%D1%82%201%20%D1%8D%D1%82%D0%B0%D0%BF.pdf)
 
 Нас проверили:
-6.1 [репозиторий](https://gitlab.usr0.ru/tailoredtastes) [чеклист]()
+
+6.1 [репозиторий](https://gitlab.usr0.ru/tailoredtastes) [чеклист](https://gitlab.usr0.ru/tailoredtastes/tailoredtastes-documentation/-/tree/master/%D0%9A%D1%80%D0%BE%D1%81%D1%81-%D0%BF%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%BA%D0%B0?ref_type=heads)
+
 5.1 [репозиторий](https://github.com/capti/Cardly) [чеклист]()
+
 3.3 [репозиторий](https://github.com/qudest/voyago) [чеклист](https://github.com/qudest/voyago/blob/main/Documentation/Check-list.pdf)
-9.5 [репозиторий](https://github.com/kotovro/TP-9-5) [чеклист]()
+
+9.5 [репозиторий](https://github.com/kotovro/TP-9-5) [чеклист](https://github.com/kotovro/TP-9-5/blob/main/Documents/%D0%92%D0%93%D0%A3-%D0%A2%D0%9F.%20%D0%A7%D0%B5%D0%BA%D0%BB%D0%B8%D1%81%D1%82%201%20%D1%8D%D1%82%D0%B0%D0%BF%20-%20%D1%87%D0%B5%D0%BA%D0%BB%D0%B8%D1%81%D1%82.pdf)
