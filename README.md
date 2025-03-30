@@ -35,6 +35,8 @@
 
 [OpenAPI](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/openapi.yaml)
 
+[Регламент коммитов](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%A0%D0%B5%D0%B3%D0%BB%D0%B0%D0%BC%D0%B5%D0%BD%D1%82%20%D0%BA%D0%BE%D0%BC%D0%BC%D0%B8%D1%82%D0%BE%D0%B2.md)
+
 ## Видео
 Презентация технического задания: [Rutube](https://rutube.ru/video/private/28b51d1e9849401dfcaa63298a0dcf9c/?r=wd&p=4zDlEhm9HK6rTGxWsY9P9A) [Youtube](https://youtu.be/Q_z2xZhO-a8)
 
