@@ -19,7 +19,7 @@
 
 [Доска с задачами](https://github.com/users/AlexanderLaptev/projects/7/views/1?layout=board)
 
-[Макет дизайна в Figma](https://www.figma.com/design/Wext8fQzsVZBAXFbF3HLTN/Workbench?node-id=20-2&t=1kTXWQMkqR80e3Zm-1)
+[Figma: макеты дизайна, бренд бук, презентация](https://www.figma.com/design/Wext8fQzsVZBAXFbF3HLTN/Workbench?node-id=20-2&t=1kTXWQMkqR80e3Zm-1)
 
 ## Ссылки на документацию
 
