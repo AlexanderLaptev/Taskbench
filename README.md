@@ -41,4 +41,10 @@
 Презентация технического задания: [Rutube](https://rutube.ru/video/private/28b51d1e9849401dfcaa63298a0dcf9c/?r=wd&p=4zDlEhm9HK6rTGxWsY9P9A) [Youtube](https://youtu.be/Q_z2xZhO-a8)
 
 ## Взаимная проверка
-[1 этап](https://docs.google.com/spreadsheets/d/1hiSlOW6U4yV-wwUU5y3ilLhBi4rmfq6X/edit?usp=sharing&ouid=109337802298818983707&rtpof=true&sd=true)
+[1 этап](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%A7%D0%B5%D0%BA%D0%BB%D0%B8%D1%81%D1%82%201%20%D1%8D%D1%82%D0%B0%D0%BF.pdf)
+
+Нас проверили:
+6.1 [репозиторий](https://gitlab.usr0.ru/tailoredtastes) [чеклист]()
+5.1 [репозиторий](https://github.com/capti/Cardly) [чеклист]()
+3.3 [репозиторий](https://github.com/qudest/voyago) [чеклист](https://github.com/qudest/voyago/blob/main/Documentation/Check-list.pdf)
+9.5 [репозиторий](https://github.com/kotovro/TP-9-5) [чеклист]()
