@@ -47,7 +47,7 @@
 
 6.1 [репозиторий](https://gitlab.usr0.ru/tailoredtastes) [чеклист](https://gitlab.usr0.ru/tailoredtastes/tailoredtastes-documentation/-/tree/master/%D0%9A%D1%80%D0%BE%D1%81%D1%81-%D0%BF%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%BA%D0%B0?ref_type=heads)
 
-5.1 [репозиторий](https://github.com/capti/Cardly) [чеклист]()
+5.1 [репозиторий](https://github.com/capti/Cardly) [чеклист](https://github.com/capti/Cardly/blob/main/Documentation/%D0%A4%D0%B8%D0%B4%D0%B1%D1%8D%D0%BA.pdf)
 
 3.3 [репозиторий](https://github.com/qudest/voyago) [чеклист](https://github.com/qudest/voyago/blob/main/Documentation/Check-list.pdf)
 
