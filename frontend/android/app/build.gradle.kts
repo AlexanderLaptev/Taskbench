@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    kotlin("plugin.serialization") version libs.versions.kotlin
 }
 
 android {
@@ -63,4 +64,5 @@ dependencies {
     implementation(libs.koin.androidx.compose.navigation)
     implementation(libs.retrofit)
     implementation(libs.androidx.compose.navigation)
+    implementation(libs.kotlinx.serialization.json)
 }
