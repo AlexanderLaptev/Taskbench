@@ -17,6 +17,25 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from taskbench.views import UserViewSet, TaskViewSet, SubtaskViewSet, CategoryViewSet, TaskCategoryViewSet
+
+#НАЧАЛЬНЫЙ ВАРИАНТ
+
+router = DefaultRouter()
+router.register(r'users', UserViewSet)
+router.register(r'tasks', TaskViewSet)
+router.register(r'subtasks', SubtaskViewSet)
+router.register(r'categories', CategoryViewSet)
+router.register(r'taskcategories', TaskCategoryViewSet)
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),  # Админка
+    path('api/', include(router.urls)),  # Добавляем 'api/' перед всеми маршрутами
 ]
+
+
+# urlpatterns = [
+#     path('admin/', admin.site.urls),
+# ] - было
