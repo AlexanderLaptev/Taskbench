@@ -1,11 +1,10 @@
-package cs.vsu.taskbench.ui.theme
+package cs.vsu.taskbench.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import cs.vsu.taskbench.ui.TaskbenchNavigation
 import cs.vsu.taskbench.ui.create.taskCreationDestination
 import cs.vsu.taskbench.ui.list.taskListDestination
 

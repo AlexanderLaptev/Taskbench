@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import cs.vsu.taskbench.ui.theme.TaskbenchNavGraph
+import cs.vsu.taskbench.ui.navigation.TaskbenchNavGraph
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 
 class MainActivity : ComponentActivity() {

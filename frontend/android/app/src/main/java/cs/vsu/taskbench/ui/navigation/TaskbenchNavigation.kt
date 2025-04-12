@@ -1,4 +1,4 @@
-package cs.vsu.taskbench.ui
+package cs.vsu.taskbench.ui.navigation
 
 import androidx.annotation.StringRes
 import cs.vsu.taskbench.R
