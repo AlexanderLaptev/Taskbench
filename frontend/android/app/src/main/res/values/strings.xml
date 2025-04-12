@@ -3,4 +3,11 @@
     <string name="screen_add_task">Добавить</string>
     <string name="screen_task_list">Задачи</string>
     <string name="screen_statistics">Статистика</string>
+    <string name="monday_short">пн</string>
+    <string name="tuesday_short">вт</string>
+    <string name="wednesday_short">ср</string>
+    <string name="thursday_short">чт</string>
+    <string name="friday_short">пт</string>
+    <string name="saturday_short">сб</string>
+    <string name="sunday_short">вс</string>
 </resources>
