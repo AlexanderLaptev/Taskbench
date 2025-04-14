@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - backend-django
+  pull_request:
+    branches:
+      - backend-django
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    environment: main
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Create Env file
+      run: |
+        cat <<EOF > backend/.env
+        DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+        DEBUG=False
+        DJANGO_LOGLEVEL=info
+        DJANGO_ALLOWED_HOSTS=localhost,0.0.0.0,193.135.137.154
+        DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+        DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}
+        DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+        DATABASE_HOST=database
+        DATABASE_PORT=5432
+        GIGACHAT_AUTH_KEY=${{ secrets.GIGACHAT_AUTH_KEY }}
+        EOF
+
+    - name: Log in to Docker hub
+      run: |
+        echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Build and Push Docker image
+      run: |
+        cd backend
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/taskbench-backend:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/taskbench-backend:latest
+
+    - name: Copy docker-compose.yaml to server
+      uses: appleboy/scp-action@v0.1.5
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        source: backend/docker-compose.yaml, backend/.env
+        target: /home/${{ secrets.SERVER_USER }}/app/
+
+    - name: Deploy
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        script: |
+          echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          cd /home/${{ secrets.SERVER_USER }}/app
+          docker compose pull
+          docker compose up -d
