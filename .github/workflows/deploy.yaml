@@ -61,4 +61,17 @@ jobs:
           echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           cd /home/${{ secrets.SERVER_USER }}/app/backend
           docker compose pull
+          docker compose down
           docker compose up -d
+          docker compose logs --tail=20
+
+    - name: Check if app is responding on port
+      run: |
+        echo "Waiting for server to be reachable..."
+        for i in {1..10}; do
+          nc -zv ${{ secrets.SERVER_HOST }} 8000 && echo "OK: Port is open!" && exit 0
+          echo "Attempt $i: Server not ready yet..."
+          sleep 5
+        done
+        echo "ERROR: Server is not responding on port 8000"
+        exit 1
