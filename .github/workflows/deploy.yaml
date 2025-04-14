@@ -60,5 +60,5 @@ jobs:
         script: |
           echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           cd /home/${{ secrets.SERVER_USER }}/app/backend
-          docker-compose pull
-          docker-compose up -d
+          docker compose pull
+          docker compose up -d
