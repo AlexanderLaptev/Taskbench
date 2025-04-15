@@ -17,11 +17,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TaskbenchTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    TaskbenchNavGraph(
-                        modifier = Modifier.padding(innerPadding),
-                    )
-                }
+
             }
         }
     }
