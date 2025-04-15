@@ -32,12 +32,14 @@ RUN useradd -m -r appuser && \
 # Copy the Python dependencies from the builder stage
 COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
+#COPY entrypoint.sh /entrypoint.sh
 
 # Set the working directory
 WORKDIR /app
 
 # Copy application code
 COPY --chown=appuser:appuser . .
+RUN chmod +x /entrypoint.sh
 
 # Set environment variables to optimize Python
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -49,9 +51,5 @@ USER appuser
 # Expose the application port
 EXPOSE 8000
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
 # Start the application using Gunicorn
-#CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "backend.wsgi:application"]
 ENTRYPOINT ["/entrypoint.sh"]
