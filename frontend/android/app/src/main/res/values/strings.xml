@@ -10,4 +10,11 @@
     <string name="friday_short">пт</string>
     <string name="saturday_short">сб</string>
     <string name="sunday_short">вс</string>
+    <string name="label_login">Войти</string>
+    <string name="label_sign_up">Зарегистрироваться</string>
+    <string name="label_back">Назад</string>
+    <string name="button_forgot_password">Забыли пароль?</string>
+    <string name="label_email">Электронная почта</string>
+    <string name="label_password">Пароль</string>
+    <string name="label_confirm_password">Подтвердите пароль</string>
 </resources>
