@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.CardEntryField
-import cs.vsu.taskbench.ui.component.SubtaskEntryField
+import cs.vsu.taskbench.ui.component.Subtask
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 
@@ -44,25 +44,41 @@ fun TaskCreationScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ){
-            SubtaskEntryField(
-                "Подготовить текст",
-                false
+            Subtask(
+                text = "Пройтись по темам созвона",
+                selected = true,
+                buttonIcon = painterResource(R.drawable.icon_save),
+                onButtonClick = {},
             )
-            SubtaskEntryField(
-                "Подготовить текст",
-                false
+            Subtask(
+                text = "Пройтись по темам созвона",
+                selected = true,
+                buttonIcon = painterResource(R.drawable.icon_save),
+                onButtonClick = {},
             )
-            SubtaskEntryField(
-                "Пройтись по темам созвона|",
-                true
+            Subtask(
+                text = "Пройтись по темам созвона",
+                selected = false,
+                buttonIcon = painterResource(R.drawable.icon_add),
+                onButtonClick = {},
             )
-            SubtaskEntryField(
-                "Подготовить текст",
-                false
+            Subtask(
+                text = "Пройтись по темам созвона",
+                selected = false,
+                buttonIcon = painterResource(R.drawable.icon_add),
+                onButtonClick = {},
             )
-            SubtaskEntryField(
-                "Подготовить текст",
-                true
+            Subtask(
+                text = "Пройтись по темам созвона",
+                selected = true,
+                buttonIcon = painterResource(R.drawable.icon_save),
+                onButtonClick = {},
+            )
+            Subtask(
+                text = "Пройтись по темам созвона",
+                selected = true,
+                buttonIcon = painterResource(R.drawable.icon_save),
+                onButtonClick = {},
             )
         }
 

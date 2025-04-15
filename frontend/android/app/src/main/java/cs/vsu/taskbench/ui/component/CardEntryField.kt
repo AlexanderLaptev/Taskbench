@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -31,10 +32,11 @@ import cs.vsu.taskbench.ui.theme.White
 
 @Composable
 fun CardEntryField(
-    inputText: String,
+    inputText: String = "Введите вашу идею",
     visibility: Boolean,
     modifier: Modifier = Modifier,
 ){
+    val color = if(visibility) Black else LightGray
     Box(
         modifier = modifier
             .background(
@@ -48,7 +50,6 @@ fun CardEntryField(
                 modifier = Modifier
                     .padding(25.dp)
                     .fillMaxSize()
-//                    .padding(bottom = 40.dp)
             ) {
                 val scrollState = rememberScrollState()
                 Text(
@@ -81,7 +82,40 @@ fun CardEntryField(
         }
     }
 
+//    val color = if(visibility) Black else LightGray
+//    Box(
+//        modifier = modifier
+//            .background(
+//                color = White,
+//                shape = RoundedCornerShape(4.dp),
+//            )
+//            .height(171.dp)
+//            .fillMaxSize()
+//    ) {
+//        val scrollState = rememberScrollState()
+//        Text(
+//            text = inputText,
+//            color = color,
+//            fontSize = 20.sp,
+//            modifier = Modifier
+//                .padding(25.dp)
+//                .verticalScroll(scrollState)
+//        )
+//
+//        if(visibility) {
+//            IconButton(
+//                color = AccentYellow,
+//                onClick = { Log.d(null, "lorem ipsum clicked") },
+//                iconResId = R.drawable.icon_save,
+//                modifier = Modifier
+//                    .padding(16.dp)
+//                    .align(Alignment.BottomEnd)
+//            )
+//        }
+//    }
+
 }
+
 
 @Composable
 @Preview

@@ -32,10 +32,10 @@ import cs.vsu.taskbench.ui.theme.White
 
 @Composable
 fun IconButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
     color: Color = White,
     iconResId: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
