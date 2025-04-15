@@ -48,7 +48,7 @@ fun CardEntryField(
                 modifier = Modifier
                     .padding(25.dp)
                     .fillMaxSize()
-                    .padding(bottom = 40.dp)
+//                    .padding(bottom = 40.dp)
             ) {
                 val scrollState = rememberScrollState()
                 Text(
