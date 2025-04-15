@@ -47,7 +47,7 @@ fun IconButton(
         Icon(
             painter = painterResource(id = iconResId),
             contentDescription = "",
-            modifier = Modifier.size(23.dp),
+            modifier = Modifier.size(40.dp),
             tint = Color.Unspecified,
         )
     }
