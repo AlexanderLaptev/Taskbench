@@ -22,6 +22,9 @@ services:
       - database
     env_file:
       - .env
+    environment:
+      DATABASE_HOST: database
+      DATABASE_PORT: 5432
 
 volumes:
   postgres_data:
