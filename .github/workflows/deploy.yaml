@@ -46,7 +46,7 @@ jobs:
             exit 0
           else
             echo "port connection failed"
-            docker-compose logs test
+            docker compose logs test
             exit 1
           fi
 

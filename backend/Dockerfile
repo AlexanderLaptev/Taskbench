@@ -52,4 +52,4 @@ USER appuser
 EXPOSE 8000
 
 # Start the application using Gunicorn
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
