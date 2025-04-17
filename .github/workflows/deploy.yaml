@@ -40,11 +40,19 @@ jobs:
       - name: Check if app is responding on port
         run: |
           sleep 5
-          curl --fail http://localhost:8000 || (echo "Server not responding" && exit 1)
+          echo "Waiting for server to be reachable..."
+          for i in {1..10}; do
+            nc -zv 127.0.0.1 8000 && echo "OK: Port is open!" && exit 0
+            echo "Attempt $i: Server not ready yet..."
+            sleep 5
+          done
+          echo "ERROR: Server is not responding on port 8000"
+          exit 1
 
       - name: Tear down containers
         if: always()
         run: |
+          cd backend
           docker compose -f docker-compose.yaml -f docker-compose.override.yaml down -v
 
   build:
