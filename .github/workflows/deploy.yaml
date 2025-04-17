@@ -17,11 +17,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: List all files in the runner
-        run: |
-          echo "Listing files recursively in workspace:"
-          ls -Rlah
-
       - name: Create test env file
         run: |
           cat <<EOF > backend/.env
@@ -68,11 +63,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: List all files in the runner
-      run: |
-        echo "Listing files recursively in workspace:"
-        ls -Rlah
 
     - name: Create Env file
       run: |

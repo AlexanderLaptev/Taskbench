@@ -35,11 +35,11 @@ COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Set the working directory
 WORKDIR /app
-COPY entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh entrypoint.sh
 
 # Copy application code
 COPY --chown=appuser:appuser . .
-RUN chmod +x /entrypoint.sh
+RUN chmod +x entrypoint.sh
 
 # Set environment variables to optimize Python
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -52,4 +52,4 @@ USER appuser
 EXPOSE 8000
 
 # Start the application using Gunicorn
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
