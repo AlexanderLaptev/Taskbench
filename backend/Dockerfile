@@ -35,9 +35,11 @@ COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Set the working directory
 WORKDIR /app
+COPY entrypoint.sh entrypoint.sh
 
 # Copy application code
 COPY --chown=appuser:appuser . .
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 
 # Set environment variables to optimize Python
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -50,4 +52,4 @@ USER appuser
 EXPOSE 8000
 
 # Start the application using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "backend.wsgi:application"]
+ENTRYPOINT ["/app/entrypoint.sh"]

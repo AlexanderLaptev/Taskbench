@@ -5,6 +5,11 @@ services:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
       - "5432:5432"
     volumes:
@@ -19,9 +24,19 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     env_file:
       - .env
+    environment:
+      DATABASE_HOST: database
+      DATABASE_PORT: 5432
+    healthcheck:
+      test: [ "CMD", "test", "-f", "/tmp/app_ready" ]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
 
 volumes:
   postgres_data:
