@@ -39,7 +39,7 @@ COPY entrypoint.sh entrypoint.sh
 
 # Copy application code
 COPY --chown=appuser:appuser . .
-RUN chmod +x entrypoint.sh
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 
 # Set environment variables to optimize Python
 ENV PYTHONDONTWRITEBYTECODE=1
