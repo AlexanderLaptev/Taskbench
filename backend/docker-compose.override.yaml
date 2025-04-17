@@ -1,0 +1,4 @@
+services:
+  taskbench-backend:
+    build: .
+    image: taskbench/taskbench-backend:dev

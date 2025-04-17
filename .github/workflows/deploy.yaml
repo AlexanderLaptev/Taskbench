@@ -3,19 +3,57 @@ name: CI
 on:
   push:
     branches:
-      - backend-django
+      - 'backend-django'
   pull_request:
     branches:
-      - backend-django
+      - 'backend-django'
 
 jobs:
-  build-push-deploy:
+  test:
     runs-on: ubuntu-latest
     environment: main
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create test env file
+        run: |
+          cat <<EOF > backend/.env
+          DJANGO_SECRET_KEY=TEST_KEY
+          DEBUG=True
+          DJANGO_LOGLEVEL=info
+          DJANGO_ALLOWED_HOSTS=localhost,0.0.0.0
+          DATABASE_NAME=test_db
+          DATABASE_USERNAME=test_db_user
+          DATABASE_PASSWORD=test_db_password
+          DATABASE_HOST=database
+          DATABASE_PORT=5432
+          GIGACHAT_AUTH_KEY=${{ secrets.GIGACHAT_AUTH_KEY }}
+          EOF
+
+      - name: Local deploy for test
+        run: |
+          docker-compose -f docker-compose.yaml -f docker-compose.override.yaml up --build -d
+
+      - name: Check if app is responding on port
+        run: |
+          sleep 5
+          curl --fail http://localhost:8000 || (echo "Server not responding" && exit 1)
+
+      - name: Tear down containers
+        if: always()
+        run: |
+          docker-compose -f docker-compose.yaml -f docker-compose.override.yaml down -v
+
+  build:
+    runs-on: ubuntu-latest
+    environment: main
+    needs: test
+
+    steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Create Env file
       run: |
