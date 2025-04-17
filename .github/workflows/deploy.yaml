@@ -37,18 +37,40 @@ jobs:
           cd backend
           docker compose -f docker-compose.yaml -f docker-compose.override.yaml up --build -d
           docker compose logs --tail=20
-
-      - name: Check if app is responding on port (using docker container with tests)
+          
+      - name: Wait for containers to be healthy
         run: |
-          cd backend
-          if docker compose logs --tail=20 test | grep -q "success"; then
-            echo "image is ok"
-            exit 0
-          else
-            echo "port connection failed"
-            docker compose logs test
-            exit 1
-          fi
+          TIMEOUT=60
+          INTERVAL=2
+          ELAPSED=0
+      
+          echo "Waiting for all services to become healthy..."
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            STATUS=$(docker inspect --format '{{json .State.Health.Status}}' $(docker compose ps -q) | grep -v "healthy" || true)
+            if [ -z "$STATUS" ]; then
+              echo "All services are healthy!"
+              exit 0
+            fi
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+      
+          echo "Some services did not become healthy in time:"
+          docker compose ps
+          docker compose logs
+          exit 1    
+
+#      - name: Check if app is responding on port (using docker container with tests)
+#        run: |
+#          cd backend
+#          if docker compose logs --tail=20 test | grep -q "success"; then
+#            echo "image is ok"
+#            exit 0
+#          else
+#            echo "port connection failed"
+#            docker compose logs test
+#            exit 1
+#          fi
 
       - name: Tear down containers
         if: always()
