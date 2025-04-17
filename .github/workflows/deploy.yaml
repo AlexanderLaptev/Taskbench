@@ -40,6 +40,7 @@ jobs:
 
       - name: Check if app is responding on port (using docker container with tests)
         run: |
+          cd backend
           if docker compose logs --tail=20 test | grep -q "success"; then
             echo "image is ok"
             exit 0
