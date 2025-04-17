@@ -31,6 +31,12 @@ services:
     environment:
       DATABASE_HOST: database
       DATABASE_PORT: 5432
+    healthcheck:
+      test: [ "CMD", "test", "-f", "/tmp/app_ready" ]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
 
 volumes:
   postgres_data:
