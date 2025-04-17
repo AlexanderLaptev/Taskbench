@@ -17,6 +17,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: List all files in the runner
+        run: |
+          echo "Listing files recursively in workspace:"
+          ls -Rlah
+
       - name: Create test env file
         run: |
           cat <<EOF > backend/.env
@@ -40,8 +45,7 @@ jobs:
 
       - name: Check if app is responding on port (using docker container with tests)
         run: |
-          run: |
-          if docker-compose logs --tail=20 test | grep -q "your_success_pattern"; then
+          if docker compose logs --tail=20 test | grep -q "success"; then
             echo "image is ok"
             exit 0
           else
@@ -64,6 +68,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: List all files in the runner
+      run: |
+        echo "Listing files recursively in workspace:"
+        ls -Rlah
 
     - name: Create Env file
       run: |
