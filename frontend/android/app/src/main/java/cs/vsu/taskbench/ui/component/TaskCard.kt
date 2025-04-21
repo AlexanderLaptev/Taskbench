@@ -66,7 +66,7 @@ fun TaskCard(
 
         // Subtasks
         Column {
-            for (subtask in subtasks) Subtask(subtask.isDone, subtask.text)
+            for (subtask in subtasks) Subtask(subtask.isDone, subtask.content)
         }
     }
 }
@@ -90,13 +90,10 @@ private fun Subtask(
 private fun PreviewWithSubtasks() {
     TaskbenchTheme {
         val subtasks = listOf(
-            SubtaskModel("Подзадача номер раз", false),
-            SubtaskModel(
-                "Подзадача номер два но длинная жестб sdfjskhdflksjhdflksndflkJDSNflksdjnf",
-                true
-            ),
-            SubtaskModel("Подзадача номер три", true),
-            SubtaskModel("Подзадача номер 4", true),
+            SubtaskModel(1, "Подзадача номер раз", false),
+            SubtaskModel(2, "Подзадача номер два но длинная жестб", true),
+            SubtaskModel(3, "Подзадача номер три", true),
+            SubtaskModel(4, "Подзадача номер 4", true),
         )
 
         TaskCard(
