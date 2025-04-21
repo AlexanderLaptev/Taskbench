@@ -58,7 +58,7 @@ fun TaskCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.icon_clock),
+                    painter = painterResource(R.drawable.ic_clock),
                     contentDescription = null,
                     modifier = Modifier.size(32.dp),
                 )

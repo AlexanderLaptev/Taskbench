@@ -101,7 +101,7 @@ private fun Preview() {
         BoxEdit(
             value = value,
             onValueChange = { value = it },
-            buttonIcon = painterResource(R.drawable.ic_plus_circle_filled),
+            buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
         )
     }
 }
@@ -114,7 +114,7 @@ private fun PreviewFilled() {
         BoxEdit(
             value = value,
             onValueChange = { value = it },
-            buttonIcon = painterResource(R.drawable.ic_plus_circle_filled),
+            buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
         )
     }
 }

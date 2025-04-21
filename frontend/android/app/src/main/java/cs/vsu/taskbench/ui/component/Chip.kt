@@ -40,7 +40,7 @@ fun Chip(
     icon: Painter? = null,
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .clickable(onClick = onClick)
@@ -53,7 +53,7 @@ fun Chip(
                 painter = icon,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(20.dp)
                     .aspectRatio(1.0f),
             )
         }
@@ -76,7 +76,7 @@ private fun Preview() {
             Chip("lorem ipsum", White, Black, {})
             Chip("lorem ipsum", White, LightGray, {})
             Chip("lorem ipsum", AccentYellow, Black, {})
-            Chip("lorem ipsum", White, Black, {}, icon = painterResource(R.drawable.icon_clock))
+            Chip("lorem ipsum", White, Black, {}, icon = painterResource(R.drawable.ic_clock))
         }
     }
 }
@@ -89,7 +89,7 @@ private fun PreviewScrollableRow() {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.horizontalScroll(rememberScrollState()),
         ) {
-            Chip("tomorrow, 17:30", White, Black, {}, icon = painterResource(R.drawable.icon_clock))
+            Chip("tomorrow, 17:30", White, Black, {}, icon = painterResource(R.drawable.ic_clock))
             Chip("high priority", AccentYellow, Black, {})
             Chip("select category", White, LightGray, {})
         }
