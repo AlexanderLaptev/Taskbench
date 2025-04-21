@@ -1,6 +1,5 @@
 package cs.vsu.taskbench.ui.component
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,7 +44,7 @@ private val DEFAULT_TEXT_STYLE = TextStyle(
 fun BoxEdit(
     value: String,
     onValueChange: (String) -> Unit,
-    button: @Composable () -> Unit,
+    buttonIcon: Painter,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource? = null,
 ) {
@@ -81,37 +80,17 @@ fun BoxEdit(
                 .focusRequester(focusRequester),
         )
 
-        button()
+        IconButton(
+            onClick = {},
+            modifier = Modifier.requiredSize(32.dp),
+        ) {
+            Image(
+                painter = buttonIcon,
+                contentDescription = null,
+                modifier = Modifier.size(28.dp),
+            )
+        }
     }
-}
-
-@Composable
-@NonRestartableComposable
-fun BoxEdit(
-    value: String,
-    onValueChange: (String) -> Unit,
-    @DrawableRes iconRes: Int,
-    modifier: Modifier = Modifier,
-    interactionSource: MutableInteractionSource? = null,
-) {
-    BoxEdit(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier,
-        interactionSource = interactionSource,
-        button = {
-            IconButton(
-                onClick = {},
-                modifier = Modifier.requiredSize(32.dp),
-            ) {
-                Image(
-                    painter = painterResource(iconRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp),
-                )
-            }
-        },
-    )
 }
 
 @Composable
@@ -122,7 +101,7 @@ private fun Preview() {
         BoxEdit(
             value = value,
             onValueChange = { value = it },
-            iconRes = R.drawable.ic_plus_circle_filled,
+            buttonIcon = painterResource(R.drawable.ic_plus_circle_filled),
         )
     }
 }
@@ -135,7 +114,7 @@ private fun PreviewFilled() {
         BoxEdit(
             value = value,
             onValueChange = { value = it },
-            iconRes = R.drawable.ic_plus_circle_filled,
+            buttonIcon = painterResource(R.drawable.ic_plus_circle_filled),
         )
     }
 }
