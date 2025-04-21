@@ -2,17 +2,6 @@
 #python manage.py makemigrations
 #python manage.py migrate
 
-# Создать дамп с таблицами и данными:  pg_dump -U postgres -d taskbenchDB -f bd.sql
-# Этот файл можно положить в репозиторий, и другие смогут его использовать для восстановления базы.
-
-
-
-#На другом компьютере можно выполнить:
-#psql -U postgres -d taskbenchDB -f bd.sql
-#Это создаст все таблицы и загрузит данные.
-
-
-
 from django.db import models
 from django.utils import timezone
 
@@ -31,7 +20,7 @@ class Task(models.Model):
     task_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255, null=False)
     deadline = models.DateTimeField(null=False)
-    priority = models.BooleanField(default=False)
+    priority = models.IntegerField(null=False)
     status = models.CharField(max_length=20, default='active')
     created_at = models.DateTimeField(default=timezone.now)
     ai_processed = models.BooleanField(default=False)
@@ -43,6 +32,7 @@ class Task(models.Model):
 
 class Subtask(models.Model):
     subtask_id = models.AutoField(primary_key=True)
+    number = models.IntegerField(null=False)
     text = models.TextField(null=False)
     is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
@@ -77,4 +67,15 @@ class TaskCategory(models.Model):
 
     def __str__(self):
         return f"{self.task.title} - {self.category.name}"
+
+class Subscription(models.Model):
+    subscription_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False, related_name='subscriptions')
+    start_date = models.DateTimeField(default=timezone.now)
+    end_date = models.DateTimeField(null=False)
+    is_active = models.BooleanField(default=True)
+    transaction_id = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f"Subscription for {self.user.username} from {self.start_date.date()} to {self.end_date.date()}"
 
