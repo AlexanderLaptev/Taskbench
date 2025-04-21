@@ -2,9 +2,7 @@ package cs.vsu.taskbench.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,7 +27,7 @@ import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 
-private val FONT_SIZE = 16.sp
+private val textStyle = TextStyle(color = Black, fontSize = 16.sp)
 
 @Composable
 fun TextField(
@@ -47,7 +45,7 @@ fun TextField(
         value = value,
         onValueChange = onValueChange,
         interactionSource = interactionSource,
-        textStyle = TextStyle(color = Black, fontSize = FONT_SIZE),
+        textStyle = textStyle,
         readOnly = readOnly,
         singleLine = true,
 
@@ -68,7 +66,7 @@ fun TextField(
                 if (shouldShowPlaceholder) {
                     Text(
                         text = placeholder,
-                        fontSize = FONT_SIZE,
+                        fontSize = 16.sp,
                         color = LightGray,
                     )
                 }
@@ -79,20 +77,7 @@ fun TextField(
 
 @Composable
 @Preview
-private fun PreviewVisual() {
-    TaskbenchTheme {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            TextField("", {}, placeholder = "Hint text")
-            TextField("Lorem ipsum", {}, placeholder = "Hint text")
-        }
-    }
-}
-
-@Composable
-@Preview
-private fun PreviewInteractive() {
+private fun Preview() {
     var inputText by remember { mutableStateOf("") }
     TaskbenchTheme {
         TextField(
