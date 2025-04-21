@@ -1,59 +1,326 @@
-openapi: 3.1.0
+openapi: 3.0.0
 info:
   title: Taskbench API
-  summary: REST API for Taskbench
-  description: The REST API for Taskbench -- a smart task manager based on the Gettings Things Done system.
+  description: API for managing tasks with deadlines, priorities, and categories
   version: 1.0.0
+
+servers:
+  - url: https://api.taskbench.ru/v1
+    description: Production server
+
 paths:
-  /tasks:
-    get:
-      summary: List all tasks for the user
-      responses:
-        "200":
-          description: List of all tasks with categories for the user
-        "401":
-          description: The user is not authorized to request tasks
+  /ai/suggestions:
     post:
-      summary: Create a new task for the user
-      responses:
-        "200":
-          description: The task was successfully created
-        "401":
-          description: The user is not authorized to create tasks
-    delete:
-      summary: Delete a task for the user
-      responses:
-        "200":
-          description: The task was successfully deleted
-        "401":
-          description: The user is not authorized to delete tasks
-        "404":
-          description: The task was not found
-    put:
-      summary: Create or update an existing task
-      responses:
-        "200":
-          description: The task was successfully created or updated
-        "401":
-          description: The user is not authorized to update tasks
-  /ai:
-    get:
-      summary: Get a list of AI suggestions based on the current user input
+      summary: Get AI suggestions for task DPC
       requestBody:
         required: true
         content:
-          "application/json":
+          application/json:
             schema:
               type: object
-              required:
-                - input
               properties:
-                input:
+                text:
+                  type: string
+                  description: Task description text
+                timestamp:
+                  type: integer
+                  format: int64
+                  description: Unix timestamp
+                dpc:
+                  $ref: '#/components/schemas/DPC'
+      responses:
+        '200':
+          description: AI suggestions received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggested_dpc:
+                    $ref: '#/components/schemas/DPC'
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+
+  /tasks:
+    post:
+      summary: Submit a new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+
+    get:
+      summary: Get list of tasks
+      parameters:
+        - in: query
+          name: category_id
+          schema:
+            type: integer
+        - in: query
+          name: sort_by
+          schema:
+            type: string
+            enum: [priority, deadline]
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: List of tasks retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+
+  /tasks/{task_id}:
+    delete:
+      summary: Remove a task
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Task removed successfully
+
+    patch:
+      summary: Edit a task
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                dpc:
+                  $ref: '#/components/schemas/DPC'
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+
+  /subtasks:
+    post:
+      summary: Add a subtask
+      parameters:
+        - in: query
+          name: task_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                is_done:
+                  type: boolean
+      responses:
+        '201':
+          description: Subtask created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subtask'
+  
+  /subtasks/{subtask_id}:
+    patch:
+      summary: Edit or toggle a subtask
+      parameters:
+        - in: path
+          name: subtask_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                is_done:
+                  type: boolean
+      responses:
+        '200':
+          description: Subtask updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subtask'
+
+    delete:
+      summary: Remove a subtask
+      parameters:
+        - in: path
+          name: subtask_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Subtask removed successfully
+
+  /user/password:
+    patch:
+      summary: Change user password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old_password:
+                  type: string
+                new_password:
                   type: string
       responses:
-        "200":
-          description: A list of AI suggestions
-        "401":
-          description: The user is not authorized to request AI suggestions
-        "403":
-          description: The user's subscription plan does not allow to request AI suggestions
+        '204':
+          description: Password changed successfully
+
+  /bootstrap:
+    get:
+      summary: Get bootstrap data
+      responses:
+        '200':
+          description: Bootstrap data retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      type: string
+                  premium_status:
+                    type: boolean
+                  jwt:
+                    type: string
+
+  /statistics:
+    get:
+      summary: Get user statistics
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  done_today:
+                    type: integer
+                  max_done:
+                    type: integer
+                  weekly:
+                    type: array
+                    items:
+                      type: number
+                      format: float
+                    maxItems: 7
+                    minItems: 7
+
+components:
+  schemas:
+    DPC:
+      type: object
+      properties:
+        deadline:
+          type: string
+          format: date-time
+        priority:
+          type: integer
+          minimum: 0
+        category:
+          type: integer
+
+    TaskInput:
+      type: object
+      properties:
+        task:
+          type: string
+        dpc:
+          $ref: '#/components/schemas/DPC'
+        subtasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubtaskInput'
+
+    SubtaskInput:
+      type: object
+      properties:
+        content:
+          type: string
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        task:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        content:
+          type: string
+        subtasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subtask'
+
+    Subtask:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        is_done:
+          type: boolean
