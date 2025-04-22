@@ -14,7 +14,6 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,8 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -101,21 +100,23 @@ private fun LoginScreenContent(
         Image(
             painter = painterResource(R.drawable.login_screen),
             contentDescription = null,
+            contentScale = ContentScale.FillBounds,
             modifier = Modifier
-                .fillMaxSize()
-                .scale(1.03f),
+                .fillMaxSize(),
         )
         Box(
             Modifier
                 .offset(y = 40.dp)
                 .fillMaxHeight()
                 .wrapContentSize()
-                .background(color = Beige, shape = RoundedCornerShape(
-                    topStart = 0.dp,
-                    topEnd = 80.dp,
-                    bottomEnd = 80.dp,
-                    bottomStart = 0.dp,
-                ))
+                .background(
+                    color = Beige, shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 80.dp,
+                        bottomEnd = 80.dp,
+                        bottomStart = 0.dp,
+                    )
+                )
                 .padding(
                     start = 8.dp,
                     top = 24.dp,
