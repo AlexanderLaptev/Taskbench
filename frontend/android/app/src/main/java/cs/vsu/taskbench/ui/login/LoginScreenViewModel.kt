@@ -4,8 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 class LoginScreenViewModel : ViewModel() {
     enum class State {
@@ -13,18 +14,37 @@ class LoginScreenViewModel : ViewModel() {
         SignUp,
     }
 
-    private var _state = MutableStateFlow(State.Login)
-    val state = _state.asStateFlow()
-
+    var state by mutableStateOf(State.Login)
     var email by mutableStateOf("")
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
 
-    fun login() {}
+    private val _errors = MutableSharedFlow<String>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    val errors = _errors.asSharedFlow()
 
-    fun signUp() {}
+    fun login() {
+        _errors.tryEmit("Logging in")
+    }
 
-    fun switchToSignUp() {}
+    fun signUp() {
+        _errors.tryEmit("Signing up")
+    }
 
-    fun switchToLogin() {}
+    fun switchToSignUp() {
+        if (state == State.SignUp) return
+        confirmPassword = ""
+        state = State.SignUp
+    }
+
+    fun switchToLogin() {
+        if (state == State.Login) return
+        state = State.Login
+    }
+
+    fun forgotPassword() {
+        _errors.tryEmit("Forgot password")
+    }
 }

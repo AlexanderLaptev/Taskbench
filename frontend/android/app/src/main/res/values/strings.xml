@@ -17,4 +17,5 @@
     <string name="label_email">Электронная почта</string>
     <string name="label_password">Пароль</string>
     <string name="label_confirm_password">Подтвердите пароль</string>
+    <string name="label_forgot_password">Забыли пароль?</string>
 </resources>
