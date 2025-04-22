@@ -60,7 +60,7 @@ fun LoginScreen(
     onError: (String) -> Unit,
 ) {
     LaunchedEffect(Unit) {
-        viewModel.errors.collect {
+        viewModel.messages.collect {
             onError(it)
         }
     }
