@@ -14,13 +14,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.TextField
+import org.koin.androidx.compose.koinViewModel
 
-@Destination<RootGraph>
+@Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
 fun LoginScreen(
-    viewModel: LoginScreenViewModel,
+    viewModel: LoginScreenViewModel = koinViewModel(),
 ) {
     val loginState by viewModel.state.collectAsStateWithLifecycle()
 

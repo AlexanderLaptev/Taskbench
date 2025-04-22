@@ -22,9 +22,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightGray
+import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 
 private val textStyle = TextStyle(color = Black, fontSize = 16.sp)
@@ -56,7 +56,7 @@ fun TextField(
         decorationBox = { innerTextField ->
             Box(
                 modifier = modifier
-                    .background(Beige, RoundedCornerShape(10.dp))
+                    .background(LightYellow, RoundedCornerShape(10.dp))
                     .padding(start = 16.dp)
                     .height(52.dp)
                     .fillMaxWidth(),
