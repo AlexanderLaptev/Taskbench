@@ -26,20 +26,25 @@ import org.koin.compose.koinInject
 @Composable
 fun SplashScreen(navigator: DestinationsNavigator) {
     val settingsRepository = koinInject<SettingsRepository>()
+
     LaunchedEffect(Unit) {
-        delay(700)
-        val settings = settingsRepository.flow.first()
-        navigator.popBackStack()
         delay(300) // a little delay so the splash screen doesn't disappear instantly
+        val settings = settingsRepository.flow.first() // suspend until the settings are read
+
+        navigator.popBackStack() // pop so we can't navigate back to the splash screen
         navigator.navigate(
+            // Navigate to either the task creation screen or the
+            // login screen depending on whether we're logged in.
             if (settings.isLoggedIn) {
                 TaskCreationScreenDestination
             } else LoginScreenDestination
         )
     }
+
     SplashScreenContent()
 }
 
+// Content extracted into a separate function to be easier to preview.
 @Composable
 private fun SplashScreenContent(modifier: Modifier = Modifier) {
     Image(
@@ -48,12 +53,12 @@ private fun SplashScreenContent(modifier: Modifier = Modifier) {
         modifier = modifier
             .offset(y = (-60).dp)
             .fillMaxSize()
-            .wrapContentSize()
+            .wrapContentSize(),
     )
 }
 
-@Composable
 @Preview(showBackground = true, backgroundColor = 0xFFFFF3DC)
+@Composable
 private fun Preview() {
     TaskbenchTheme {
         SplashScreenContent()
