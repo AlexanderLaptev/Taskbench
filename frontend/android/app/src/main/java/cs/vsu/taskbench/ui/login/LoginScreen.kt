@@ -11,10 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.TextField
 
+@Destination<RootGraph>
 @Composable
 fun LoginScreen(
     viewModel: LoginScreenViewModel,

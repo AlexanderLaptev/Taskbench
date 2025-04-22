@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.ramcosta.composedestinations.DestinationsNavHost
+import com.ramcosta.composedestinations.generated.navgraphs.RootNavGraph
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 
 class MainActivity : ComponentActivity() {
@@ -12,6 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TaskbenchTheme {
+                DestinationsNavHost(navGraph = RootNavGraph)
             }
         }
     }
