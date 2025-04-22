@@ -5,16 +5,29 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.generated.navgraphs.RootNavGraph
+import com.ramcosta.composedestinations.generated.NavGraphs
+import cs.vsu.taskbench.data.dataModule
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.compose.KoinApplication
+import org.koin.core.logger.Level
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            TaskbenchTheme {
-                DestinationsNavHost(navGraph = RootNavGraph)
+            KoinApplication(
+                application = {
+                    androidLogger(Level.DEBUG)
+                    androidContext(this@MainActivity)
+                    modules(dataModule)
+                }
+            ) {
+                TaskbenchTheme {
+                    DestinationsNavHost(navGraph = NavGraphs.root)
+                }
             }
         }
     }
