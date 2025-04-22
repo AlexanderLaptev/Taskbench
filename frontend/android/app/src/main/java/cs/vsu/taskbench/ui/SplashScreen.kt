@@ -30,6 +30,7 @@ fun SplashScreen(navigator: DestinationsNavigator) {
         delay(700)
         val settings = settingsRepository.flow.first()
         navigator.popBackStack()
+        delay(300) // a little delay so the splash screen doesn't disappear instantly
         navigator.navigate(
             if (settings.isLoggedIn) {
                 TaskCreationScreenDestination
