@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.ui.login
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -55,13 +56,12 @@ import org.koin.androidx.compose.koinViewModel
 
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
-fun LoginScreen(
-    viewModel: LoginScreenViewModel = koinViewModel(),
-    onError: (String) -> Unit,
-) {
+fun LoginScreen() {
+    val viewModel = koinViewModel<LoginScreenViewModel>()
+
     LaunchedEffect(Unit) {
         viewModel.messages.collect {
-            onError(it)
+            Log.d("LoginScreen", "message: $it")
         }
     }
 
