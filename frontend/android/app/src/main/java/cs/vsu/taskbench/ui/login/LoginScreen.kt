@@ -47,9 +47,9 @@ import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.TextField
-import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
+import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.White
 import org.koin.androidx.compose.koinViewModel
 
@@ -105,12 +105,12 @@ private fun LoginScreenContent(
                 .fillMaxSize(),
         )
         Box(
-            Modifier
+            modifier = Modifier
                 .offset(y = 40.dp)
                 .fillMaxHeight()
                 .wrapContentSize()
                 .background(
-                    color = Beige, shape = RoundedCornerShape(
+                    color = LightYellow, shape = RoundedCornerShape(
                         topStart = 0.dp,
                         topEnd = 80.dp,
                         bottomEnd = 80.dp,
@@ -164,6 +164,7 @@ private fun ControlsBox(
     ) {
         TextField(
             value = email,
+            color = Beige,
             placeholder = stringResource(R.string.label_email),
             onValueChange = onEmailChange,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -172,6 +173,7 @@ private fun ControlsBox(
 
         TextField(
             value = password,
+            color = Beige,
             placeholder = stringResource(R.string.label_password),
             password = true,
             onValueChange = onPasswordChange,
@@ -184,6 +186,7 @@ private fun ControlsBox(
             Column {
                 TextField(
                     value = confirmPassword,
+                    color = Beige,
                     placeholder = stringResource(R.string.label_confirm_password),
                     password = true,
                     onValueChange = onConfirmPasswordChange,
@@ -202,7 +205,7 @@ private fun ControlsBox(
             state,
             R.string.label_login,
             R.string.label_sign_up,
-            AccentYellow,
+            White,
         )
         Spacer(Modifier.height(8.dp))
 
@@ -229,15 +232,18 @@ private fun ControlsBox(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.label_forgot_password),
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     color = if (isLinkPressed) Color(0xFF0823D5) else Color(0xFF586EFF),
                     textDecoration = TextDecoration.Underline,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
                         .clickable(
                             onClick = onForgotPassword,
                             interactionSource = interactionSource,
                             indication = null,
-                        ),
+                        )
+                        .height(32.dp)
+                        .fillMaxWidth(0.5f),
                 )
             }
         }

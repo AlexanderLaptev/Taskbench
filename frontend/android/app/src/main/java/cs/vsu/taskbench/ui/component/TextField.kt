@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -36,6 +37,7 @@ fun TextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    color: Color = LightYellow,
     placeholder: String = "",
     readOnly: Boolean = false,
     password: Boolean = false,
@@ -62,7 +64,7 @@ fun TextField(
         decorationBox = { innerTextField ->
             Box(
                 modifier = modifier
-                    .background(LightYellow, RoundedCornerShape(10.dp))
+                    .background(color, RoundedCornerShape(10.dp))
                     .padding(start = 16.dp)
                     .height(52.dp)
                     .fillMaxWidth(),
