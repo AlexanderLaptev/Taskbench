@@ -1,5 +1,10 @@
 package cs.vsu.taskbench.data.auth
 
 interface AuthorizationService {
-    suspend fun getJwtToken(email: String, password: String): String
+    sealed interface Result {
+        data object Error : Result // TODO: error types
+        data class Success(val jwtToken: String) : Result
+    }
+
+    suspend fun authorize(email: String, password: String): Result
 }

@@ -6,12 +6,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.auth.AuthorizationService
 import cs.vsu.taskbench.data.user.UserRepository
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 
 class LoginScreenViewModel(
     private val authService: AuthorizationService,
@@ -34,6 +36,7 @@ class LoginScreenViewModel(
         UserDoesNotExist(R.string.placeholder),
         IncorrectPassword(R.string.placeholder),
         NoInternet(R.string.placeholder),
+        Unknown(R.string.placeholder),
     }
 
     sealed interface Event {
@@ -54,7 +57,27 @@ class LoginScreenViewModel(
 
     fun login() {
         if (!validateLogin()) return
-        _events.tryEmit(Event.LoggedIn)
+        viewModelScope.launch { handleLogin() }
+    }
+
+    private suspend fun handleLogin() {
+        when (val result = authService.authorize(email, password)) {
+            AuthorizationService.Result.Error -> {
+                _events.tryEmit(Event.Error(ErrorType.Unknown))
+                return
+            }
+
+            is AuthorizationService.Result.Success -> {
+                saveJwtToken(result.jwtToken)
+                userRepository.fetchUser(result.jwtToken)
+                _events.tryEmit(Event.LoggedIn)
+            }
+        }
+    }
+
+    private fun saveJwtToken(token: String) {
+        Log.d(TAG, "saving token: $token")
+        // TODO
     }
 
     private fun validateLogin(): Boolean {
@@ -73,7 +96,7 @@ class LoginScreenViewModel(
         return true
     }
 
-    private fun String.isValidEmail(): Boolean = TODO()
+    private fun String.isValidEmail(): Boolean = "@" in this // TODO
 
     fun signUp() {
         _events.tryEmit(Event.LoggedIn)
@@ -91,6 +114,7 @@ class LoginScreenViewModel(
     }
 
     fun forgotPassword() {
+        // TODO
         Log.d(TAG, "forgot password")
     }
 }
