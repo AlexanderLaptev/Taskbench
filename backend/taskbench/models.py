@@ -32,7 +32,7 @@ class Task(models.Model):
 
 class Subtask(models.Model):
     subtask_id = models.AutoField(primary_key=True)
-    number = models.IntegerField(null=False)
+    number = models.IntegerField(default=0, null=False)
     text = models.TextField(null=False)
     is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
