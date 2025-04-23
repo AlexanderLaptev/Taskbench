@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +32,13 @@ import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 
 private val textStyle = TextStyle(color = Black, fontSize = 16.sp)
 
+private val placeholderTextStyle = TextStyle(
+    color = LightGray,
+    fontSize = 16.sp,
+)
+
+private val shape = RoundedCornerShape(10.dp)
+
 @Composable
 fun TextField(
     value: String,
@@ -44,8 +51,6 @@ fun TextField(
     keyboardOptions: KeyboardOptions? = null,
     interactionSource: MutableInteractionSource? = null,
 ) {
-    val shouldShowPlaceholder = value.isEmpty()
-
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
@@ -64,18 +69,17 @@ fun TextField(
         decorationBox = { innerTextField ->
             Box(
                 modifier = modifier
-                    .background(color, RoundedCornerShape(10.dp))
+                    .background(color, shape)
                     .padding(start = 16.dp)
                     .height(52.dp)
                     .fillMaxWidth(),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 innerTextField()
-                if (shouldShowPlaceholder) {
-                    Text(
+                if (value.isEmpty()) {
+                    BasicText(
                         text = placeholder,
-                        fontSize = 16.sp,
-                        color = LightGray,
+                        style = placeholderTextStyle,
                     )
                 }
             }
@@ -91,7 +95,7 @@ private fun Preview() {
         TextField(
             inputText,
             { inputText = it },
-            placeholder = "Hint text"
+            placeholder = "Hint text",
         )
     }
 }

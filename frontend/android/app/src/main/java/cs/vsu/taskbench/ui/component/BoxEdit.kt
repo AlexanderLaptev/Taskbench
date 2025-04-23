@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -32,11 +33,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.theme.Black
+import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
 
-private val DEFAULT_TEXT_STYLE = TextStyle(
+private val textStyle = TextStyle(
     color = Black,
+    fontSize = 16.sp,
+)
+
+private val placeholderTextStyle = TextStyle(
+    color = LightGray,
     fontSize = 16.sp,
 )
 
@@ -46,6 +53,7 @@ fun BoxEdit(
     onValueChange: (String) -> Unit,
     buttonIcon: Painter,
     modifier: Modifier = Modifier,
+    placeholder: String = "",
     interactionSource: MutableInteractionSource? = null,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -72,12 +80,21 @@ fun BoxEdit(
             onValueChange = onValueChange,
             singleLine = false,
             interactionSource = interactionSource,
-            textStyle = DEFAULT_TEXT_STYLE,
+            textStyle = textStyle,
             modifier = Modifier
                 .align(alignment = Alignment.Top)
                 .weight(1.0f)
-                .padding(bottom = 8.dp)
                 .focusRequester(focusRequester),
+
+            decorationBox = { field ->
+                field()
+                if (value.isEmpty()) {
+                    BasicText(
+                        text = placeholder,
+                        style = placeholderTextStyle,
+                    )
+                }
+            }
         )
 
         IconButton(
@@ -102,6 +119,7 @@ private fun Preview() {
             value = value,
             onValueChange = { value = it },
             buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
+            placeholder = "Enter text",
         )
     }
 }
