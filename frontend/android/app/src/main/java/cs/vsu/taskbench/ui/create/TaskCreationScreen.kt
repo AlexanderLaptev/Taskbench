@@ -25,101 +25,136 @@ import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.CardEntryField
 import cs.vsu.taskbench.ui.component.Subtask
 import cs.vsu.taskbench.ui.theme.Beige
-import cs.vsu.taskbench.ui.theme.TaskbenchTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import cs.vsu.taskbench.ui.ScreenTransitions
+import cs.vsu.taskbench.ui.component.NavigationBar
+import cs.vsu.taskbench.ui.theme.LightGray
 
+@Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
 fun TaskCreationScreen(
+//) {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(color = Beige)
+//            .padding(8.dp),
+//    ) {
+//        Column(
+//            modifier = Modifier
+//                .height(263.dp)
+//                .verticalScroll(rememberScrollState()),
+//            verticalArrangement = Arrangement.spacedBy(8.dp)
+//        ){
+//            Subtask(
+//                text = "Пройтись по темам созвона",
+//                selected = true,
+//                buttonIcon = painterResource(R.drawable.icon_save),
+//                onButtonClick = {},
+//            )
+//            Subtask(
+//                text = "Пройтись по темам созвона",
+//                selected = true,
+//                buttonIcon = painterResource(R.drawable.icon_save),
+//                onButtonClick = {},
+//            )
+//            Subtask(
+//                text = "Пройтись по темам созвона",
+//                selected = false,
+//                buttonIcon = painterResource(R.drawable.icon_add),
+//                onButtonClick = {},
+//            )
+//            Subtask(
+//                text = "Пройтись по темам созвона",
+//                selected = false,
+//                buttonIcon = painterResource(R.drawable.icon_add),
+//                onButtonClick = {},
+//            )
+//            Subtask(
+//                text = "Пройтись по темам созвона",
+//                selected = true,
+//                buttonIcon = painterResource(R.drawable.icon_save),
+//                onButtonClick = {},
+//            )
+//            Subtask(
+//                text = "Пройтись по темам созвона",
+//                selected = true,
+//                buttonIcon = painterResource(R.drawable.icon_save),
+//                onButtonClick = {},
+//            )
+//        }
+//
+//        Icon(
+//            painter = painterResource(R.drawable.logo),
+//            contentDescription = "",
+//            tint = Color.Unspecified,
+//            modifier = Modifier
+//                .align(Alignment.Center)
+//        )
+//
+//        Column(
+//            modifier = Modifier
+//                .verticalScroll(rememberScrollState())
+//                .align(Alignment.BottomCenter)
+//                .padding(bottom = 80.dp),
+//            verticalArrangement = Arrangement.spacedBy(16.dp)
+//
+//        ) {
+//            Row(
+//                modifier = Modifier
+//                    .horizontalScroll(rememberScrollState()),
+//                horizontalArrangement = Arrangement.spacedBy(8.dp)
+//            ) {
+//                Button(
+//                    "Выбрать время",
+//                    onClick = { Log.d(null, "lorem ipsum clicked") }
+//                )
+//                Button(
+//                    "Категория",
+//                    onClick = { Log.d(null, "lorem ipsum clicked") }
+//                )
+//                Button(
+//                    "Приоритет",
+//                    onClick = { Log.d(null, "lorem ipsum clicked") }
+//                )
+//            }
+//            CardEntryField(
+//                "",
+//                "Введите вашу идею",
+//                {}
+//            )
+//        }
+    navController: NavController,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Beige)
-            .padding(8.dp),
-    ) {
-        Column(
-            modifier = Modifier
-                .height(263.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ){
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = true,
-                buttonIcon = painterResource(R.drawable.icon_save),
-                onButtonClick = {},
-            )
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = true,
-                buttonIcon = painterResource(R.drawable.icon_save),
-                onButtonClick = {},
-            )
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = false,
-                buttonIcon = painterResource(R.drawable.icon_add),
-                onButtonClick = {},
-            )
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = false,
-                buttonIcon = painterResource(R.drawable.icon_add),
-                onButtonClick = {},
-            )
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = true,
-                buttonIcon = painterResource(R.drawable.icon_save),
-                onButtonClick = {},
-            )
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = true,
-                buttonIcon = painterResource(R.drawable.icon_save),
-                onButtonClick = {},
-            )
+    Scaffold(
+        bottomBar = {
+            Column {
+                NavigationBar(navController)
+            }
         }
-
-        Icon(
-            painter = painterResource(R.drawable.logo),
-            contentDescription = "",
-            tint = Color.Unspecified,
+    ) { padding ->
+        // TODO!
+        Text(
+            text = "Task Creation Screen",
+            fontSize = 28.sp,
+            color = LightGray,
             modifier = Modifier
-                .align(Alignment.Center)
+                .fillMaxSize()
+                .wrapContentSize()
+                .padding(padding),
         )
 
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 80.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-
-        ) {
-            Row(
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    "Выбрать время",
-                    onClick = { Log.d(null, "lorem ipsum clicked") }
-                )
-                Button(
-                    "Категория",
-                    onClick = { Log.d(null, "lorem ipsum clicked") }
-                )
-                Button(
-                    "Приоритет",
-                    onClick = { Log.d(null, "lorem ipsum clicked") }
-                )
-            }
-            CardEntryField(
-                "",
-                "Введите вашу идею",
-                {}
-            )
-        }
     }
 }
 

@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    kotlin("plugin.serialization") version libs.versions.kotlin
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -41,7 +41,7 @@ android {
 }
 
 dependencies {
-
+    ksp(libs.composeDestinations.ksp)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.datastore)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -63,6 +64,6 @@ dependencies {
     implementation(libs.koin.androidx.compose)
     implementation(libs.koin.androidx.compose.navigation)
     implementation(libs.retrofit)
-    implementation(libs.androidx.compose.navigation)
-    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.composeDestinations.core)
+    implementation(libs.composeDestinations.bottomSheet)
 }
