@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -87,19 +88,23 @@ fun LoginScreen(
 ) {
     val viewModel = koinViewModel<LoginScreenViewModel>()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
+    val scope = rememberCoroutineScope()
+    val resources = LocalContext.current.resources
     LaunchedEffect(Unit) {
-        viewModel.messages.collect { event ->
+        viewModel.events.collect { event ->
             when (event) {
-                is LoginScreenViewModel.Result.Error -> scope.launch {
-                    with(snackbarHostState) { // display errors as snackbars
+                is LoginScreenViewModel.Event.Error -> scope.launch {
+                    with(snackbarHostState) {
                         currentSnackbarData?.dismiss()
-                        showSnackbar(event.message, withDismissAction = true)
+                        showSnackbar(
+                            resources.getString(event.type.messageId),
+                            withDismissAction = true
+                        )
                     }
                 }
 
-                LoginScreenViewModel.Result.Success -> {
+                LoginScreenViewModel.Event.LoggedIn -> {
                     navigator.popBackStack()
                     navigator.navigate(TaskCreationScreenDestination)
                 }
