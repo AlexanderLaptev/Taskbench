@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.ui.component
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,16 +18,47 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.ramcosta.composedestinations.generated.NavGraphs
+import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.StatisticsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TaskCreationScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TaskListScreenDestination
+import com.ramcosta.composedestinations.spec.Direction
+import com.ramcosta.composedestinations.utils.currentDestinationAsState
+import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
+import com.ramcosta.composedestinations.utils.startDestination
+import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.LightYellow
+import cs.vsu.taskbench.ui.theme.TaskbenchTheme
+
+private enum class TopLevelDestination(
+    val direction: Direction,
+    @DrawableRes val iconId: Int,
+) {
+    TaskCreation(TaskCreationScreenDestination, R.drawable.ic_add_circle_outline),
+    TaskList(TaskListScreenDestination, R.drawable.ic_list),
+    Statistics(StatisticsScreenDestination, R.drawable.ic_chart),
+    Settings(SettingsScreenDestination, R.drawable.ic_gear),
+}
 
 @Composable
 fun NavigationBar(
+    navController: NavController,
     modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit,
+    interactionSource: MutableInteractionSource? = null,
 ) {
+    val currentDestination = navController
+        .currentDestinationAsState()
+        .value ?: NavGraphs.root.startDestination
+    val navigator = navController.rememberDestinationsNavigator()
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -36,12 +68,26 @@ fun NavigationBar(
             .defaultMinSize(minHeight = 48.dp)
             .fillMaxWidth()
             .selectableGroup(),
-        content = content,
-    )
+    ) {
+        for (destination in TopLevelDestination.entries) {
+            NavigationBarItem(
+                icon = painterResource(destination.iconId),
+                selected = currentDestination == destination.direction,
+                interactionSource = interactionSource,
+                onClick = {
+                    if (currentDestination == destination.direction) return@NavigationBarItem
+                    navigator.popBackStack()
+                    navigator.navigate(destination.direction) {
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+    }
 }
 
 @Composable
-fun RowScope.NavigationBarItem(
+private fun RowScope.NavigationBarItem(
     icon: Painter,
     selected: Boolean,
     onClick: () -> Unit,
@@ -65,5 +111,13 @@ fun RowScope.NavigationBarItem(
             tint = tintColor,
             modifier = modifier.size(36.dp)
         )
+    }
+}
+
+@Preview
+@Composable
+private fun Preview() {
+    TaskbenchTheme {
+        NavigationBar(rememberNavController())
     }
 }

@@ -1,4 +1,4 @@
-package cs.vsu.taskbench.ui.list
+package cs.vsu.taskbench.ui
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,13 +11,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.theme.LightGray
 
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
-fun TaskListScreen(
+fun StatisticsScreen(
     navController: NavController,
 ) {
     Scaffold(
@@ -25,7 +24,7 @@ fun TaskListScreen(
     ) { padding ->
         // TODO!
         Text(
-            text = "Task List Screen",
+            text = "Statistics Screen",
             fontSize = 28.sp,
             color = LightGray,
             modifier = Modifier

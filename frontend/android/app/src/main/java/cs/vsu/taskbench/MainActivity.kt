@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.generated.NavGraphs
 import cs.vsu.taskbench.data.dataModule
@@ -26,8 +27,12 @@ class MainActivity : ComponentActivity() {
                     modules(dataModule, uiModule)
                 }
             ) {
+                val navController = rememberNavController()
                 TaskbenchTheme {
-                    DestinationsNavHost(navGraph = NavGraphs.root)
+                    DestinationsNavHost(
+                        navGraph = NavGraphs.root,
+                        navController = navController,
+                    )
                 }
             }
         }

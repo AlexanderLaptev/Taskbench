@@ -1,15 +1,14 @@
 package cs.vsu.taskbench.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.LoginScreenDestination
@@ -17,12 +16,13 @@ import com.ramcosta.composedestinations.generated.destinations.TaskCreationScree
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.SettingsRepository
+import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import org.koin.compose.koinInject
 
-@Destination<RootGraph>(start = true)
+@Destination<RootGraph>(start = true, style = ScreenTransitions::class)
 @Composable
 fun SplashScreen(navigator: DestinationsNavigator) {
     val settingsRepository = koinInject<SettingsRepository>()
@@ -51,7 +51,7 @@ private fun SplashScreenContent(modifier: Modifier = Modifier) {
         painter = painterResource(R.drawable.logo_full_dark),
         contentDescription = "",
         modifier = modifier
-            .offset(y = (-60).dp)
+            .background(Beige)
             .fillMaxSize()
             .wrapContentSize(),
     )

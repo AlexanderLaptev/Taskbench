@@ -14,23 +14,28 @@ class LoginScreenViewModel : ViewModel() {
         SignUp,
     }
 
+    sealed interface Result {
+        data class Error(val message: String): Result
+        data object Success: Result
+    }
+
     var state by mutableStateOf(State.Login)
     var email by mutableStateOf("")
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
 
-    private val _messages = MutableSharedFlow<String>(
+    private val _messages = MutableSharedFlow<Result>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val messages = _messages.asSharedFlow()
 
     fun login() {
-        _messages.tryEmit("Logging in")
+        _messages.tryEmit(Result.Success)
     }
 
     fun signUp() {
-        _messages.tryEmit("Signing up")
+        _messages.tryEmit(Result.Error("Signing up"))
     }
 
     fun switchToSignUp() {
@@ -45,6 +50,6 @@ class LoginScreenViewModel : ViewModel() {
     }
 
     fun forgotPassword() {
-        _messages.tryEmit("Forgot password")
+        _messages.tryEmit(Result.Error("Forgot password"))
     }
 }

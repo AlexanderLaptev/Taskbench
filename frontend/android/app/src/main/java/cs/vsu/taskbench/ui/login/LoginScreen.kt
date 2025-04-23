@@ -1,7 +1,6 @@
 package cs.vsu.taskbench.ui.login
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -48,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.TaskCreationScreenDestination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.Button
@@ -81,19 +82,26 @@ private data class LoginScreenState(
 
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    navigator: DestinationsNavigator,
+) {
     val viewModel = koinViewModel<LoginScreenViewModel>()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        // Whenever the view model posts a new message, display it in a snackbar.
-        viewModel.messages.collect { message ->
-            Log.d("LoginScreen", "message: $message")
-            scope.launch {
-                with(snackbarHostState) {
-                    currentSnackbarData?.dismiss()
-                    showSnackbar(message, withDismissAction = true)
+        viewModel.messages.collect { event ->
+            when (event) {
+                is LoginScreenViewModel.Result.Error -> scope.launch {
+                    with(snackbarHostState) { // display errors as snackbars
+                        currentSnackbarData?.dismiss()
+                        showSnackbar(event.message, withDismissAction = true)
+                    }
+                }
+
+                LoginScreenViewModel.Result.Success -> {
+                    navigator.popBackStack()
+                    navigator.navigate(TaskCreationScreenDestination)
                 }
             }
         }
