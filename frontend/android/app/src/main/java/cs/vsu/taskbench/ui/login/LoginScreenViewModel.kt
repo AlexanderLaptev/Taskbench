@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.SettingsRepository
 import cs.vsu.taskbench.data.auth.AuthorizationService
 import cs.vsu.taskbench.data.user.UserRepository
 import kotlinx.coroutines.channels.BufferOverflow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 class LoginScreenViewModel(
     private val authService: AuthorizationService,
     private val userRepository: UserRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
     companion object {
         private val TAG = LoginScreenViewModel::class.simpleName
@@ -70,14 +72,15 @@ class LoginScreenViewModel(
             is AuthorizationService.Result.Success -> {
                 saveJwtToken(result.jwtToken)
                 userRepository.fetchUser(result.jwtToken)
+                Log.d(TAG, "current user: ${userRepository.user}")
                 _events.tryEmit(Event.LoggedIn)
             }
         }
     }
 
-    private fun saveJwtToken(token: String) {
+    private suspend fun saveJwtToken(token: String) {
         Log.d(TAG, "saving token: $token")
-        // TODO
+        settingsRepository.setJwtToken(token)
     }
 
     private fun validateLogin(): Boolean {

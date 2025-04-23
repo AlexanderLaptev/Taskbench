@@ -35,7 +35,7 @@ fun SplashScreen(navigator: DestinationsNavigator) {
         navigator.navigate(
             // Navigate to either the task creation screen or the
             // login screen depending on whether we're logged in.
-            if (settings.isLoggedIn) {
+            if (settings.jwtToken.isNotEmpty()) {
                 TaskCreationScreenDestination
             } else LoginScreenDestination
         )

@@ -7,4 +7,6 @@ interface AuthorizationService {
     }
 
     suspend fun authorize(email: String, password: String): Result
+
+    suspend fun signUp(email: String, password: String): Result
 }
