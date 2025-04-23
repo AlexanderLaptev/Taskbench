@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.ui.component
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -94,6 +96,7 @@ private fun RowScope.NavigationBarItem(
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource? = null,
 ) {
+    val color by animateColorAsState(if (selected) Black else LightGray)
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
@@ -104,7 +107,7 @@ private fun RowScope.NavigationBarItem(
             )
             .weight(1.0f),
     ) {
-        val tintColor = if (selected) Black else LightGray
+        val tintColor = color
         Icon(
             painter = icon,
             contentDescription = null,
