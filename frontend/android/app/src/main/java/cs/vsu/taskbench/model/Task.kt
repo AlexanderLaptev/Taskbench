@@ -1,7 +1,9 @@
 package cs.vsu.taskbench.model
 
+import androidx.compose.runtime.Immutable
 import java.time.LocalDateTime
 
+@Immutable
 data class Task(
     val id: Int?,
     val content: String,
@@ -11,6 +13,7 @@ data class Task(
     val categoryId: Long,
 )
 
+@Immutable
 data class Subtask(
     val id: Int?,
     val content: String,
