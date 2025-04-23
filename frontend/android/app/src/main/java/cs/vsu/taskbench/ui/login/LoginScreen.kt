@@ -1,38 +1,42 @@
 package cs.vsu.taskbench.ui.login
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -51,194 +55,217 @@ import cs.vsu.taskbench.ui.component.TextField
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightYellow
+import cs.vsu.taskbench.ui.theme.Link
+import cs.vsu.taskbench.ui.theme.LinkPressed
 import cs.vsu.taskbench.ui.theme.White
+import cs.vsu.taskbench.ui.theme.swapTransition
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import cs.vsu.taskbench.ui.login.LoginScreenViewModel.State as LoginState
+
+@Stable
+private data class LoginScreenState(
+    val email: String,
+    val onEmailChange: (String) -> Unit,
+    val password: String,
+    val onPasswordChange: (String) -> Unit,
+    val confirmPassword: String,
+    val onConfirmPasswordChange: (String) -> Unit,
+    val loginState: LoginState,
+    val onLogin: () -> Unit,
+    val onSignUp: () -> Unit,
+    val onSwitchToLogin: () -> Unit,
+    val onSwitchToSignUp: () -> Unit,
+    val onForgotPassword: () -> Unit,
+)
 
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
 fun LoginScreen() {
     val viewModel = koinViewModel<LoginScreenViewModel>()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        viewModel.messages.collect {
-            Log.d("LoginScreen", "message: $it")
+        // Whenever the view model posts a new message, display it in a snackbar.
+        viewModel.messages.collect { message ->
+            Log.d("LoginScreen", "message: $message")
+            scope.launch {
+                with(snackbarHostState) {
+                    currentSnackbarData?.dismiss()
+                    showSnackbar(message, withDismissAction = true)
+                }
+            }
         }
     }
 
-    LoginScreenContent(
+    val screenState = LoginScreenState(
         email = viewModel.email,
         onEmailChange = { viewModel.email = it },
         password = viewModel.password,
         onPasswordChange = { viewModel.password = it },
         confirmPassword = viewModel.confirmPassword,
         onConfirmPasswordChange = { viewModel.confirmPassword = it },
-        state = viewModel.state,
+        loginState = viewModel.state,
         onLogin = viewModel::login,
         onSignUp = viewModel::signUp,
         onSwitchToLogin = viewModel::switchToLogin,
         onSwitchToSignUp = viewModel::switchToSignUp,
         onForgotPassword = viewModel::forgotPassword,
     )
+    LoginScreenContent(snackbarHostState, screenState)
 }
 
+private const val OFFSET_FRACTION = 0.16f
+
+private val LOGIN_CONTROLS_ITEM_SPACING = 8.dp
+
+private val loginControlsModifier = Modifier
+    .background(
+        color = LightYellow,
+        shape = RoundedCornerShape(
+            topStart = 0.dp,
+            topEnd = 80.dp,
+            bottomEnd = 80.dp,
+            bottomStart = 0.dp,
+        )
+    )
+    .padding(
+        start = 16.dp,
+        top = 48.dp,
+        end = 32.dp
+    )
+    .height(360.dp)
+    .fillMaxWidth(0.9f)
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 private fun LoginScreenContent(
-    email: String,
-    onEmailChange: (String) -> Unit,
-    password: String,
-    onPasswordChange: (String) -> Unit,
-    confirmPassword: String,
-    onConfirmPasswordChange: (String) -> Unit,
-    state: LoginScreenViewModel.State,
-    onLogin: () -> Unit,
-    onSignUp: () -> Unit,
-    onSwitchToLogin: () -> Unit,
-    onSwitchToSignUp: () -> Unit,
-    onForgotPassword: () -> Unit,
+    snackbarHostState: SnackbarHostState,
+    state: LoginScreenState,
 ) {
-    Box {
+    Scaffold(
+        containerColor = Beige,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { _ ->
+        // We ignore paddings since our background vector is already
+        // edge-to-edge, and our layout is sufficiently far away from
+        // the edges of the screen.
+
         Image(
-            painter = painterResource(R.drawable.login_screen),
+            painter = painterResource(R.drawable.background_login_screen),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
         )
-        Box(
+
+        val offset = (LocalConfiguration.current.screenHeightDp * OFFSET_FRACTION).dp
+        Column(
+            verticalArrangement = Arrangement.spacedBy(48.dp),
             modifier = Modifier
-                .offset(y = 40.dp)
-                .fillMaxHeight()
-                .wrapContentSize()
-                .background(
-                    color = LightYellow, shape = RoundedCornerShape(
-                        topStart = 0.dp,
-                        topEnd = 80.dp,
-                        bottomEnd = 80.dp,
-                        bottomStart = 0.dp,
-                    )
-                )
-                .padding(
-                    start = 8.dp,
-                    top = 24.dp,
-                    end = 24.dp,
-                )
-                .fillMaxHeight(0.5f)
-                .fillMaxWidth(0.85f),
+                .offset(y = offset)
+                .fillMaxWidth(),
         ) {
-            ControlsBox(
-                email,
-                onEmailChange,
-                password,
-                onPasswordChange,
-                confirmPassword,
-                onConfirmPasswordChange,
-                state,
-                onLogin,
-                onSignUp,
-                onSwitchToLogin,
-                onSwitchToSignUp,
-                onForgotPassword
+            Image(
+                painter = painterResource(R.drawable.logo_full_dark),
+                contentDescription = null,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
+            LoginControls(
+                screenState = state,
+                modifier = Modifier.align(Alignment.Start),
             )
         }
     }
 }
 
+
 @Composable
-private fun ControlsBox(
-    email: String,
-    onEmailChange: (String) -> Unit,
-    password: String,
-    onPasswordChange: (String) -> Unit,
-    confirmPassword: String,
-    onConfirmPasswordChange: (String) -> Unit,
-    state: LoginScreenViewModel.State,
-    onLogin: () -> Unit,
-    onSignUp: () -> Unit,
-    onSwitchToLogin: () -> Unit,
-    onSwitchToSignUp: () -> Unit,
-    onForgotPassword: () -> Unit,
+private fun LoginControls(
+    screenState: LoginScreenState,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier.padding(16.dp),
+        modifier = modifier then loginControlsModifier,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TextField(
-            value = email,
+            value = screenState.email,
             color = Beige,
             placeholder = stringResource(R.string.label_email),
-            onValueChange = onEmailChange,
+            onValueChange = screenState.onEmailChange,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         )
-        Spacer(Modifier.height(8.dp))
 
+        Spacer(Modifier.height(LOGIN_CONTROLS_ITEM_SPACING))
         TextField(
-            value = password,
+            value = screenState.password,
             color = Beige,
             placeholder = stringResource(R.string.label_password),
             password = true,
-            onValueChange = onPasswordChange,
+            onValueChange = screenState.onPasswordChange,
         )
-        Spacer(Modifier.height(8.dp))
 
         AnimatedVisibility(
-            visible = state == LoginScreenViewModel.State.SignUp,
+            visible = screenState.loginState == LoginState.SignUp,
         ) {
             Column {
+                Spacer(Modifier.height(8.dp))
                 TextField(
-                    value = confirmPassword,
+                    value = screenState.confirmPassword,
                     color = Beige,
                     placeholder = stringResource(R.string.label_confirm_password),
                     password = true,
-                    onValueChange = onConfirmPasswordChange,
+                    onValueChange = screenState.onConfirmPasswordChange,
                 )
-                Spacer(Modifier.height(8.dp))
             }
         }
 
+        Spacer(Modifier.height(LOGIN_CONTROLS_ITEM_SPACING))
         VariantButton(
             onClick = {
-                when (state) {
-                    LoginScreenViewModel.State.Login -> onLogin()
-                    LoginScreenViewModel.State.SignUp -> onSignUp()
+                when (screenState.loginState) {
+                    LoginState.Login -> screenState.onLogin()
+                    LoginState.SignUp -> screenState.onSignUp()
                 }
             },
-            state,
+            screenState.loginState,
             R.string.label_login,
             R.string.label_sign_up,
             White,
         )
-        Spacer(Modifier.height(8.dp))
 
+        Spacer(Modifier.height(LOGIN_CONTROLS_ITEM_SPACING))
         VariantButton(
             onClick = {
-                when (state) {
-                    LoginScreenViewModel.State.Login -> onSwitchToSignUp()
-                    LoginScreenViewModel.State.SignUp -> onSwitchToLogin()
+                when (screenState.loginState) {
+                    LoginState.Login -> screenState.onSwitchToSignUp()
+                    LoginState.SignUp -> screenState.onSwitchToLogin()
                 }
             },
-            state,
+            screenState.loginState,
             R.string.label_sign_up,
             R.string.label_back,
             White,
         )
 
         AnimatedVisibility(
-            visible = state == LoginScreenViewModel.State.Login,
+            visible = screenState.loginState == LoginState.Login,
         ) {
             val interactionSource = remember { MutableInteractionSource() }
             val isLinkPressed by interactionSource.collectIsPressedAsState()
 
             Column {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(LOGIN_CONTROLS_ITEM_SPACING))
                 Text(
                     text = stringResource(R.string.label_forgot_password),
                     fontSize = 14.sp,
-                    color = if (isLinkPressed) Color(0xFF0823D5) else Color(0xFF586EFF),
+                    color = if (isLinkPressed) LinkPressed else Link,
                     textDecoration = TextDecoration.Underline,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .clickable(
-                            onClick = onForgotPassword,
+                            onClick = screenState.onForgotPassword,
                             interactionSource = interactionSource,
                             indication = null,
                         )
@@ -253,7 +280,7 @@ private fun ControlsBox(
 @Composable
 private fun VariantButton(
     onClick: () -> Unit,
-    state: LoginScreenViewModel.State,
+    state: LoginState,
     @StringRes loginText: Int,
     @StringRes signUpText: Int,
     color: Color,
@@ -261,11 +288,11 @@ private fun VariantButton(
     Button(onClick = onClick, color = color) {
         AnimatedContent(
             targetState = state,
-            transitionSpec = { scaleIn().togetherWith(scaleOut()) }
+            transitionSpec = swapTransition(),
         ) {
             when (it) {
-                LoginScreenViewModel.State.Login -> ButtonText(stringResource(loginText))
-                LoginScreenViewModel.State.SignUp -> ButtonText(stringResource(signUpText))
+                LoginState.Login -> ButtonText(stringResource(loginText))
+                LoginState.SignUp -> ButtonText(stringResource(signUpText))
             }
         }
     }
@@ -281,21 +308,29 @@ private fun ButtonText(text: String) {
     )
 }
 
-@Preview
+@Preview(device = "id:Nexus 6P")
+@Preview(device = "id:pixel_9")
+@Preview(device = "id:pixel_4")
 @Composable
-private fun PreviewLogin() {
-    LoginScreenContent(
-        email = "",
-        onEmailChange = {},
-        password = "",
-        onPasswordChange = {},
-        confirmPassword = "",
-        onConfirmPasswordChange = {},
-        state = LoginScreenViewModel.State.Login,
+private fun Preview() {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var loginState by remember { mutableStateOf(LoginState.Login) }
+
+    val screenState = LoginScreenState(
+        email = email,
+        onEmailChange = { email = it },
+        password = password,
+        onPasswordChange = { password = it },
+        confirmPassword = confirmPassword,
+        onConfirmPasswordChange = { confirmPassword = it },
+        loginState = loginState,
+        onSwitchToLogin = { loginState = LoginState.Login },
+        onSwitchToSignUp = { loginState = LoginState.SignUp },
         onLogin = {},
         onSignUp = {},
-        onSwitchToLogin = {},
-        onSwitchToSignUp = {},
         onForgotPassword = {},
     )
+    LoginScreenContent(remember { SnackbarHostState() }, screenState)
 }
