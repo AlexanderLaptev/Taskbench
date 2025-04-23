@@ -24,7 +24,7 @@ import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cs.vsu.taskbench.R
-import cs.vsu.taskbench.model.Subtask
+import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme

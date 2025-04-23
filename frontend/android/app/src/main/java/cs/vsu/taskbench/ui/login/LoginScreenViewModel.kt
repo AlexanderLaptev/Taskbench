@@ -78,7 +78,7 @@ class LoginScreenViewModel(
         }
     }
 
-    private suspend fun saveJwtToken(token: String) {
+    private suspend inline fun saveJwtToken(token: String) {
         Log.d(TAG, "saving token: $token")
         settingsRepository.setJwtToken(token)
     }
@@ -102,7 +102,33 @@ class LoginScreenViewModel(
     private fun String.isValidEmail(): Boolean = "@" in this // TODO
 
     fun signUp() {
-        _events.tryEmit(Event.LoggedIn)
+        if (!validateSignUp()) return
+        viewModelScope.launch { handleSignUp() }
+    }
+
+    private fun validateSignUp(): Boolean {
+        if (!validateLogin()) return false
+        if (password != confirmPassword) {
+            _events.tryEmit(Event.Error(ErrorType.PasswordsDoNotMatch))
+            return false
+        }
+        return true
+    }
+
+    private suspend inline fun handleSignUp() {
+        when (val result = authService.signUp(email, password)) {
+            AuthorizationService.Result.Error -> {
+                _events.tryEmit(Event.Error(ErrorType.Unknown))
+                return
+            }
+
+            is AuthorizationService.Result.Success -> {
+                saveJwtToken(result.jwtToken)
+                userRepository.fetchUser(result.jwtToken)
+                Log.d(TAG, "current user: ${userRepository.user}")
+                _events.tryEmit(Event.LoggedIn)
+            }
+        }
     }
 
     fun switchToSignUp() {

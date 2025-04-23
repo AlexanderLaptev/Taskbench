@@ -1,7 +1,7 @@
 package cs.vsu.taskbench.data.user
 
 import android.util.Log
-import cs.vsu.taskbench.model.User
+import cs.vsu.taskbench.domain.model.User
 import java.time.LocalDate
 
 object FakeUserRepository : UserRepository {
@@ -22,5 +22,9 @@ object FakeUserRepository : UserRepository {
                 LocalDate.now().plusDays(7)
             )
         )
+    }
+
+    override fun logout() {
+        _user = null
     }
 }

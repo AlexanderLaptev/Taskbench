@@ -1,4 +1,4 @@
-package cs.vsu.taskbench.model
+package cs.vsu.taskbench.domain.model
 
 import androidx.compose.runtime.Immutable
 import java.time.LocalDateTime

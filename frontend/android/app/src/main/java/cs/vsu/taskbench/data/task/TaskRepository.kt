@@ -1,6 +1,6 @@
 package cs.vsu.taskbench.data.task
 
-import cs.vsu.taskbench.model.Task
+import cs.vsu.taskbench.domain.model.Task
 import java.time.LocalDate
 
 interface TaskRepository {
