@@ -23,9 +23,7 @@ fun TaskCreationScreen(
 ) {
     Scaffold(
         bottomBar = {
-            Column {
-                NavigationBar(navController)
-            }
+            NavigationBar(navController)
         }
     ) { padding ->
         // TODO!
