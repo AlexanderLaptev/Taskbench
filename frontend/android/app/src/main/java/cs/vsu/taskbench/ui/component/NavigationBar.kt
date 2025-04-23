@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +37,7 @@ import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import com.ramcosta.composedestinations.utils.startDestination
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.theme.Black
+import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
@@ -96,7 +98,7 @@ private fun RowScope.NavigationBarItem(
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource? = null,
 ) {
-    val color by animateColorAsState(if (selected) Black else LightGray)
+    val color by animateColorAsState(if (selected) Black else Color(0xFF8D8D8D))
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
