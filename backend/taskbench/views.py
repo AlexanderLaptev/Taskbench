@@ -42,8 +42,8 @@ def task_list(request):
             if not user_id:
                 return JsonResponse({'error': 'user_id parameter is required'}, status=400)
 
-            # Базовый запрос с префетчем подзадач и категорий
-            tasks = Task.objects.filter(user_id=user_id) \
+            # Базовый запрос - исключаем completed задачи
+            tasks = Task.objects.filter(user_id=user_id, status='active') \
                 .prefetch_related('subtasks', 'task_categories__category')
 
             # Применяем фильтры
@@ -60,13 +60,12 @@ def task_list(request):
             # Формируем ответ
             data = []
             for task in tasks:
-                # Получаем первую категорию задачи (если есть)
                 category = task.task_categories.first().category if task.task_categories.first() else None
 
                 task_data = {
                     "id": task.task_id,
                     "content": task.title,
-                    "is_done": task.status.lower() == 'completed',
+                    "is_done": False,  # Все задачи здесь активные, поэтому всегда False
                     "dpc": {
                         "deadline": task.deadline.isoformat(),
                         "priority": task.priority,
@@ -172,9 +171,36 @@ def task_detail(request, task_id):
 
     if request.method == 'DELETE':
         try:
-            task.delete()
-            # Возвращаем пустой ответ с кодом 204
-            return HttpResponse(status=204, content_type='application/json')
+            # Проверяем, не завершена ли задача уже
+            if task.status == 'completed':
+                return JsonResponse({'error': 'Task already completed'}, status=400)
+
+            # Помечаем задачу как выполненную
+            task.status = 'completed'
+            task.save()
+
+            # Возвращаем обновленную задачу
+            category = task.task_categories.first().category if task.task_categories.first() else None
+            response_data = {
+                "id": task.task_id,
+                "content": task.title,
+                "is_done": True,
+                "dpc": {
+                    "deadline": task.deadline.isoformat() if task.deadline else None,
+                    "priority": task.priority,
+                    "category_id": category.category_id if category else 0,
+                    "category_name": category.name if category else ""
+                },
+                "subtasks": [
+                    {
+                        "id": s.subtask_id,
+                        "content": s.text,
+                        "is_done": s.is_completed
+                    } for s in task.subtasks.all()
+                ]
+            }
+            return JsonResponse(response_data)
+
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
