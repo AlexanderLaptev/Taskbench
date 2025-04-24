@@ -23,10 +23,9 @@ class FakeAuthService(
         val password: String,
     )
 
-    @Suppress("SpellCheckingInspection")
     private val users = mutableMapOf(
-        "normal@example.com" to UserData(1, "qwertyui"),
-        "premium@example.com" to UserData(2, "12345678"),
+        "normal@example.com" to UserData(1, "correcthorse"),
+        "premium@example.com" to UserData(2, "batterystaple"),
     )
 
     private var id = users.size
@@ -40,8 +39,15 @@ class FakeAuthService(
 
         Log.d(TAG, "no cached tokens, reading from settings")
         val settings = settingsRepository.flow.first()
-        if (settings.jwtAccess.isNullOrEmpty() || settings.jwtRefresh.isNullOrEmpty()) return null
-        tokens = AuthTokens(settings.jwtAccess, settings.jwtRefresh)
+        if (settings.jwtAccess.isNullOrEmpty() || settings.jwtRefresh.isNullOrEmpty()) {
+            Log.d(TAG, "no saved tokens")
+            return null
+        }
+
+        val saved = AuthTokens(settings.jwtAccess, settings.jwtRefresh)
+        val email = JWT.decode(saved.refresh).subject!!
+        Log.d(TAG, "read saved tokens for user '$email'")
+        tokens = saved
         return tokens
     }
 
@@ -54,38 +60,58 @@ class FakeAuthService(
     }
 
     override suspend fun login(email: String, password: String): LoginResult {
+        Log.d(TAG, "login attempt for user '$email' with password '$password'")
         if (countdown == 0) {
+            Log.d(TAG, "simulating unknown error")
             countdown = ERROR_COUNTDOWN
             return LoginResult.UnknownError
         }
-
-        val userData = users[email] ?: return LoginResult.UserNotFound
-        if (password != userData.password) return LoginResult.IncorrectPassword
-
         countdown--
+
+        val userData = users[email] ?: let {
+            Log.d(TAG, "user '$email' not found")
+            return LoginResult.UserNotFound
+        }
+        if (password != userData.password) {
+            Log.d(TAG, "incorrect password")
+            return LoginResult.IncorrectPassword
+        }
+
         generateNewTokens(email)
+        Log.d(TAG, "login success for user '$email'")
         return LoginResult.Success
     }
 
     override suspend fun signUp(email: String, password: String): SignUpResult {
+        Log.d(TAG, "sign up attempt for user '$email' with password '$password'")
         if (countdown == 0) {
+            Log.d(TAG, "simulating unknown error")
             countdown = ERROR_COUNTDOWN
             return SignUpResult.UnknownError
         }
-
-        if (users[email] != null) return SignUpResult.UserAlreadyExists
-        users[email] = UserData(++id, password)
-
         countdown--
-        refreshTokens()
+
+        if (users[email] != null) {
+            Log.d(TAG, "user '$email' already exists")
+            return SignUpResult.UserAlreadyExists
+        }
+        users[email] = let {
+            val data = UserData(++id, password)
+            Log.d(TAG, "user data: $data")
+            data
+        }
+
+        generateNewTokens(email)
+        Log.d(TAG, "sign up success for user '$email'")
         return SignUpResult.Success
     }
 
     override suspend fun logout() {
+        Log.d(TAG, "logout")
         settingsRepository.clearJwtTokens()
     }
 
-    private fun generateNewTokens(email: String) {
+    private suspend fun generateNewTokens(email: String) {
         Log.d(TAG, "issuing tokens for $email")
 
         val issued = Instant.now()
@@ -103,11 +129,13 @@ class FakeAuthService(
             .withClaim("id", users[email]!!.id)
             .withIssuer("https://auth.taskbench.ru")
             .withAudience("android")
-            .withExpiresAt(issued.plus(2, ChronoUnit.WEEKS))
+            .withExpiresAt(issued.plus(2 * 7, ChronoUnit.DAYS))
             .withIssuedAt(issued)
             .withNotBefore(issued)
             .sign(Algorithm.none())
 
-        tokens = AuthTokens(access, refresh)
+        val generated = AuthTokens(access, refresh)
+        tokens = generated
+        settingsRepository.setJwtTokens(generated.access, generated.refresh)
     }
 }

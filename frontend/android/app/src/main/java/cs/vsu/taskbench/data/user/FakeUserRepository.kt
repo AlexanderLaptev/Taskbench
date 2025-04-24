@@ -5,7 +5,6 @@ import com.auth0.jwt.JWT
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.domain.model.User
 import java.time.LocalDate
-import kotlin.math.abs
 
 class FakeUserRepository(
     private val authService: AuthService,
@@ -18,19 +17,21 @@ class FakeUserRepository(
     override val user: User? get() = _user
 
     override suspend fun preload(): Boolean {
-        val tokens = authService.getSavedTokens() ?: return false
-
-        val email = JWT.decode(tokens.refresh).subject!!.also {
-            Log.d(TAG, "email: $it")
+        Log.d(TAG, "preloading")
+        val tokens = authService.getSavedTokens() ?: let {
+            Log.d(TAG, "preload failed: no saved tokens")
+            return false
         }
 
-        val id = abs(email.hashCode() % 30)
-
+        val decoded = JWT.decode(tokens.access)
+        val email = decoded.subject!!
+        val id = decoded.getClaim("id").asInt()
         val status = if (email.startsWith("premium")) {
             User.Status.Premium(LocalDate.now().plusDays(7))
         } else User.Status.Unpaid
 
         _user = User(id, email, status)
+        Log.d(TAG, "user data: $_user")
         return true
     }
 }

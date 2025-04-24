@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.ui.login
 
 import android.util.Log
+import android.util.Patterns
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -79,6 +80,7 @@ class LoginScreenViewModel(
         }
     }
 
+    // TODO: password requirements
     private fun validateLogin(): Boolean {
         if (email.isBlank()) {
             _events.tryEmit(Event.Error.EmptyEmail)
@@ -95,7 +97,8 @@ class LoginScreenViewModel(
         return true
     }
 
-    private fun String.isValidEmail(): Boolean = "@" in this // TODO
+    private fun String.isValidEmail(): Boolean =
+        this.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
     fun signUp() {
         if (!validateSignUp()) return

@@ -18,10 +18,7 @@ class BootstrapUseCase(
     }
 
     suspend operator fun invoke(): Result {
-        if (authTokenRepo.getSavedTokens() == null) {
-            Log.d(TAG, "no saved tokens")
-            return Result.LoginRequired
-        }
+        if (authTokenRepo.getSavedTokens() == null) return Result.LoginRequired
 
         return if (tryPreload()) {
             Log.d(TAG, "bootstrap success!")
@@ -34,11 +31,20 @@ class BootstrapUseCase(
 
     private suspend fun tryPreload(): Boolean {
         for (repo in preloadRepos) {
+            Log.d(TAG, "bootstrapping repository $repo")
             val result = repo.preload()
             if (!result) {
-                authTokenRepo.refreshTokens() ?: return false
-                if (!repo.preload()) return false
+                Log.d(TAG, "bootstrap failed, attempting token refresh")
+                authTokenRepo.refreshTokens() ?: let {
+                    Log.d(TAG, "bootstrap failed: refresh tokens failed")
+                    return false
+                }
+                if (!repo.preload()) {
+                    Log.d(TAG, "bootstrap failed: preload after refresh failed")
+                    return false
+                }
             }
+            Log.d(TAG, "preloaded $repo successfully")
         }
         return true
     }
