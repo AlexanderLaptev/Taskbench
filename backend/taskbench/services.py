@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import os
-from gigachat import GigaChat
 from datetime import datetime, timezone
-from natasha import DatesExtractor, MorphVocab
-import dateparser
 
-# Используется, чтобы не тратить токены в Gigachat. True - шаблоны, False - обращение к нейросети.
-DEBUG = True
+import dateparser.search
+from gigachat import GigaChat
+
 
 def singleton(cls):
     _instance = None
@@ -22,19 +20,33 @@ def singleton(cls):
 @singleton
 class SuggestionService:
 
-    def __init__(self):
-        self.giga = GigaChat(credentials=os.getenv('GIGACHAT_API_KEY'))
+    def __init__(self, debug:bool=False):
+        self.giga = GigaChat(
+            credentials=os.getenv('GIGACHAT_API_KEY')
+        )
+
+        self.debug = debug
+        if self.debug:
+            return
+
         response = self.giga.get_token()
-        # pass
+        self.access_token = response['access_token']
+        self.expires_at = response['expires_at']
+
+    def update_token(self):
+        if self.expires_at < datetime.now(timezone.utc):
+            response = self.giga.get_token()
+            self.access_token = response['access_token']
+            self.expires_at = response['expires_at']
 
     """
     Предлагает подзадачи.
     :param text: текст введенной задачи.
     """
     def suggest_subtasks(self, text: str) -> list:
-        if DEBUG:
+        if self.debug:
             return ["subtask 1", "subtask 2", "subtask 3"]
-
+        self.update_token()
         payload = "Предложи короткие подзадачи. Каждую подзадачу начинай с новой строки. " + text
 
         result = self.giga.chat(payload)
@@ -51,10 +63,10 @@ class SuggestionService:
         if len(category_names) == 0:
             return None
 
-        if DEBUG:
+        if self.debug:
             return 0
-
         # names = [c.name for c in categories]
+        self.update_token()
         payload = "Из категорий: " + ', '.join(category_names) + " - выбери ту что больше подходит тексту:" + text + " Напиши только номер категории."
         result_number = int(self.giga.chat(payload).choices[0].message.strip())
 
@@ -68,37 +80,30 @@ class SuggestionService:
     """
     def suggest_deadline(self, text: str, *, now: datetime | None = None) -> datetime | None:
         now = now or datetime.now(tz=timezone.utc)
+        now = self._make_aware(now or datetime.now())
 
-        morph = MorphVocab()
-        extractor = DatesExtractor(morph)
-        spans = extractor(text)
-
-        parsed = []
-        for span in spans:
-            dt = self._parse_date(span.text, now)
-            if dt:
-                parsed.append(dt)
-
-        if not parsed:
-            return None
-
-        future = [d for d in parsed if d > now]
-        if future:
-            return min(future)  # ближайшая будущая
-        return max(parsed)  # иначе последняя (из прошедших)
-
-    """
-    Парсит дату/время из естественного текста в datetime формат
-    :return: полученный datetime или None, если не получилось 
-    """
-    def _parse_date(self, text: str, now: datetime)  -> datetime | None:
-        return dateparser.parse(
+        found = dateparser.search.search_dates(
             text,
-            languages=['ru'],
+            languages=["ru"],
             settings={
                 "RELATIVE_BASE": now,
                 "PREFER_DATES_FROM": "future",
-                "TIMEZONE": "Europe/Moscow",
-                "RETURN_AS_TIMEZONE_AWARE": True
+                "RETURN_AS_TIMEZONE_AWARE": True,
             },
         )
+
+        if not found:
+            return None
+
+        # found -> список кортежей (фрагмент, datetime)
+        # tz = now.tzinfo
+        datetimes = [self._make_aware(dt) for _, dt in found]
+
+        future = [d for d in datetimes if d > now]
+        return min(future) if future else max(datetimes)
+
+
+    @staticmethod
+    def _make_aware(dt: datetime, tz=timezone.utc) -> datetime:
+        """Возвращает datetime с tzinfo (добавляет tz, если его нет)."""
+        return dt if dt.tzinfo else dt.replace(tzinfo=tz)
