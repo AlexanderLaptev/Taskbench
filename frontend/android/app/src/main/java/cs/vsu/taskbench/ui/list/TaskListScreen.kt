@@ -55,9 +55,10 @@ fun TaskListScreen(
                 items = tasks,
                 key = { it.id!! },
             ) {
+                val debug = "${it.id}, P=${it.isHighPriority}, C=${it.categoryId}"
                 TaskCard(
                     deadlineText = DateTimeFormatter.ISO_DATE_TIME.format(it.deadline),
-                    bodyText = "[${it.id}, P=${it.isHighPriority}] ${it.content}",
+                    bodyText = "[$debug] ${it.content}",
                     subtasks = it.subtasks,
                     onClick = { Log.d(TAG, "clicked task with id=${it.id}") },
                     onSubtaskCheckedChange = { subtask, selected ->

@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.data.task
 
 import android.util.Log
+import androidx.collection.MutableIntObjectMap
 import androidx.collection.mutableIntObjectMapOf
 import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.domain.model.Category
@@ -22,30 +23,40 @@ class FakeTaskRepository(
         private const val SUBTASK_CONTENT = "Vivamus a dolor ac risus consectetur"
     }
 
-    private val random = Random(4242)
+    private val random = Random
 
-    private val index = mutableIntObjectMapOf<Task>()
+    private lateinit var index: MutableIntObjectMap<Task>
+    private var taskId = -1
+    private var subtaskId = -1
 
     private var categories = listOf<Category>()
 
-    private var taskId = 1
-    private var subtaskId = 1
+    init {
+        dropIndex()
+    }
+
+    private fun dropIndex() {
+        index = mutableIntObjectMapOf()
+        taskId = 1
+        subtaskId = 1
+    }
 
     override suspend fun preload(): Boolean {
         Log.d(TAG, "preloading fake tasks")
         categories = categoryRepository.getAllCategories()
         Log.d(TAG, "loaded ${categories.size} categories")
 
+        dropIndex()
         val first = LocalDate.now().minusDays(7)
         val totalDays = 2 * 7
 
         var generatedCount = 0
         for (day in 0..<totalDays) {
             val today = first.plusDays(day.toLong())
-            val taskCount = random.nextInt(5, 10)
+            val taskCount = random.nextInt(10, 20)
             repeat(taskCount) {
                 val task = generateTask(today)
-                saveTask(task)
+                saveTaskInternal(task)
                 generatedCount++
             }
         }
@@ -139,6 +150,10 @@ class FakeTaskRepository(
 
     override suspend fun saveTask(task: Task): Task {
         Log.d(TAG, "saving task $task")
+        return saveTaskInternal(task)
+    }
+
+    private fun saveTaskInternal(task: Task): Task {
         if (task.id == null) { // create
             val saved = task.copy(id = taskId)
             index[taskId] = saved
