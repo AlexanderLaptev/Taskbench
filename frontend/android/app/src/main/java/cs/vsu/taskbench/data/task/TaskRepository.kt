@@ -10,8 +10,8 @@ interface TaskRepository : PreloadRepository {
         Deadline,
     }
 
-    // TODO: add ability to request tasks in all categories
-    suspend fun getTasks(date: LocalDate, categoryId: Int?, sortBy: SortByMode): List<Task>
+    suspend fun getTasksInCategory(date: LocalDate, categoryId: Int?, sortBy: SortByMode): List<Task>
+    suspend fun getTasks(date: LocalDate, sortBy: SortByMode): List<Task>
     suspend fun saveTask(task: Task): Task?
     suspend fun deleteTask(task: Task)
 }

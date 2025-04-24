@@ -78,10 +78,29 @@ class FakeTaskRepository(
         )
     }
 
-    override suspend fun getTasks(
+    override suspend fun getTasksInCategory(
         date: LocalDate,
         categoryId: Int?,
         sortBy: TaskRepository.SortByMode,
+    ): List<Task> = getTasks(
+        date = date,
+        sortBy = sortBy,
+        filterByCategory = true,
+        categoryId = categoryId
+    )
+
+    override suspend fun getTasks(date: LocalDate, sortBy: TaskRepository.SortByMode): List<Task> =
+        getTasks(
+            date = date,
+            sortBy = sortBy,
+            filterByCategory = false
+        )
+
+    private fun getTasks(
+        date: LocalDate,
+        sortBy: TaskRepository.SortByMode,
+        filterByCategory: Boolean,
+        categoryId: Int? = null,
     ): List<Task> {
         val result = mutableListOf<Task>()
         index.forEachValue { result += it }
@@ -94,7 +113,11 @@ class FakeTaskRepository(
         return result
             .asSequence()
             .filter { it.deadline.toLocalDate() == date }
-            .filter { it.categoryId == categoryId }
+            .let {
+                if (filterByCategory) it.filter { task ->
+                    task.categoryId == categoryId
+                } else it
+            }
             .sortedWith(comparator.thenBy { it.id })
             .toList()
     }
