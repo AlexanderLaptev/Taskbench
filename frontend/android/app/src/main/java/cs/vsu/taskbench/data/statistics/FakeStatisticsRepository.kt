@@ -23,7 +23,7 @@ object FakeStatisticsRepository : StatisticsRepository {
     private fun generate() {
         val values = mutableFloatListOf()
         repeat(7) {
-            values[it] = Random.nextFloat()
+            values += Random.nextFloat()
         }
         cached = Statistics(
             doneToday = Random.nextInt(0, 12),

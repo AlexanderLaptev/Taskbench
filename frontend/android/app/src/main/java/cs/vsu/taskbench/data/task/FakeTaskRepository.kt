@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.data.task
 
+import android.util.Log
 import androidx.collection.mutableIntObjectMapOf
 import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.domain.model.Category
@@ -14,6 +15,8 @@ class FakeTaskRepository(
     private val categoryRepository: CategoryRepository,
 ) : TaskRepository {
     companion object {
+        private val TAG = FakeTaskRepository::class.simpleName
+
         private const val TASK_CONTENT =
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas faucibus tellus eget mi iaculis, quis luctus nisl ornare."
         private const val SUBTASK_CONTENT = "Vivamus a dolor ac risus consectetur"
@@ -29,19 +32,24 @@ class FakeTaskRepository(
     private var subtaskId = 1
 
     override suspend fun preload(): Boolean {
+        Log.d(TAG, "preloading fake tasks")
         categories = categoryRepository.getAllCategories()
+        Log.d(TAG, "loaded ${categories.size} categories")
 
         val first = LocalDate.now().minusDays(7)
         val totalDays = 2 * 7
 
+        var generatedCount = 0
         for (day in 0..<totalDays) {
             val today = first.plusDays(day.toLong())
-            val taskCount = random.nextInt(1, 5)
+            val taskCount = random.nextInt(5, 10)
             repeat(taskCount) {
                 val task = generateTask(today)
                 saveTask(task)
+                generatedCount++
             }
         }
+        Log.d(TAG, "generated $generatedCount fake tasks")
 
         return true
     }
@@ -59,9 +67,10 @@ class FakeTaskRepository(
         repeat(random.nextInt(0, 5)) {
             subtasks += Subtask(
                 id = subtaskId,
-                content = SUBTASK_CONTENT,
+                content = "[$subtaskId] $SUBTASK_CONTENT",
                 isDone = random.nextBoolean(),
             )
+            subtaskId++
         }
 
         val category = if (random.nextBoolean()) {
@@ -102,6 +111,10 @@ class FakeTaskRepository(
         filterByCategory: Boolean,
         categoryId: Int? = null,
     ): List<Task> {
+        Log.d(
+            TAG,
+            "requested tasks: date=$date, sortBy=$sortBy, filterByCategory=$filterByCategory, categoryId=$categoryId"
+        )
         val result = mutableListOf<Task>()
         index.forEachValue { result += it }
 
@@ -119,10 +132,13 @@ class FakeTaskRepository(
                 } else it
             }
             .sortedWith(comparator.thenBy { it.id })
-            .toList()
+            .toList().also {
+                Log.d(TAG, "returning ${it.size} tasks")
+            }
     }
 
     override suspend fun saveTask(task: Task): Task {
+        Log.d(TAG, "saving task $task")
         if (task.id == null) { // create
             val saved = task.copy(id = taskId)
             index[taskId] = saved
@@ -136,6 +152,7 @@ class FakeTaskRepository(
     }
 
     override suspend fun deleteTask(task: Task) {
+        Log.d(TAG, "deleting task $task")
         check(task.id != null) { "Attempted to delete a non-existent task" }
         index.remove(task.id)
     }
