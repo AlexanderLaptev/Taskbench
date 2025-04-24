@@ -10,6 +10,6 @@ interface TaskRepository {
     }
 
     suspend fun getTasks(date: LocalDate, categoryId: Int, sortBy: SortByMode): List<Task>
-
-    suspend fun saveTask(task: Task)
+    suspend fun saveTask(task: Task): Boolean
+    suspend fun deleteTask(task: Task)
 }

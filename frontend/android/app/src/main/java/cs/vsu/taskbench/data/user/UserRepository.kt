@@ -6,6 +6,5 @@ interface UserRepository {
     val user: User?
 
     suspend fun fetchUser(jwtToken: String)
-
-    fun logout()
+    suspend fun logout()
 }
