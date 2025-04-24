@@ -24,7 +24,7 @@ object FakeUserRepository : UserRepository {
         )
     }
 
-    override fun logout() {
+    override suspend fun logout() {
         _user = null
     }
 }

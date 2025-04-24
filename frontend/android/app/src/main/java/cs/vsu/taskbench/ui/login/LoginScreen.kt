@@ -98,7 +98,7 @@ fun LoginScreen(
                     with(snackbarHostState) {
                         currentSnackbarData?.dismiss()
                         showSnackbar(
-                            resources.getString(event.type.messageId),
+                            resources.getString(event.messageId),
                             withDismissAction = true
                         )
                     }
