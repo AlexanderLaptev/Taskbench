@@ -1,10 +1,8 @@
 package cs.vsu.taskbench.data.user
 
+import cs.vsu.taskbench.data.PreloadRepository
 import cs.vsu.taskbench.domain.model.User
 
-interface UserRepository {
+interface UserRepository : PreloadRepository {
     val user: User?
-
-    suspend fun fetchUser(jwtToken: String)
-    suspend fun logout()
 }

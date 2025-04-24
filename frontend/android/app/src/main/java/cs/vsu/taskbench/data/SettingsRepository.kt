@@ -11,18 +11,34 @@ class SettingsRepository(
     private val dataStore: DataStore<Preferences>,
 ) {
     private object PreferencesKeys {
-        val JWT_TOKEN = stringPreferencesKey("jwt_token") // TODO: secure storage
+        val JWT_ACCESS = stringPreferencesKey("jwt_access") // TODO: secure storage
+        val JWT_REFRESH = stringPreferencesKey("jwt_refresh")
     }
 
     data class Settings(
-        val jwtToken: String,
+        val jwtAccess: String?,
+        val jwtRefresh: String?,
     )
 
     val flow: Flow<Settings> = dataStore.data.map { prefs ->
-        Settings(prefs[PreferencesKeys.JWT_TOKEN] ?: "")
+        Settings(
+            jwtAccess = prefs[PreferencesKeys.JWT_ACCESS].takeUnless { it.isNullOrEmpty() },
+            jwtRefresh = prefs[PreferencesKeys.JWT_REFRESH].takeUnless { it.isNullOrEmpty() },
+        )
     }
 
-    suspend fun setJwtToken(jwtToken: String) {
-        dataStore.edit { it[PreferencesKeys.JWT_TOKEN] = jwtToken }
+    // TODO: move to AuthTokenRepository
+    suspend fun setJwtTokens(access: String, refresh: String) {
+        dataStore.edit {
+            it[PreferencesKeys.JWT_ACCESS] = access
+            it[PreferencesKeys.JWT_REFRESH] = refresh
+        }
+    }
+
+    suspend fun clearJwtTokens() {
+        dataStore.edit {
+            it[PreferencesKeys.JWT_ACCESS] = ""
+            it[PreferencesKeys.JWT_REFRESH] = ""
+        }
     }
 }

@@ -22,4 +22,11 @@
     <string name="error_invalid_email">Неверный адрес электронной почты</string>
     <!-- TODO: remove -->
     <string name="placeholder">Lorem ipsum dolor sit amet</string>
+    <string name="error_empty_password">Введите пароль</string>
+    <string name="error_passwords_do_not_match">Пароли не совпадают</string>
+    <string name="error_user_does_not_exist">Пользователя не существует</string>
+    <string name="error_user_already_exists">Такой пользователь уже зарегистрирован</string>
+    <string name="error_user_incorrect_password">Неверный пароль</string>
+    <string name="error_no_internet">Отсутствует подключение к сети</string>
+    <string name="error_unknown">Неизвестная ошибка</string>
 </resources>

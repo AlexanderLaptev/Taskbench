@@ -8,9 +8,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cs.vsu.taskbench.R
-import cs.vsu.taskbench.data.auth.AuthTokenRepository
-import cs.vsu.taskbench.data.auth.AuthTokenRepository.LoginResult
-import cs.vsu.taskbench.data.auth.AuthTokenRepository.SignUpResult
+import cs.vsu.taskbench.data.auth.AuthService
+import cs.vsu.taskbench.data.auth.AuthService.LoginResult
+import cs.vsu.taskbench.data.auth.AuthService.SignUpResult
 import cs.vsu.taskbench.domain.usecase.BootstrapUseCase
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class LoginScreenViewModel(
-    private val authTokenRepository: AuthTokenRepository,
+    private val authService: AuthService,
     private val bootstrapUseCase: BootstrapUseCase,
 ) : ViewModel() {
     companion object {
@@ -35,13 +35,13 @@ class LoginScreenViewModel(
         enum class Error(@StringRes val messageId: Int) : Event {
             EmptyEmail(R.string.error_empty_email),
             InvalidEmail(R.string.error_invalid_email),
-            EmptyPassword(R.string.placeholder),
-            PasswordsDoNotMatch(R.string.placeholder),
-            UserDoesNotExist(R.string.placeholder),
-            UserAlreadyExists(R.string.placeholder),
-            IncorrectPassword(R.string.placeholder),
-            NoInternet(R.string.placeholder),
-            Unknown(R.string.placeholder),
+            EmptyPassword(R.string.error_empty_password),
+            PasswordsDoNotMatch(R.string.error_passwords_do_not_match),
+            UserDoesNotExist(R.string.error_user_does_not_exist),
+            UserAlreadyExists(R.string.error_user_already_exists),
+            IncorrectPassword(R.string.error_user_incorrect_password),
+            NoInternet(R.string.error_no_internet),
+            Unknown(R.string.error_unknown),
         }
 
         data object LoggedIn : Event
@@ -64,7 +64,7 @@ class LoginScreenViewModel(
     }
 
     private suspend fun handleLogin() {
-        val result = authTokenRepository.login(email, password)
+        val result = authService.login(email, password)
         when (result) {
             LoginResult.Success -> {
                 // Ignore the result since at this point we should
@@ -112,7 +112,7 @@ class LoginScreenViewModel(
     }
 
     private suspend inline fun handleSignUp() {
-        val result = authTokenRepository.signUp(email, password)
+        val result = authService.signUp(email, password)
         when (result) {
             SignUpResult.Success -> {
                 // Ignore the result since at this point we should

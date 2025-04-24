@@ -18,8 +18,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.LoginScreenDestination
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
-import cs.vsu.taskbench.data.SettingsRepository
-import cs.vsu.taskbench.data.user.UserRepository
+import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.theme.LightGray
@@ -44,9 +43,7 @@ fun SettingsScreen(
                 .padding(16.dp)
                 .padding(padding),
         ) {
-            val userRepository = koinInject<UserRepository>()
-            val settingsRepository = koinInject<SettingsRepository>()
-
+            val authService = koinInject<AuthService>()
             val scope = rememberCoroutineScope()
             val navigator = navController.rememberDestinationsNavigator()
 
@@ -60,8 +57,7 @@ fun SettingsScreen(
                 text = "Logout",
                 onClick = {
                     scope.launch {
-                        userRepository.logout()
-                        settingsRepository.setJwtToken("")
+                        authService.logout()
                         navigator.popBackStack()
                         navigator.navigate(LoginScreenDestination)
                     }

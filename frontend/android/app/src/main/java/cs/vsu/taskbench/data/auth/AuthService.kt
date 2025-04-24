@@ -1,13 +1,11 @@
 package cs.vsu.taskbench.data.auth
 
-import com.auth0.jwt.JWT
-
 data class AuthTokens(
-    val access: JWT,
-    val refresh: JWT,
+    val access: String,
+    val refresh: String,
 )
 
-interface AuthTokenRepository {
+interface AuthService {
     enum class LoginResult {
         Success,
         UserNotFound,
@@ -25,4 +23,5 @@ interface AuthTokenRepository {
     suspend fun refreshTokens(): AuthTokens?
     suspend fun login(email: String, password: String): LoginResult
     suspend fun signUp(email: String, password: String): SignUpResult
+    suspend fun logout()
 }

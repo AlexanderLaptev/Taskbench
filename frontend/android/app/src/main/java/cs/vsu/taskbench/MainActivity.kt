@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.generated.NavGraphs
 import cs.vsu.taskbench.data.dataModule
+import cs.vsu.taskbench.domain.usecase.useCaseModule
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.uiModule
 import org.koin.android.ext.koin.androidContext
@@ -35,7 +36,7 @@ class MainActivity : ComponentActivity() {
                 application = {
                     androidLogger(Level.DEBUG)
                     androidContext(this@MainActivity)
-                    modules(dataModule, uiModule)
+                    modules(dataModule, useCaseModule, uiModule)
                 }
             ) {
                 val navController = rememberNavController()
