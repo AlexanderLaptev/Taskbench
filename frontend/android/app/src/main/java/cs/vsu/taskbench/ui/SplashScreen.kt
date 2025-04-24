@@ -15,30 +15,30 @@ import com.ramcosta.composedestinations.generated.destinations.LoginScreenDestin
 import com.ramcosta.composedestinations.generated.destinations.TaskCreationScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
-import cs.vsu.taskbench.data.SettingsRepository
+import cs.vsu.taskbench.domain.usecase.BootstrapUseCase
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import org.koin.compose.koinInject
 
 @Destination<RootGraph>(start = true, style = ScreenTransitions::class)
 @Composable
 fun SplashScreen(navigator: DestinationsNavigator) {
-    val settingsRepository = koinInject<SettingsRepository>()
+    val bootstrapUseCase = koinInject<BootstrapUseCase>()
 
     LaunchedEffect(Unit) {
         delay(300) // a little delay so the splash screen doesn't disappear instantly
-        val settings = settingsRepository.flow.first() // suspend until the settings are read
 
-        navigator.popBackStack() // pop so we can't navigate back to the splash screen
-        navigator.navigate(
-            // Navigate to either the task creation screen or the
-            // login screen depending on whether we're logged in.
-            if (settings.jwtToken.isNotEmpty()) {
-                TaskCreationScreenDestination
-            } else LoginScreenDestination
-        )
+        val result = bootstrapUseCase()
+        val direction = when (result) {
+            BootstrapUseCase.Result.Success -> TaskCreationScreenDestination
+            BootstrapUseCase.Result.LoginRequired -> LoginScreenDestination
+        }
+
+        with(navigator) {
+            popBackStack()
+            navigate(direction)
+        }
     }
 
     SplashScreenContent()
