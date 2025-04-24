@@ -252,35 +252,53 @@ def task_detail(request, task_id):
 
 
 # /subtasks - POST
-
+#http://127.0.0.1:8000/api/subtasks/?task_id=3
+#{
+#   "content": "Новая подзадача2",
+#   "is_done": false
+# }
 @csrf_exempt
 def subtask_create(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            task_id = data.get('task_id')
-            content = data.get('content')
-            is_done = data.get('is_done', False)
+            # Получаем task_id из параметров запроса
+            task_id = request.GET.get('task_id')
+            if not task_id:
+                return JsonResponse({'error': 'task_id parameter is required'}, status=400)
 
+            # Проверяем существование задачи
             try:
                 task = Task.objects.get(task_id=task_id)
             except Task.DoesNotExist:
                 return JsonResponse({'error': 'Task not found'}, status=404)
 
+            # Парсим тело запроса
+            data = json.loads(request.body)
+            content = data.get('content')
+            is_done = data.get('is_done', False)  # По умолчанию False, если не указано
+
+            if not content:
+                return JsonResponse({'error': 'content is required'}, status=400)
+
+            # Создаем подзадачу
             subtask = Subtask.objects.create(
-                task=task,
                 text=content,
+                task=task,
                 is_completed=is_done
             )
 
+            # Формируем ответ
             response_data = {
-                'id': subtask.subtask_id,
-                'content': subtask.text,
-                'is_done': subtask.is_completed,
+                "id": subtask.subtask_id,
+                "content": subtask.text,
+                "is_done": subtask.is_completed
             }
 
             return JsonResponse(response_data, status=201)
+
         except json.JSONDecodeError:
-            return HttpResponseBadRequest("Invalid JSON")
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
     else:
-        return HttpResponseNotAllowed(["POST"])
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
