@@ -277,13 +277,15 @@ components:
         priority:
           type: integer
           minimum: 0
-        category:
+        category_id:
           type: integer
+        category_name:
+          type: string
 
     TaskInput:
       type: object
       properties:
-        task:
+        content:
           type: string
         dpc:
           $ref: '#/components/schemas/DPC'
@@ -302,14 +304,13 @@ components:
       type: object
       properties:
         id:
-          type: string
-        task:
-          type: string
-        deadline:
-          type: string
-          format: date-time
+          type: integer
         content:
           type: string
+        is_done:
+          type: boolean
+        dpc:
+          $ref: '#/components/schemas/DPC'
         subtasks:
           type: array
           items:
@@ -319,7 +320,7 @@ components:
       type: object
       properties:
         id:
-          type: string
+          type: integer
         content:
           type: string
         is_done:
