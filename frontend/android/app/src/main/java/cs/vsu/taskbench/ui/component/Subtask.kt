@@ -66,14 +66,14 @@ private fun Preview() {
             Subtask(
                 text = "Пройтись по темам созвона",
                 selected = true,
-                buttonIcon = painterResource(R.drawable.icon_save),
+                buttonIcon = painterResource(R.drawable.ic_ok_circle_filled),
                 onButtonClick = {},
             )
 
             Subtask(
                 text = "Подготовить текст",
                 selected = false,
-                buttonIcon = painterResource(R.drawable.icon_add),
+                buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
                 onButtonClick = {},
             )
         }

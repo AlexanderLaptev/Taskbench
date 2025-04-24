@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.theme.Black
+import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
@@ -52,10 +54,15 @@ fun BoxEdit(
     value: String,
     onValueChange: (String) -> Unit,
     buttonIcon: Painter,
+    inactiveButtonIcon: Painter,
     modifier: Modifier = Modifier,
     placeholder: String = "",
     interactionSource: MutableInteractionSource? = null,
 ) {
+    val isEnabled = value.isNotEmpty()
+    val iconTint = if (isEnabled) null else ColorFilter.tint(LightGray)
+    val currentIcon = if (isEnabled) buttonIcon else inactiveButtonIcon
+
     val focusRequester = remember { FocusRequester() }
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -99,12 +106,14 @@ fun BoxEdit(
 
         IconButton(
             onClick = {},
+            enabled = isEnabled,
             modifier = Modifier.requiredSize(32.dp),
         ) {
             Image(
-                painter = buttonIcon,
+                painter = currentIcon,
                 contentDescription = null,
                 modifier = Modifier.size(28.dp),
+                colorFilter = iconTint,
             )
         }
     }
@@ -119,6 +128,7 @@ private fun Preview() {
             value = value,
             onValueChange = { value = it },
             buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
+            inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
             placeholder = "Enter text",
         )
     }
@@ -133,6 +143,7 @@ private fun PreviewFilled() {
             value = value,
             onValueChange = { value = it },
             buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
+            inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
         )
     }
 }

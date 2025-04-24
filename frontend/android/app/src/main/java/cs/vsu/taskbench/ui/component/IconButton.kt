@@ -10,22 +10,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.theme.AccentYellow
-import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
 
@@ -40,8 +33,8 @@ fun IconButton(
     Box(
         modifier = modifier
             .clickable(onClick = onClick)
-            .background(color, RoundedCornerShape(30.dp))
-            .padding(8.dp),
+            .background(color, RoundedCornerShape(40.dp))
+            .padding(16.dp),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -62,32 +55,32 @@ private fun Preview() {
         ) {
             IconButton(
                 onClick = { Log.d(null, "lorem ipsum clicked") },
-                iconResId = R.drawable.icon_clock,
+                iconResId = R.drawable.ic_clock,
             )
             IconButton(
                 color = AccentYellow,
                 onClick = { Log.d(null, "lorem ipsum clicked") },
-                iconResId = R.drawable.icon_save,
+                iconResId = R.drawable.ic_ok_circle_filled,
             )
             IconButton(
                 color = AccentYellow,
                 onClick = { Log.d(null, "lorem ipsum clicked") },
-                iconResId = R.drawable.icon_edit,
+                iconResId = R.drawable.ic_edit,
             )
             IconButton(
                 color = AccentYellow,
                 onClick = { Log.d(null, "lorem ipsum clicked") },
-                iconResId = R.drawable.icon_settings,
+                iconResId = R.drawable.ic_gear,
             )
             IconButton(
                 color = AccentYellow,
                 onClick = { Log.d(null, "lorem ipsum clicked") },
-                iconResId = R.drawable.icon_add,
+                iconResId = R.drawable.ic_add_circle_outline,
             )
             IconButton(
                 color = Color.Transparent,
                 onClick = { Log.d(null, "lorem ipsum clicked") },
-                iconResId = R.drawable.icon_back,
+                iconResId = R.drawable.ic_back,
             )
         }
     }
