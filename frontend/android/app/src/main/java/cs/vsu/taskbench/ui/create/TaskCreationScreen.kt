@@ -1,6 +1,5 @@
 package cs.vsu.taskbench.ui.create
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -20,24 +19,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import cs.vsu.taskbench.R
-import cs.vsu.taskbench.ui.component.Button
-import cs.vsu.taskbench.ui.component.Subtask
-import cs.vsu.taskbench.ui.theme.Beige
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.Chip
-import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.theme.AccentYellow
+import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
@@ -59,42 +47,6 @@ fun TaskCreationScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = true,
-                buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
-                onButtonClick = {},
-            )
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = true,
-                buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
-                onButtonClick = {},
-            )
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = false,
-                buttonIcon = painterResource(R.drawable.ic_add_circle_outline),
-                onButtonClick = {},
-            )
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = false,
-                buttonIcon = painterResource(R.drawable.ic_add_circle_outline),
-                onButtonClick = {},
-            )
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = true,
-                buttonIcon = painterResource(R.drawable.ic_ok_circle_filled),
-                onButtonClick = {},
-            )
-            Subtask(
-                text = "Пройтись по темам созвона",
-                selected = true,
-                buttonIcon = painterResource(R.drawable.ic_ok_circle_filled),
-                onButtonClick = {},
-            )
         }
 
         Icon(
@@ -136,7 +88,13 @@ fun TaskCreationScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
             ) {
-                Chip("tomorrow, 17:30", White, Black, {}, icon = painterResource(R.drawable.ic_clock))
+                Chip(
+                    "tomorrow, 17:30",
+                    White,
+                    Black,
+                    {},
+                    icon = painterResource(R.drawable.ic_clock)
+                )
                 Chip("high priority", AccentYellow, Black, {})
                 Chip("select category", White, LightGray, {})
             }
