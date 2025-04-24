@@ -13,6 +13,7 @@ retrofit = "2.11.0"
 ksp = "2.1.20-2.0.0"
 composeDestinations = "2.1.0"
 datastore = "1.1.4"
+javaJwt = "4.5.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,7 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 composeDestinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "composeDestinations" }
 composeDestinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "composeDestinations" }
 composeDestinations-bottomSheet = { module = "io.github.raamcosta.compose-destinations:bottom-sheet", version.ref = "composeDestinations" }
+javaJwt = { module = "com.auth0:java-jwt", version.ref = "javaJwt" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
