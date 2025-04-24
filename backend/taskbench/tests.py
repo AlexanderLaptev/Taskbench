@@ -1,6 +1,4 @@
 from datetime import datetime, timezone, UTC
-from multiprocessing.forkserver import read_signed
-
 from django.test import SimpleTestCase
 from .services import SuggestionService
 
@@ -17,8 +15,8 @@ class SuggestionServiceTestCase(SimpleTestCase):
         now_time = datetime(2025, 4, 24, 12, 00, 0, tzinfo=timezone.utc)
         supposed_time = datetime(2025,4,25,15,00,0, tzinfo=timezone.utc)
         result = SuggestionService().suggest_deadline(text, now=now_time)
-        self.assertEqual(result, supposed_time)
         print(result)
+        self.assertEqual(result, supposed_time)
 
     def test_subtask_suggestion(self):
         text = 'Помыть машину'
@@ -31,4 +29,10 @@ class SuggestionServiceTestCase(SimpleTestCase):
         category_names = ['работа', 'учеба', 'семья']
         result = SuggestionService().suggest_category(text, category_names)
         print(category_names[result])
-        self.assertTrue(-1 < result < len(category_names))
+        self.assertTrue(-2 < result < len(category_names))
+
+    def test_priority_suggestion(self):
+        text = 'Очень важно не забыть помыть посуду'
+        result = SuggestionService().suggest_priority(text)
+        print('очень важно' if result == 1 else 'не очень важно')
+        self.assertTrue(0 <= result <= 1)

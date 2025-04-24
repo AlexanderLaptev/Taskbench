@@ -90,13 +90,20 @@ class SuggestionService:
         return -1
 
     def suggest_priority(self, text: str) -> int:
+        """
+        Предлагает приоритет из 0/1.
+        :param text: текст введенной задачи
+        :return: 0, если не очень важно, 1 если очень важно
+        """
         if self.debug:
             return 0
         self.update_token()
         payload = "Предположи важность задачи. 0, если не очень важно, 1 если очень важно. Напиши только число." + text
-        result_number = int(self.giga.chat(payload).choices[0].message.content)
-
-        return result_number
+        try:
+            result_number = int(self.giga.chat(payload).choices[0].message.content)
+            return result_number
+        except (ValueError, TypeError):
+            return 0
 
     def suggest_deadline(self, text: str, *, now: datetime | None = None) -> datetime | None:
         """
