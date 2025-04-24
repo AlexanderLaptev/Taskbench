@@ -5,7 +5,7 @@ from .services import SuggestionService
 class SuggestionServiceTestCase(SimpleTestCase):
     def __init__(self, method_name: str = "runTest"):
         super().__init__(method_name)
-        self.SuggestionService = SuggestionService(debug=False)
+        self.SuggestionService = SuggestionService(debug=True)
 
     def setUp(self):
         pass

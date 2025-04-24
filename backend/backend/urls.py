@@ -18,24 +18,33 @@ from django.contrib import admin
 from django.urls import path
 
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from taskbench.views import UserViewSet, TaskViewSet, SubtaskViewSet, CategoryViewSet, TaskCategoryViewSet
+from taskbench.views import task_list, task_detail, subtask_create
 
-#НАЧАЛЬНЫЙ ВАРИАНТ
 
-router = DefaultRouter()
-router.register(r'users', UserViewSet)
-router.register(r'tasks', TaskViewSet)
-router.register(r'subtasks', SubtaskViewSet)
-router.register(r'categories', CategoryViewSet)
-router.register(r'taskcategories', TaskCategoryViewSet)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),  # Админка
-    path('api/', include(router.urls)),  # Добавляем 'api/' перед всеми маршрутами
+    path('admin/', admin.site.urls),
+    #path('api/tasks/', task_list, name='task_list'),
+    path('tasks/', task_list, name='task_list'),  # Соответствует OpenAPI
+    path('api/tasks/<int:task_id>/', task_detail, name='task_detail'),
+    path('api/subtasks/', subtask_create, name='subtask_create'),
 ]
 
 
+# from rest_framework.routers import DefaultRouter
+# from taskbench.views import UserViewSet, TaskViewSet, SubtaskViewSet, CategoryViewSet, TaskCategoryViewSet
+#
+# #НАЧАЛЬНЫЙ ВАРИАНТ
+#
+# router = DefaultRouter()
+# router.register(r'users', UserViewSet)
+# router.register(r'tasks', TaskViewSet)
+# router.register(r'subtasks', SubtaskViewSet)
+# router.register(r'categories', CategoryViewSet)
+# router.register(r'taskcategories', TaskCategoryViewSet)
+#
 # urlpatterns = [
-#     path('admin/', admin.site.urls),
-# ] - было
+#     path('admin/', admin.site.urls),  # Админка
+#     path('api/', include(router.urls)),  # Добавляем 'api/' перед всеми маршрутами
+# ]
+
