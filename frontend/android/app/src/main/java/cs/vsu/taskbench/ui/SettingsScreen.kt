@@ -21,10 +21,10 @@ import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.user.UserRepository
 import cs.vsu.taskbench.domain.model.User
+import cs.vsu.taskbench.domain.usecase.BootstrapUseCase
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.theme.DarkGray
-import cs.vsu.taskbench.ui.theme.LightGray
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -50,14 +50,9 @@ fun SettingsScreen(
                 .padding(padding),
         ) {
             val authService = koinInject<AuthService>()
+            val bootstrapUseCase = koinInject<BootstrapUseCase>()
             val scope = rememberCoroutineScope()
             val navigator = navController.rememberDestinationsNavigator()
-
-            Text(
-                text = "Settings Screen",
-                fontSize = 28.sp,
-                color = LightGray,
-            )
 
             Text(
                 text = "${user.email} (id=${user.id})",
@@ -73,6 +68,11 @@ fun SettingsScreen(
                 text = statusText,
                 fontSize = 20.sp,
                 color = DarkGray,
+            )
+
+            Button(
+                text = "Bootstrap",
+                onClick = { scope.launch { bootstrapUseCase() } }
             )
 
             Button(

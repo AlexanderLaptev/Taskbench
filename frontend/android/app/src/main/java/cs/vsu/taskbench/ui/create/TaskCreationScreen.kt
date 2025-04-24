@@ -1,33 +1,30 @@
 package cs.vsu.taskbench.ui.create
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import cs.vsu.taskbench.data.task.TaskRepository
-import cs.vsu.taskbench.domain.model.Task
+import cs.vsu.taskbench.data.task.SuggestionRepository
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.NavigationBar
-import cs.vsu.taskbench.ui.component.TaskCard
+import cs.vsu.taskbench.ui.component.TextField
+import cs.vsu.taskbench.ui.theme.DarkGray
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
-private const val TAG = "TaskCreationScreen"
 
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
@@ -39,33 +36,32 @@ fun TaskCreationScreen(
             NavigationBar(navController)
         }
     ) { padding ->
-        var tasks by remember { mutableStateOf(listOf<Task>()) }
-        val taskRepository = koinInject<TaskRepository>()
+        // TODO!
+        val suggestionRepository = koinInject<SuggestionRepository>()
+        var suggestions by remember { mutableStateOf(listOf<String>()) }
+        val scope = rememberCoroutineScope()
 
-        LaunchedEffect(Unit) {
-            tasks = taskRepository.getTasks(LocalDate.now(), TaskRepository.SortByMode.Priority)
-        }
-
-        LazyColumn(
+        Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .fillMaxHeight()
+                .padding(16.dp)
                 .padding(padding),
         ) {
-            items(
-                items = tasks,
-                key = { it.id!! },
-            ) {
-                TaskCard(
-                    deadlineText = DateTimeFormatter.ISO_DATE_TIME.format(it.deadline),
-                    bodyText = "[${it.id}, P=${it.isHighPriority}] ${it.content}",
-                    subtasks = it.subtasks,
-                    onClick = { Log.d(TAG, "clicked task with id=${it.id}") },
-                    onSubtaskCheckedChange = { subtask, selected ->
-                        val verb = if (selected) "selected" else "deselected"
-                        Log.d(TAG, "$verb subtask with id=${subtask.id}")
-                    },
-                    modifier = Modifier.padding(horizontal = 16.dp)
+            var prompt by remember { mutableStateOf("") }
+            TextField(
+                value = prompt,
+                onValueChange = {
+                    prompt = it
+                    scope.launch { suggestions = suggestionRepository.getSuggestions(it) }
+                },
+                placeholder = "prompt",
+            )
+
+            for (suggestion in suggestions) {
+                Text(
+                    text = suggestion,
+                    fontSize = 20.sp,
+                    color = DarkGray,
                 )
             }
         }
