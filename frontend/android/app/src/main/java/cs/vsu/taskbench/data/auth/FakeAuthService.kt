@@ -30,8 +30,8 @@ class FakeAuthService(
     )
 
     private val users = mutableMapOf(
-        "normal@example.com" to UserData(1, "correcthorse"),
-        "premium@example.com" to UserData(2, "batterystaple"),
+        "normal@example.com" to UserData(1, "00000000"),
+        "premium@example.com" to UserData(2, "11111111"),
     )
 
     private var id = users.size

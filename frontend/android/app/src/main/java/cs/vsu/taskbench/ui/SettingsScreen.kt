@@ -19,8 +19,11 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.LoginScreenDestination
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import cs.vsu.taskbench.data.auth.AuthService
+import cs.vsu.taskbench.data.user.UserRepository
+import cs.vsu.taskbench.domain.model.User
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.NavigationBar
+import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -30,6 +33,9 @@ import org.koin.compose.koinInject
 fun SettingsScreen(
     navController: NavController,
 ) {
+    val userRepo = koinInject<UserRepository>()
+    val user = userRepo.user!!
+
     Scaffold(
         bottomBar = { NavigationBar(navController) }
     ) { padding ->
@@ -51,6 +57,22 @@ fun SettingsScreen(
                 text = "Settings Screen",
                 fontSize = 28.sp,
                 color = LightGray,
+            )
+
+            Text(
+                text = "${user.email} (id=${user.id})",
+                fontSize = 20.sp,
+                color = DarkGray,
+            )
+
+            val statusText = when (user.status) {
+                is User.Status.Premium -> "Status: premium (until ${user.status.activeUntil})"
+                User.Status.Unpaid -> "Status: unpaid"
+            }
+            Text(
+                text = statusText,
+                fontSize = 20.sp,
+                color = DarkGray,
             )
 
             Button(
