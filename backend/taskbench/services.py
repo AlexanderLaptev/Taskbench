@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 from gigachat import GigaChat
 from typing import Union
 
-
 GIGACHAT_API_SAFETY_GAP = 60
 
 def singleton(cls):
@@ -51,11 +50,11 @@ class SuggestionService:
             self.access_token = response.access_token
             self.expires_at = datetime.fromtimestamp(response.expires_at / 1000, tz=timezone.utc)
 
-    """
-    Предлагает подзадачи.
-    :param text: текст введенной задачи.
-    """
     def suggest_subtasks(self, text: str) -> list:
+        """
+        Предлагает подзадачи.
+        :param text: текст введенной задачи.
+        """
         if self.debug:
             return ["1. Начать делать задачу", "2. Продолжить делать задачу", "3. Закончить делать задачу"]
         self.update_token()
@@ -65,13 +64,14 @@ class SuggestionService:
         subtasks = result.choices[0].message.content.split('\n')
         return subtasks
 
-    """
-    Предлагает категорию из существующих категорий у пользователя. 
-    :param text: текст введенной задачи
-    :param category_names: названия категорий пользователя,
-    :return: индекс подходящей категории из списка.
-    """
     def suggest_category(self, text: str, category_names: list) -> int | None:
+        """
+        Предлагает категорию из существующих категорий у пользователя.
+        :param text: текст введенной задачи
+        :param category_names: названия категорий пользователя,
+        :return: индекс подходящей категории из списка, -1 если не нашло подходящее.
+        """
+
         if len(category_names) == 0:
             return -1
 
@@ -98,13 +98,13 @@ class SuggestionService:
 
         return result_number
 
-    """
-    Анализирует текст с естественным языком и ищет даты.
-    Выбирает либо последнюю из прошедших дат, либо ближайшую из будущих.
-    :param text: анализируемый текст
-    :param now: время, которое считается за текущее.
-    """
     def suggest_deadline(self, text: str, *, now: datetime | None = None) -> datetime | None:
+        """
+        Анализирует текст с естественным языком и ищет даты.
+        Выбирает либо последнюю из прошедших дат, либо ближайшую из будущих.
+        :param text: анализируемый текст
+        :param now: время, которое считается за текущее.
+        """
         now = now or datetime.now(tz=timezone.utc)
         now = self._make_aware(now or datetime.now())
 
