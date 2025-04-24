@@ -50,7 +50,7 @@ class FakeAuthService(
             access = it[ACCESS_KEY]
             refresh = it[REFRESH_KEY]
         }
-        if (access == null || refresh == null) {
+        if (access.isNullOrEmpty() || refresh.isNullOrEmpty()) {
             Log.d(TAG, "no saved tokens")
             return null
         }
