@@ -15,6 +15,5 @@ private val Context.dataStore by preferencesDataStore("settings")
 val dataModule = module {
     single { get<Context>().dataStore }
     single { FakeUserRepository(get()) } bind UserRepository::class
-    singleOf(::SettingsRepository)
     singleOf(::FakeAuthService) bind AuthService::class
 }

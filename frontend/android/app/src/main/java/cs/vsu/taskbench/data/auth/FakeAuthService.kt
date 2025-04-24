@@ -1,9 +1,12 @@
 package cs.vsu.taskbench.data.auth
 
 import android.util.Log
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import cs.vsu.taskbench.data.SettingsRepository
 import cs.vsu.taskbench.data.auth.AuthService.LoginResult
 import cs.vsu.taskbench.data.auth.AuthService.SignUpResult
 import kotlinx.coroutines.flow.first
@@ -11,11 +14,14 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 class FakeAuthService(
-    private val settingsRepository: SettingsRepository,
+    private val dataStore: DataStore<Preferences>, // TODO: secure storage
 ) : AuthService {
     companion object {
         private val TAG = FakeAuthService::class.simpleName
         private const val ERROR_COUNTDOWN = 1
+
+        private val ACCESS_KEY = stringPreferencesKey("jwt_access")
+        private val REFRESH_KEY = stringPreferencesKey("jwt_refresh")
     }
 
     private data class UserData(
@@ -37,14 +43,19 @@ class FakeAuthService(
     override suspend fun getSavedTokens(): AuthTokens? {
         if (tokens != null) return tokens
 
-        Log.d(TAG, "no cached tokens, reading from settings")
-        val settings = settingsRepository.flow.first()
-        if (settings.jwtAccess.isNullOrEmpty() || settings.jwtRefresh.isNullOrEmpty()) {
+        Log.d(TAG, "no cached tokens, reading from data store")
+        val access: String?
+        val refresh: String?
+        dataStore.data.first().let {
+            access = it[ACCESS_KEY]
+            refresh = it[REFRESH_KEY]
+        }
+        if (access == null || refresh == null) {
             Log.d(TAG, "no saved tokens")
             return null
         }
 
-        val saved = AuthTokens(settings.jwtAccess, settings.jwtRefresh)
+        val saved = AuthTokens(access, refresh)
         val email = JWT.decode(saved.refresh).subject!!
         Log.d(TAG, "read saved tokens for user '$email'")
         tokens = saved
@@ -108,7 +119,10 @@ class FakeAuthService(
 
     override suspend fun logout() {
         Log.d(TAG, "logout")
-        settingsRepository.clearJwtTokens()
+        dataStore.edit {
+            it[ACCESS_KEY] = ""
+            it[REFRESH_KEY] = ""
+        }
     }
 
     private suspend fun generateNewTokens(email: String) {
@@ -136,6 +150,9 @@ class FakeAuthService(
 
         val generated = AuthTokens(access, refresh)
         tokens = generated
-        settingsRepository.setJwtTokens(generated.access, generated.refresh)
+        dataStore.edit {
+            it[ACCESS_KEY] = access
+            it[REFRESH_KEY] = refresh
+        }
     }
 }
