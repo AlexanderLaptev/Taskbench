@@ -17,7 +17,7 @@ class FakeUserRepository(
     override val user: User? get() = _user
 
     override suspend fun preload(): Boolean {
-        Log.d(TAG, "preloading")
+        Log.d(TAG, "preloading user data")
         val tokens = authService.getSavedTokens() ?: let {
             Log.d(TAG, "preload failed: no saved tokens")
             return false
@@ -31,7 +31,7 @@ class FakeUserRepository(
         } else User.Status.Unpaid
 
         _user = User(id, email, status)
-        Log.d(TAG, "user data: $_user")
+        Log.d(TAG, "loaded user data: $_user")
         return true
     }
 }

@@ -1,9 +1,12 @@
 package cs.vsu.taskbench.data.category
 
+import android.util.Log
 import androidx.collection.mutableIntObjectMapOf
 import cs.vsu.taskbench.domain.model.Category
 
 object FakeCategoryRepository : CategoryRepository {
+    private val TAG = FakeCategoryRepository::class.simpleName
+
     private val categories = mutableIntObjectMapOf<Category>().apply {
         this[1] = Category(1, "work")
         this[2] = Category(2, "home")
@@ -12,15 +15,21 @@ object FakeCategoryRepository : CategoryRepository {
 
     private var id = 4
 
-    override suspend fun preload(): Boolean = true
+    override suspend fun preload(): Boolean {
+        Log.d(TAG, "preloading categories")
+        return true
+    }
 
     override suspend fun getAllCategories(): List<Category> {
+        Log.d(TAG, "requested categories")
         val result = mutableListOf<Category>()
         categories.forEachValue { result += it }
+        Log.d(TAG, "returning ${result.size} categories")
         return result
     }
 
     override suspend fun saveCategory(category: Category): Category {
+        Log.d(TAG, "saving category $category")
         if (category.id == null) {
             val copy = category.copy(id = id)
             categories[id] = copy
@@ -34,6 +43,7 @@ object FakeCategoryRepository : CategoryRepository {
     }
 
     override suspend fun deleteCategory(category: Category) {
+        Log.d(TAG, "deleting category $category")
         check(category.id != null) { "Attempted to delete a non-existent category" }
         categories.remove(category.id)
     }
