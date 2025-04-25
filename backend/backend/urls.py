@@ -16,11 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-
-from django.urls import path, include
 from taskbench.views.task_views import task_list, task_detail, subtask_create, subtask_detail
-
-
+from taskbench.views.user_views import RegisterView, LoginView, DeleteUserView, TokenRefreshView, ChangePasswordView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,23 +26,10 @@ urlpatterns = [
     path('tasks/<int:task_id>/', task_detail, name='task_detail'), # PATCH/DELETE конкретной задачи
     path('subtasks/', subtask_create, name='subtask_create'), # POST - создание подзадачи
     path('subtasks/<int:subtask_id>/', subtask_detail, name='subtask_detail'), # PATCH/DELETE подзадачи
+    path('user/register/', RegisterView.as_view(), name='register'), # POST - создание пользователя
+    path('user/login', LoginView.as_view(), name='login'), # POST - валидация пользователя, возвращение jwt
+    path('user/delete', DeleteUserView.as_view(), name='delete_user'), # POST - валидация пользователя, возвращение jwt
+    path('user/password', ChangePasswordView.as_view(), name='change_password'),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
-
-
-# from rest_framework.routers import DefaultRouter
-# from taskbench.views import UserViewSet, TaskViewSet, SubtaskViewSet, CategoryViewSet, TaskCategoryViewSet
-#
-# #НАЧАЛЬНЫЙ ВАРИАНТ
-#
-# router = DefaultRouter()
-# router.register(r'users', UserViewSet)
-# router.register(r'tasks', TaskViewSet)
-# router.register(r'subtasks', SubtaskViewSet)
-# router.register(r'categories', CategoryViewSet)
-# router.register(r'taskcategories', TaskCategoryViewSet)
-#
-# urlpatterns = [
-#     path('admin/', admin.site.urls),  # Админка
-#     path('api/', include(router.urls)),  # Добавляем 'api/' перед всеми маршрутами
-# ]
 

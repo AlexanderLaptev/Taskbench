@@ -6,6 +6,7 @@ dateparser==1.2.1
 Django==5.2
 django-filter==25.1
 djangorestframework==3.16.0
+djangorestframework_simplejwt==5.5.0
 gigachat==0.1.39.post1
 gunicorn==23.0.0
 h11==0.14.0
@@ -16,6 +17,7 @@ packaging==24.2
 psycopg2-binary==2.9.10
 pydantic==2.11.3
 pydantic_core==2.33.1
+PyJWT==2.9.0
 pymorphy2-dicts-ru==2.4.417127.4579844
 python-dateutil==2.9.0.post0
 pytz==2025.2

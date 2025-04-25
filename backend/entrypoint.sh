@@ -3,7 +3,10 @@
 echo "Applying database migrations..."
 #python manage.py makemigrations
 python manage.py migrate
-python manage.py test taskbench/tests/
+if ! python manage.py test taskbench/tests/; then
+    echo "Tests not passed"
+    exit 1
+fi
 
 echo "Marking container as ready..."
 touch /tmp/app_ready
