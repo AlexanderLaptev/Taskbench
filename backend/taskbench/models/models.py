@@ -1,23 +1,32 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password, check_password
 
 class User(models.Model):
     user_id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=50, unique=True, null=False)
+    # username = models.CharField(max_length=50, unique=True, null=False)
     email = models.EmailField(max_length=100, unique=True, null=False)
     password_hash = models.CharField(max_length=255, null=False)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.username
+        return self.email
+
+    def set_password(self, password):
+        """Хэширует пароль"""
+        self.password_hash = make_password(password)
+
+    def check_password(self, password):
+        """Валидирует пароль"""
+        return check_password(password, self.password_hash)
 
 
 class Task(models.Model):
     task_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255, null=False)
-    deadline = models.DateTimeField(null=False)
-    priority = models.IntegerField(null=False)
-    status = models.CharField(max_length=20, default='active')
+    deadline = models.DateTimeField(null=True)
+    priority = models.IntegerField(null=False, default=0)
+    is_completed = models.BooleanField(max_length=20, default=True)
     created_at = models.DateTimeField(default=timezone.now)
     ai_processed = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False, related_name='tasks') #многие к одному к юзеру
