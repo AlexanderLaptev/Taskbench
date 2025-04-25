@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.data.task.SuggestionRepository
+import cs.vsu.taskbench.domain.model.AiSuggestions
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.TextField
@@ -38,7 +39,7 @@ fun TaskCreationScreen(
     ) { padding ->
         // TODO!
         val suggestionRepository = koinInject<SuggestionRepository>()
-        var suggestions by remember { mutableStateOf(listOf<String>()) }
+        var suggestions by remember { mutableStateOf(AiSuggestions()) }
         val scope = rememberCoroutineScope()
 
         Column(
@@ -57,9 +58,15 @@ fun TaskCreationScreen(
                 placeholder = "prompt",
             )
 
-            for (suggestion in suggestions) {
+            Text(
+                text = suggestions.copy(subtasks = emptyList()).toString(),
+                fontSize = 20.sp,
+                color = DarkGray,
+            )
+
+            for (subtask in suggestions.subtasks) {
                 Text(
-                    text = suggestion,
+                    text = subtask,
                     fontSize = 20.sp,
                     color = DarkGray,
                 )
