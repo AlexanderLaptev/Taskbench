@@ -1,30 +1,37 @@
 package cs.vsu.taskbench.data.user
 
 import android.util.Log
+import com.auth0.jwt.JWT
+import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.domain.model.User
 import java.time.LocalDate
 
-object FakeUserRepository : UserRepository {
-    private val TAG = FakeUserRepository::class.simpleName
+class FakeUserRepository(
+    private val authService: AuthService,
+) : UserRepository {
+    companion object {
+        private val TAG = FakeUserRepository::class.simpleName
+    }
 
     private var _user: User? = null
     override val user: User? get() = _user
 
-    override suspend fun fetchUser(jwtToken: String) {
-        val jwt = jwtToken.replace("\n", "; ")
-        Log.d(TAG, "fetching user with jwt='$jwt'")
+    override suspend fun preload(): Boolean {
+        Log.d(TAG, "preloading user data")
+        val tokens = authService.getSavedTokens() ?: let {
+            Log.d(TAG, "preload failed: no saved tokens")
+            return false
+        }
 
-        val lines = jwtToken.lines()
-        _user = User(
-            id = lines[0].toInt(),
-            email = lines[1],
-            status = User.Status.Premium(
-                LocalDate.now().plusDays(7)
-            )
-        )
-    }
+        val decoded = JWT.decode(tokens.access)
+        val email = decoded.subject!!
+        val id = decoded.getClaim("id").asInt()
+        val status = if (email.startsWith("premium")) {
+            User.Status.Premium(LocalDate.now().plusDays(7))
+        } else User.Status.Unpaid
 
-    override fun logout() {
-        _user = null
+        _user = User(id, email, status)
+        Log.d(TAG, "loaded user data: $_user")
+        return true
     }
 }

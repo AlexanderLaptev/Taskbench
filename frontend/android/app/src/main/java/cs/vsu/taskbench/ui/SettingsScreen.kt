@@ -18,11 +18,13 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.LoginScreenDestination
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
-import cs.vsu.taskbench.data.SettingsRepository
+import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.user.UserRepository
+import cs.vsu.taskbench.domain.model.User
+import cs.vsu.taskbench.domain.usecase.BootstrapUseCase
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.NavigationBar
-import cs.vsu.taskbench.ui.theme.LightGray
+import cs.vsu.taskbench.ui.theme.DarkGray
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -31,6 +33,9 @@ import org.koin.compose.koinInject
 fun SettingsScreen(
     navController: NavController,
 ) {
+    val userRepo = koinInject<UserRepository>()
+    val user = userRepo.user!!
+
     Scaffold(
         bottomBar = { NavigationBar(navController) }
     ) { padding ->
@@ -44,24 +49,37 @@ fun SettingsScreen(
                 .padding(16.dp)
                 .padding(padding),
         ) {
-            val userRepository = koinInject<UserRepository>()
-            val settingsRepository = koinInject<SettingsRepository>()
-
+            val authService = koinInject<AuthService>()
+            val bootstrapUseCase = koinInject<BootstrapUseCase>()
             val scope = rememberCoroutineScope()
             val navigator = navController.rememberDestinationsNavigator()
 
             Text(
-                text = "Settings Screen",
-                fontSize = 28.sp,
-                color = LightGray,
+                text = "${user.email} (id=${user.id})",
+                fontSize = 20.sp,
+                color = DarkGray,
+            )
+
+            val statusText = when (user.status) {
+                is User.Status.Premium -> "Status: premium (until ${user.status.activeUntil})"
+                User.Status.Unpaid -> "Status: unpaid"
+            }
+            Text(
+                text = statusText,
+                fontSize = 20.sp,
+                color = DarkGray,
+            )
+
+            Button(
+                text = "Bootstrap",
+                onClick = { scope.launch { bootstrapUseCase() } }
             )
 
             Button(
                 text = "Logout",
                 onClick = {
                     scope.launch {
-                        userRepository.logout()
-                        settingsRepository.setJwtToken("")
+                        authService.logout()
                         navigator.popBackStack()
                         navigator.navigate(LoginScreenDestination)
                     }

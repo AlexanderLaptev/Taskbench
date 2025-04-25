@@ -10,7 +10,7 @@ data class Task(
     val deadline: LocalDateTime,
     val isHighPriority: Boolean,
     val subtasks: List<Subtask>,
-    val categoryId: Long,
+    val categoryId: Int?,
 )
 
 @Immutable

@@ -4,14 +4,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,62 +40,75 @@ fun TaskCard(
     subtasks: List<Subtask>,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    onDismiss: () -> Unit,
     onSubtaskCheckedChange: (Subtask, Boolean) -> Unit,
 ) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = White,
-            contentColor = Black,
-        ),
-        shape = RoundedCornerShape(4.dp),
-        onClick = onClick,
-        modifier = modifier,
+    val state = rememberSwipeToDismissBoxState()
+    LaunchedEffect(state.currentValue) {
+        if (state.currentValue == SwipeToDismissBoxValue.EndToStart) onDismiss()
+    }
+
+    SwipeToDismissBox(
+        state = state,
+        backgroundContent = {},
+        enableDismissFromStartToEnd = false,
     ) {
-        Column(
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(16.dp),
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = White,
+                contentColor = Black,
+            ),
+            shape = RoundedCornerShape(10.dp),
+            onClick = onClick,
+            modifier = modifier
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_clock),
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                )
-                Text(
-                    text = deadlineText,
-                    fontSize = 16.sp,
-                    color = Black,
-                )
-            }
-
-            Text(
-                text = bodyText,
-                fontSize = 20.sp,
-            )
-
-            HorizontalDivider(
-                color = LightGray,
-                thickness = 2.dp,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-            )
-
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(16.dp),
             ) {
-                for (subtask in subtasks) {
-                    var checked by remember { mutableStateOf(subtask.isDone) }
-                    SubtaskComposable(
-                        content = subtask.content,
-                        checked = checked,
-                        onCheckedChange = {
-                            checked = !checked
-                            onSubtaskCheckedChange(subtask, it)
-                        },
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_clock),
+                        contentDescription = null,
                     )
+                    Text(
+                        text = deadlineText,
+                        fontSize = 16.sp,
+                        color = Black,
+                    )
+                }
+
+                Text(
+                    text = bodyText,
+                    fontSize = 20.sp,
+                )
+
+                if (subtasks.isNotEmpty()) {
+                    HorizontalDivider(
+                        color = LightGray,
+                        thickness = 2.dp,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                    )
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    for (subtask in subtasks) {
+                        var checked by remember { mutableStateOf(subtask.isDone) }
+                        SubtaskComposable(
+                            content = subtask.content,
+                            checked = checked,
+                            onCheckedChange = {
+                                checked = !checked
+                                onSubtaskCheckedChange(subtask, it)
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -150,6 +166,7 @@ private fun Preview() {
             bodyText = LoremIpsum(25).values.first(),
             subtasks = subtasks,
             onClick = {},
+            onDismiss = {},
             onSubtaskCheckedChange = { _, _ -> },
         )
     }

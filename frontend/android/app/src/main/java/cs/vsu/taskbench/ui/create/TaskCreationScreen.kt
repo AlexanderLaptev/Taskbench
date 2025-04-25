@@ -65,6 +65,42 @@ fun TaskCreationScreen(
     //    navController: NavController,
 ) {
 
+
+//    Scaffold(
+//        bottomBar = {
+//            NavigationBar(navController)
+//        }
+//    ) { padding ->
+//        // TODO!
+//        val suggestionRepository = koinInject<SuggestionRepository>()
+//        var suggestions by remember { mutableStateOf(listOf<String>()) }
+//        val scope = rememberCoroutineScope()
+//
+//        Column(
+//            verticalArrangement = Arrangement.spacedBy(8.dp),
+//            modifier = Modifier
+//                .padding(16.dp)
+//                .padding(padding),
+//        ) {
+//            var prompt by remember { mutableStateOf("") }
+//            TextField(
+//                value = prompt,
+//                onValueChange = {
+//                    prompt = it
+//                    scope.launch { suggestions = suggestionRepository.getSuggestions(it) }
+//                },
+//                placeholder = "prompt",
+//            )
+//
+//            for (suggestion in suggestions) {
+//                Text(
+//                    text = suggestion,
+//                    fontSize = 20.sp,
+//                    color = DarkGray,
+//                )
+//            }
+//        }
+
 }
 
 @Composable

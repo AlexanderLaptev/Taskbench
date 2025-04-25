@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.ui.login
 
 import android.util.Log
+import android.util.Patterns
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,18 +9,18 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cs.vsu.taskbench.R
-import cs.vsu.taskbench.data.SettingsRepository
-import cs.vsu.taskbench.data.auth.AuthorizationService
-import cs.vsu.taskbench.data.user.UserRepository
+import cs.vsu.taskbench.data.auth.AuthService
+import cs.vsu.taskbench.data.auth.AuthService.LoginResult
+import cs.vsu.taskbench.data.auth.AuthService.SignUpResult
+import cs.vsu.taskbench.domain.usecase.BootstrapUseCase
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class LoginScreenViewModel(
-    private val authService: AuthorizationService,
-    private val userRepository: UserRepository,
-    private val settingsRepository: SettingsRepository,
+    private val authService: AuthService,
+    private val bootstrapUseCase: BootstrapUseCase,
 ) : ViewModel() {
     companion object {
         private val TAG = LoginScreenViewModel::class.simpleName
@@ -30,19 +31,20 @@ class LoginScreenViewModel(
         SignUp,
     }
 
-    enum class ErrorType(@StringRes val messageId: Int) {
-        EmptyEmail(R.string.error_empty_email),
-        InvalidEmail(R.string.error_invalid_email),
-        EmptyPassword(R.string.placeholder),
-        PasswordsDoNotMatch(R.string.placeholder),
-        UserDoesNotExist(R.string.placeholder),
-        IncorrectPassword(R.string.placeholder),
-        NoInternet(R.string.placeholder),
-        Unknown(R.string.placeholder),
-    }
 
     sealed interface Event {
-        data class Error(val type: ErrorType) : Event
+        enum class Error(@StringRes val messageId: Int) : Event {
+            EmptyEmail(R.string.error_empty_email),
+            InvalidEmail(R.string.error_invalid_email),
+            EmptyPassword(R.string.error_empty_password),
+            PasswordsDoNotMatch(R.string.error_passwords_do_not_match),
+            UserDoesNotExist(R.string.error_user_does_not_exist),
+            UserAlreadyExists(R.string.error_user_already_exists),
+            IncorrectPassword(R.string.error_user_incorrect_password),
+            NoInternet(R.string.error_no_internet),
+            Unknown(R.string.error_unknown),
+        }
+
         data object LoggedIn : Event
     }
 
@@ -63,43 +65,40 @@ class LoginScreenViewModel(
     }
 
     private suspend fun handleLogin() {
-        when (val result = authService.authorize(email, password)) {
-            AuthorizationService.Result.Error -> {
-                _events.tryEmit(Event.Error(ErrorType.Unknown))
-                return
-            }
-
-            is AuthorizationService.Result.Success -> {
-                saveJwtToken(result.jwtToken)
-                userRepository.fetchUser(result.jwtToken)
-                Log.d(TAG, "current user: ${userRepository.user}")
+        val result = authService.login(email, password)
+        when (result) {
+            LoginResult.Success -> {
+                // Ignore the result since at this point we should
+                // be authorized anyway.
+                bootstrapUseCase()
                 _events.tryEmit(Event.LoggedIn)
             }
+
+            LoginResult.UserNotFound -> _events.tryEmit(Event.Error.UserDoesNotExist)
+            LoginResult.IncorrectPassword -> _events.tryEmit(Event.Error.IncorrectPassword)
+            LoginResult.UnknownError -> _events.tryEmit(Event.Error.Unknown)
         }
     }
 
-    private suspend inline fun saveJwtToken(token: String) {
-        Log.d(TAG, "saving token: $token")
-        settingsRepository.setJwtToken(token)
-    }
-
+    // TODO: password requirements
     private fun validateLogin(): Boolean {
         if (email.isBlank()) {
-            _events.tryEmit(Event.Error(ErrorType.EmptyEmail))
+            _events.tryEmit(Event.Error.EmptyEmail)
             return false
         }
         if (!email.isValidEmail()) {
-            _events.tryEmit(Event.Error(ErrorType.InvalidEmail))
+            _events.tryEmit(Event.Error.InvalidEmail)
             return false
         }
         if (password.isBlank()) {
-            _events.tryEmit(Event.Error(ErrorType.EmptyPassword))
+            _events.tryEmit(Event.Error.EmptyPassword)
             return false
         }
         return true
     }
 
-    private fun String.isValidEmail(): Boolean = "@" in this // TODO
+    private fun String.isValidEmail(): Boolean =
+        this.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
     fun signUp() {
         if (!validateSignUp()) return
@@ -109,25 +108,24 @@ class LoginScreenViewModel(
     private fun validateSignUp(): Boolean {
         if (!validateLogin()) return false
         if (password != confirmPassword) {
-            _events.tryEmit(Event.Error(ErrorType.PasswordsDoNotMatch))
+            _events.tryEmit(Event.Error.PasswordsDoNotMatch)
             return false
         }
         return true
     }
 
     private suspend inline fun handleSignUp() {
-        when (val result = authService.signUp(email, password)) {
-            AuthorizationService.Result.Error -> {
-                _events.tryEmit(Event.Error(ErrorType.Unknown))
-                return
-            }
-
-            is AuthorizationService.Result.Success -> {
-                saveJwtToken(result.jwtToken)
-                userRepository.fetchUser(result.jwtToken)
-                Log.d(TAG, "current user: ${userRepository.user}")
+        val result = authService.signUp(email, password)
+        when (result) {
+            SignUpResult.Success -> {
+                // Ignore the result since at this point we should
+                // be authorized anyway.
+                bootstrapUseCase()
                 _events.tryEmit(Event.LoggedIn)
             }
+
+            SignUpResult.UserAlreadyExists -> _events.tryEmit(Event.Error.UserAlreadyExists)
+            SignUpResult.UnknownError -> _events.tryEmit(Event.Error.Unknown)
         }
     }
 
