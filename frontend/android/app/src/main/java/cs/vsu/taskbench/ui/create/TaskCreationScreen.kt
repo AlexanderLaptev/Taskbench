@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.ui.create
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -8,13 +9,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,81 +41,76 @@ import cs.vsu.taskbench.ui.component.BoxEdit
 import cs.vsu.taskbench.ui.component.Chip
 import cs.vsu.taskbench.ui.component.CreateSubtaskField
 import cs.vsu.taskbench.ui.component.NavigationBar
+import cs.vsu.taskbench.ui.component.Suggestion
 import cs.vsu.taskbench.ui.component.TextField
-import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
-import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.koin.androidx.compose.koinViewModel
 
-@Stable
-private data class TaskCreationScreenState(
-    val task: String,
-    val onTaskChange: (String) -> Unit,
-    val newSubtask: String,
-    val onNewSubtaskChange: (String) -> Unit,
-    val priority: String,
-    val deadline: String,
-    val category: String,
-    var subtasks: List<Subtask>,
-    var suggestions: List<Subtask>,
-    val onDeadline: () -> Unit,
-    val onPriority: () -> Unit,
-    val onCategory: () -> Unit,
-    val onSubtaskClick: () -> Unit,
-    val onAddTask: () -> Unit,
-)
-
-
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
 fun TaskCreationScreen(
         navController: NavController,
 ) {
+    val viewModel = koinViewModel<TaskCreationScreenViewModel>()
     Scaffold(
         bottomBar = {
             NavigationBar(navController)
         }
     ) { padding ->
-        val suggestionRepository = koinInject<SuggestionRepository>()
-        var suggestions by remember { mutableStateOf(listOf<String>()) }
-        val scope = rememberCoroutineScope()
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .padding(16.dp)
-                .padding(padding),
-        ) {
-            var prompt by remember { mutableStateOf("") }
-            TextField(
-                value = prompt,
-                onValueChange = {
-                    prompt = it
-                    scope.launch { suggestions = suggestionRepository.getSuggestions(it) }
-                },
-                placeholder = "prompt",
-            )
-
-            for (suggestion in suggestions) {
-                Text(
-                    text = suggestion,
-                    fontSize = 20.sp,
-                    color = DarkGray,
-                )
+        TaskCreationContent(
+            task = viewModel.task,
+            onTaskChange = { viewModel.task = it },
+            newSubtask = viewModel.newSubtask,
+            onNewSubtaskChange = { viewModel.newSubtask = it },
+            priority = viewModel.priority,
+            deadline = viewModel.deadline,
+            category = viewModel.category,
+            subtasks = viewModel.subtasks,
+            suggestions = viewModel.suggestions,
+            onDeadline = { },
+            onPriority = { },
+            onCategory = {},
+            onSubtaskClick = {},
+            onAddTask = {},
+            onSuggestionsChange = { newSuggestions ->
+                viewModel.updateSuggestions(newSuggestions)
             }
-        }
+        )
     }
 }
 
 @Composable
 private fun TaskCreationContent(
-    stateScreen: TaskCreationScreenState
+    task: String,
+    onTaskChange: (String) -> Unit,
+    newSubtask: String,
+    onNewSubtaskChange: (String) -> Unit,
+    priority: String,
+    deadline: String,
+    category: String,
+    subtasks: List<Subtask>,
+    suggestions: List<String>,
+//    suggestions: List<Subtask>,
+    onDeadline: () -> Unit,
+    onPriority: () -> Unit,
+    onCategory: () -> Unit,
+    onSubtaskClick: () -> Unit,
+    onAddTask: () -> Unit,
+    onSuggestionsChange: (List<String>) -> Unit,
 ){
+
+    val suggestionRepository = koinInject<SuggestionRepository>()
+    val scope = rememberCoroutineScope()
+    var suggestionsS by remember { mutableStateOf(listOf<String>()) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -132,18 +129,43 @@ private fun TaskCreationContent(
                 .padding(
                     start = 16.dp,
                     end = 16.dp,
-                    top = 16.dp,
+                    top = 48.dp,
                     bottom = 96.dp
                 ),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             CreateSubtaskField(
-                text = stateScreen.newSubtask,
-                onTextChange = stateScreen.onNewSubtaskChange,
+                text = newSubtask,
+                onTextChange = onNewSubtaskChange,
                 placeholder = stringResource(R.string.label_subtask),
-                onAddButtonClick = stateScreen.onSubtaskClick,
+                onAddButtonClick = onSubtaskClick,
             )
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .height(489.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(top = 8.dp, bottom = 48.dp)
+            ){
+                Text(
+                    text = stringResource(R.string.list_subtasks),
+                    fontSize = 14.sp,
+                    color = DarkGray,
+                )
+                Text(
+                    text = stringResource(R.string.list_suggestions),
+                    fontSize = 14.sp,
+                    color = DarkGray,
+                )
+
+                for (suggestion in suggestionsS) {
+                    Suggestion(
+                         text = suggestion,
+                         onAdd = {},
+                     )
+                 }
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -179,11 +201,16 @@ private fun TaskCreationContent(
                     )
                 }
                 BoxEdit(
-                    value = stateScreen.task,
-                    onValueChange = stateScreen.onTaskChange,
+                    value = task,
+                    onValueChange =
+                        {
+                            onTaskChange(it)
+                            scope.launch { suggestionsS = suggestionRepository.getSuggestions(it) }
+
+                        },
                     buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
                     inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
-                    placeholder = "Enter text",
+                    placeholder = stringResource(R.string.label_task),
                 )
             }
 
@@ -201,26 +228,26 @@ private fun Preview() {
     var deadline by remember { mutableStateOf("")}
     var category by remember { mutableStateOf("")}
     var subtasks: List<Subtask> by remember { mutableStateOf(emptyList())}
-    var suggestions: List<Subtask> by remember { mutableStateOf(emptyList())}
-
-    val screenState = TaskCreationScreenState(
-        task = task,
-        onTaskChange = { task = it },
-        newSubtask = newSubtask,
-        onNewSubtaskChange = { newSubtask = it },
-        priority = priority,
-        deadline = deadline,
-        category = category,
-        subtasks = subtasks,
-        suggestions = suggestions,
-        onDeadline = { },
-        onPriority = { },
-        onCategory = {},
-        onSubtaskClick = {},
-        onAddTask = {},
-    )
+//    var suggestions: List<Subtask> by remember { mutableStateOf(emptyList())}
+    var suggestions: List<String> by remember { mutableStateOf(emptyList())}
 
     TaskbenchTheme {
-        TaskCreationContent(screenState)
+        TaskCreationContent(
+            task = task,
+            onTaskChange = { task = it },
+            newSubtask = newSubtask,
+            onNewSubtaskChange = { newSubtask = it },
+            priority = priority,
+            deadline = deadline,
+            category = category,
+            subtasks = subtasks,
+            suggestions = suggestions,
+            onDeadline = { },
+            onPriority = { },
+            onCategory = {},
+            onSubtaskClick = {},
+            onAddTask = {},
+            onSuggestionsChange = {},
+        )
     }
 }
