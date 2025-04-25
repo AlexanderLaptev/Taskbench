@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='task',
             name='is_completed',
-            field=models.BooleanField(default=True, max_length=20),
+            field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
             model_name='task',

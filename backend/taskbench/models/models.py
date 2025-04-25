@@ -26,7 +26,7 @@ class Task(models.Model):
     title = models.CharField(max_length=255, null=False)
     deadline = models.DateTimeField(null=True)
     priority = models.IntegerField(null=False, default=0)
-    is_completed = models.BooleanField(max_length=20, default=True)
+    is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     ai_processed = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False, related_name='tasks') #многие к одному к юзеру
