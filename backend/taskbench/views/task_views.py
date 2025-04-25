@@ -43,7 +43,7 @@ def task_list(request):
                 return JsonResponse({'error': 'user_id parameter is required'}, status=400)
 
             # Базовый запрос - исключаем completed задачи
-            tasks = Task.objects.filter(user_id=user_id, status='active') \
+            tasks = Task.objects.filter(user_id=user_id, is_completed=False) \
                 .prefetch_related('subtasks', 'task_categories__category')
 
             # Применяем фильтры
@@ -105,7 +105,7 @@ def task_list(request):
                 deadline=parse_datetime(dpc.get('deadline')) if dpc.get('deadline') else None,
                 priority=dpc.get('priority', 0),
                 user_id=user_id,
-                status='active'
+                is_completed=False
             )
 
             # Добавляем категорию, если указана
@@ -172,11 +172,11 @@ def task_detail(request, task_id):
     if request.method == 'DELETE':
         try:
             # Проверяем, не завершена ли задача уже
-            if task.status == 'completed':
+            if task.is_completed:
                 return JsonResponse({'error': 'Task already completed'}, status=400)
 
             # Помечаем задачу как выполненную
-            task.status = 'completed'
+            task.is_completed = True
             task.save()
 
             # Возвращаем обновленную задачу
@@ -227,7 +227,7 @@ def task_detail(request, task_id):
             response_data = {
                 "id": task.task_id,
                 "content": task.title,
-                "is_done": task.status.lower() == 'completed',
+                "is_done": task.is_completed,
                 "dpc": {
                     "deadline": task.deadline.isoformat() if task.deadline else None,
                     "priority": task.priority,
