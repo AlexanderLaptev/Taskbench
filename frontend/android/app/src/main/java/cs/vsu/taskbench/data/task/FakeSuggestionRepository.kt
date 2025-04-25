@@ -17,8 +17,8 @@ object FakeSuggestionRepository : SuggestionRepository {
 
         val random = Random(prompt.hashCode())
         val result = mutableListOf<String>()
-        repeat(random.nextInt(0, 7)) {
-            result += "${it + 1}. ${Lipsum.get(4, 11)}"
+        repeat(random.nextInt(1, 7)) {
+            result += "${it + 1}. ${Lipsum.get(4, 11, random)}"
         }
 
         Log.d(TAG, "returned ${result.size} suggestions")

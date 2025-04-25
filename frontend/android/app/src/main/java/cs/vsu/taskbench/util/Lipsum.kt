@@ -1,5 +1,7 @@
 package cs.vsu.taskbench.util
 
+import kotlin.random.Random
+
 object Lipsum {
     @Suppress("SpellCheckingInspection")
     private val LIPSUM = listOf(
@@ -23,16 +25,16 @@ object Lipsum {
         "vulputate",
     )
 
-    fun get(capitalize: Boolean = true): String =
-        get(4, 11, capitalize)
+    fun get(random: Random = MockRandom, capitalize: Boolean = true): String =
+        get(4, 11, random, capitalize)
 
-    fun get(min: Int, max: Int, capitalize: Boolean = true): String =
-        get(MockRandom.nextInt(min, max + 1), capitalize)
+    fun get(min: Int, max: Int, random: Random = MockRandom, capitalize: Boolean = true): String =
+        get(random.nextInt(min, max + 1), random, capitalize)
 
-    fun get(wordCount: Int, capitalize: Boolean = true): String {
+    fun get(wordCount: Int, random: Random = MockRandom, capitalize: Boolean = true): String {
         val words = mutableListOf<String>()
         repeat(wordCount) {
-            words += LIPSUM.random(MockRandom)
+            words += LIPSUM.random(random)
         }
         if (capitalize) words[0] = words[0].replaceFirstChar { it.uppercaseChar() }
         return words.joinToString(" ")
