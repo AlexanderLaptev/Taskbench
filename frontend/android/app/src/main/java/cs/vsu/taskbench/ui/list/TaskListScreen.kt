@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,9 +54,10 @@ fun TaskListScreen(
                 .padding(padding),
         ) {
             items(
-                items = tasks,
-                key = { it.id!! },
-            ) { task ->
+                count = tasks.size,
+                key = { tasks[it].id!! },
+            ) {
+                val task = tasks[it]
                 val debug = "${task.id}, P=${task.isHighPriority}, C=${task.categoryId}"
                 val visible = remember { MutableTransitionState(true) }
 
@@ -75,7 +75,7 @@ fun TaskListScreen(
 
                 AnimatedVisibility(visibleState = visible) {
                     Column {
-                        Spacer(Modifier.height(8.dp))
+                        if (it != 0) Spacer(Modifier.height(8.dp))
                         TaskCard(
                             deadlineText = DateTimeFormatter.ISO_DATE_TIME.format(task.deadline),
                             bodyText = "[$debug] ${task.content}",
