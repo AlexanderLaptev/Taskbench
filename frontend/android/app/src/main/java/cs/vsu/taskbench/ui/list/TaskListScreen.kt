@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.ui.list
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
@@ -56,17 +57,28 @@ fun TaskListScreen(
                 key = { it.id!! },
             ) {
                 val debug = "${it.id}, P=${it.isHighPriority}, C=${it.categoryId}"
-                TaskCard(
-                    deadlineText = DateTimeFormatter.ISO_DATE_TIME.format(it.deadline),
-                    bodyText = "[$debug] ${it.content}",
-                    subtasks = it.subtasks,
-                    onClick = { Log.d(TAG, "clicked task with id=${it.id}") },
-                    onSubtaskCheckedChange = { subtask, selected ->
-                        val verb = if (selected) "selected" else "deselected"
-                        Log.d(TAG, "$verb subtask with id=${subtask.id}")
-                    },
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
+                var dismissed by remember { mutableStateOf(false) }
+                AnimatedVisibility(
+                    visible = !dismissed,
+                ) {
+                    TaskCard(
+                        deadlineText = DateTimeFormatter.ISO_DATE_TIME.format(it.deadline),
+                        bodyText = "[$debug] ${it.content}",
+                        subtasks = it.subtasks,
+                        onClick = { Log.d(TAG, "clicked task with id=${it.id}") },
+                        modifier = Modifier.padding(horizontal = 16.dp),
+
+                        onDismiss = {
+                            dismissed = true
+                            Log.d(TAG, "dismissed task with id=${it.id}")
+                        },
+
+                        onSubtaskCheckedChange = { subtask, selected ->
+                            val verb = if (selected) "selected" else "deselected"
+                            Log.d(TAG, "$verb subtask with id=${subtask.id}")
+                        },
+                    )
+                }
             }
         }
     }
