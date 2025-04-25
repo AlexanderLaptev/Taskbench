@@ -3,6 +3,7 @@ package cs.vsu.taskbench.domain.usecase
 import android.util.Log
 import cs.vsu.taskbench.data.PreloadRepository
 import cs.vsu.taskbench.data.auth.AuthService
+import cs.vsu.taskbench.util.MockRandom
 
 class BootstrapUseCase(
     private val authTokenRepo: AuthService,
@@ -18,6 +19,7 @@ class BootstrapUseCase(
     }
 
     suspend operator fun invoke(): Result {
+        MockRandom.reset()
         if (authTokenRepo.getSavedTokens() == null) return Result.LoginRequired
 
         return if (tryPreload()) {

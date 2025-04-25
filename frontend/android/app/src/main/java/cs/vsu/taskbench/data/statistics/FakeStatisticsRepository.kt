@@ -3,8 +3,8 @@ package cs.vsu.taskbench.data.statistics
 import android.util.Log
 import androidx.collection.mutableFloatListOf
 import cs.vsu.taskbench.domain.model.Statistics
+import cs.vsu.taskbench.util.MockRandom
 import java.time.LocalDate
-import kotlin.random.Random
 
 object FakeStatisticsRepository : StatisticsRepository {
     private val TAG = FakeStatisticsRepository::class.simpleName
@@ -29,11 +29,11 @@ object FakeStatisticsRepository : StatisticsRepository {
         Log.d(TAG, "generating statistics")
         val values = mutableFloatListOf()
         repeat(7) {
-            values += Random.nextFloat()
+            values += MockRandom.nextFloat()
         }
         cached = Statistics(
-            doneToday = Random.nextInt(0, 12),
-            doneAllTimeHigh = Random.nextInt(8, 22),
+            doneToday = MockRandom.nextInt(0, 12),
+            doneAllTimeHigh = MockRandom.nextInt(8, 22),
             graphData = values,
         )
     }

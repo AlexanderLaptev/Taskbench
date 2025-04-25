@@ -7,23 +7,20 @@ import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
+import cs.vsu.taskbench.util.Lipsum
+import cs.vsu.taskbench.util.MockRandom
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import kotlin.random.Random
 
 class FakeTaskRepository(
     private val categoryRepository: CategoryRepository,
 ) : TaskRepository {
     companion object {
         private val TAG = FakeTaskRepository::class.simpleName
-
-        private const val TASK_CONTENT =
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas faucibus tellus eget mi iaculis, quis luctus nisl ornare."
-        private const val SUBTASK_CONTENT = "Vivamus a dolor ac risus consectetur"
     }
 
-    private val random = Random
+    private val random = MockRandom
 
     private lateinit var index: MutableIntObjectMap<Task>
     private var taskId = -1
@@ -47,6 +44,7 @@ class FakeTaskRepository(
         Log.d(TAG, "loaded ${categories.size} categories")
 
         dropIndex()
+        Log.d(TAG, "random: ${random.nextInt()}")
         val first = LocalDate.now().minusDays(7)
         val totalDays = 2 * 7
 
@@ -78,7 +76,7 @@ class FakeTaskRepository(
         repeat(random.nextInt(0, 5)) {
             subtasks += Subtask(
                 id = subtaskId,
-                content = "[$subtaskId] $SUBTASK_CONTENT",
+                content = "[$subtaskId] ${Lipsum.get()}",
                 isDone = random.nextBoolean(),
             )
             subtaskId++
@@ -90,7 +88,7 @@ class FakeTaskRepository(
 
         return Task(
             id = null,
-            content = TASK_CONTENT,
+            content = Lipsum.get(8, 30),
             deadline = deadline,
             isHighPriority = random.nextBoolean(),
             subtasks = subtasks,
