@@ -52,7 +52,6 @@ class DeleteUserView(APIView):
 
     def delete(self, request, *args, **kwargs):
         token = get_token_from_request(request)
-        print(token)
         serializer = JwtSerializer(data=token)
         if serializer.is_valid():
             user = serializer.validated_data['user']
@@ -76,14 +75,23 @@ class ChangePasswordView(APIView):
                 status=400
             )
 
-        if not request.user.check_password(old_password):
+        token = get_token_from_request(request)
+        serializer = JwtSerializer(data=token)
+        if not serializer.is_valid():
+            return JsonResponse(
+                {"error": "Not logged in"},
+                status=401
+            )
+        user = serializer.validated_data['user']
+
+        if not user.check_password(old_password):
             return JsonResponse(
                 {"error": "Old password is incorrect"},
                 status=400
             )
 
-        request.user.set_password(new_password)
-        request.user.save()
+        user.set_password(new_password)
+        user.save()
 
         return Response(status=204)
 
