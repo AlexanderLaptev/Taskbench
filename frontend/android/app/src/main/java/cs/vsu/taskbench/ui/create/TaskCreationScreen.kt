@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,7 +33,6 @@ import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
-import cs.vsu.taskbench.data.task.SuggestionRepository
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.BoxEdit
@@ -42,14 +40,12 @@ import cs.vsu.taskbench.ui.component.Chip
 import cs.vsu.taskbench.ui.component.CreateSubtaskField
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.Suggestion
-import cs.vsu.taskbench.ui.component.TextField
+import cs.vsu.taskbench.ui.create.TaskCreationScreenViewModel.TaskViewModel
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
-import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
 import org.koin.androidx.compose.koinViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -58,7 +54,8 @@ import org.koin.androidx.compose.koinViewModel
 fun TaskCreationScreen(
         navController: NavController,
 ) {
-    val viewModel = koinViewModel<TaskCreationScreenViewModel>()
+//    val viewModel = koinViewModel<TaskCreationScreenViewModel>()
+    val taskViewModel = koinViewModel<TaskViewModel>()
     Scaffold(
         bottomBar = {
             NavigationBar(navController)
@@ -66,23 +63,22 @@ fun TaskCreationScreen(
     ) { padding ->
 
         TaskCreationContent(
-            task = viewModel.task,
-            onTaskChange = { viewModel.task = it },
-            newSubtask = viewModel.newSubtask,
-            onNewSubtaskChange = { viewModel.newSubtask = it },
-            priority = viewModel.priority,
-            deadline = viewModel.deadline,
-            category = viewModel.category,
-            subtasks = viewModel.subtasks,
-            suggestions = viewModel.suggestions,
+            task = taskViewModel.content,
+            onTaskChange = {
+                taskViewModel.content = it
+                taskViewModel.updateSuggestions(it)},
+            newSubtask = taskViewModel.newSubtask,
+            onNewSubtaskChange = { taskViewModel.newSubtask = it },
+            priority = taskViewModel.priority,
+            deadline = taskViewModel.deadline,
+            category = taskViewModel.category,
+            subtasks = taskViewModel.subtasks,
+            suggestions = taskViewModel.suggestions,
             onDeadline = { },
             onPriority = { },
             onCategory = {},
             onSubtaskClick = {},
             onAddTask = {},
-            onSuggestionsChange = { newSuggestions ->
-                viewModel.updateSuggestions(newSuggestions)
-            }
         )
     }
 }
@@ -104,12 +100,10 @@ private fun TaskCreationContent(
     onCategory: () -> Unit,
     onSubtaskClick: () -> Unit,
     onAddTask: () -> Unit,
-    onSuggestionsChange: (List<String>) -> Unit,
 ){
 
-    val suggestionRepository = koinInject<SuggestionRepository>()
-    val scope = rememberCoroutineScope()
-    var suggestionsS by remember { mutableStateOf(listOf<String>()) }
+//    val suggestionRepository = koinInject<SuggestionRepository>()
+//    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -159,7 +153,7 @@ private fun TaskCreationContent(
                     color = DarkGray,
                 )
 
-                for (suggestion in suggestionsS) {
+                for (suggestion in suggestions) {
                     Suggestion(
                          text = suggestion,
                          onAdd = {},
@@ -202,12 +196,12 @@ private fun TaskCreationContent(
                 }
                 BoxEdit(
                     value = task,
-                    onValueChange =
-                        {
-                            onTaskChange(it)
-                            scope.launch { suggestionsS = suggestionRepository.getSuggestions(it) }
-
-                        },
+                    onValueChange = onTaskChange,
+//                        {
+//                            onTaskChange(it)
+//                            scope.launch { suggestions = suggestionRepository.getSuggestions(it) }
+//
+//                        },
                     buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
                     inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
                     placeholder = stringResource(R.string.label_task),
@@ -247,7 +241,6 @@ private fun Preview() {
             onCategory = {},
             onSubtaskClick = {},
             onAddTask = {},
-            onSuggestionsChange = {},
         )
     }
 }
