@@ -151,8 +151,8 @@ def task_list(request):
 
 
 # /tasks/{task_id} - PATCH, DELETE
-#пример:DELETE http://127.0.0.1:8000/api/tasks/2/
-#PATCH http://127.0.0.1:8000/api/tasks/1/
+#пример:DELETE http://127.0.0.1:8000/tasks/2/
+#PATCH http://127.0.0.1:8000/tasks/1/
 # {
 #   "content": "Подготовить отчетфыфыфыф",
 #   "dpc": {
@@ -252,7 +252,7 @@ def task_detail(request, task_id):
 
 
 # /subtasks - POST
-#http://127.0.0.1:8000/api/subtasks/?task_id=3
+#http://127.0.0.1:8000/subtasks/?task_id=3
 #{
 #   "content": "Новая подзадача2",
 #   "is_done": false
@@ -298,6 +298,69 @@ def subtask_create(request):
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+#PATCH (/subtasks/{subtask_id})
+#http://127.0.0.1:8000/subtasks/4/
+#{
+#   "content": "Обновленный текст подзадачи",
+#   "is_done": true
+# }
+#DELETE
+#http://127.0.0.1:8000/subtasks/4/
+#/subtasks/{subtask_id}
+@csrf_exempt
+def subtask_detail(request, subtask_id):
+    if request.method == 'PATCH':
+        try:
+            # Получаем подзадачу
+            try:
+                subtask = Subtask.objects.get(subtask_id=subtask_id)
+            except Subtask.DoesNotExist:
+                return JsonResponse({'error': 'Subtask not found'}, status=404)
+
+            # Парсим тело запроса
+            data = json.loads(request.body)
+
+            # Обновляем текст если он есть в запросе
+            if 'content' in data:
+                subtask.text = data['content']
+
+            # Обновляем статус если он есть в запросе
+            if 'is_done' in data:
+                subtask.is_completed = data['is_done']
+
+            subtask.save()
+
+            # Формируем ответ
+            response_data = {
+                "id": subtask.subtask_id,
+                "content": subtask.text,
+                "is_done": subtask.is_completed
+            }
+
+            return JsonResponse(response_data)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+    elif request.method == 'DELETE':
+        try:
+            # Получаем и сразу удаляем подзадачу
+            try:
+                subtask = Subtask.objects.get(subtask_id=subtask_id)
+                subtask.delete()
+                return HttpResponse(status=204)  # 204 No Content - стандартный ответ для успешного удаления
+            except Subtask.DoesNotExist:
+                return JsonResponse({'error': 'Subtask not found'}, status=404)
+
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     else:

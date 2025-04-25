@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 
 from django.urls import path, include
-from taskbench.views import task_list, task_detail, subtask_create
+from taskbench.views import task_list, task_detail, subtask_create, subtask_detail
 
 
 
@@ -26,8 +26,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     #path('api/tasks/', task_list, name='task_list'),
     path('tasks/', task_list, name='task_list'),  # Соответствует OpenAPI
-    path('api/tasks/<int:task_id>/', task_detail, name='task_detail'),
-    path('api/subtasks/', subtask_create, name='subtask_create'),
+    path('tasks/<int:task_id>/', task_detail, name='task_detail'), # PATCH/DELETE конкретной задачи
+    path('subtasks/', subtask_create, name='subtask_create'), # POST - создание подзадачи
+    path('subtasks/<int:subtask_id>/', subtask_detail, name='subtask_detail'), # PATCH/DELETE подзадачи
 ]
 
 
