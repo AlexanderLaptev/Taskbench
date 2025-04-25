@@ -1,11 +1,12 @@
 from datetime import datetime, timezone, UTC
 from django.test import SimpleTestCase
-from .services import SuggestionService
+# from ..services.suggestion_service import SuggestionService
+from ..services.suggestion_service import SuggestionService
 
 class SuggestionServiceTestCase(SimpleTestCase):
     def __init__(self, method_name: str = "runTest"):
         super().__init__(method_name)
-        self.SuggestionService = SuggestionService(debug=False)
+        self.SuggestionService = SuggestionService(debug=True)
 
     def setUp(self):
         pass

@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import User, Task, Subtask, Category, TaskCategory
-#НАЧАЛЬНЫЙ ВАРИАНТ
+from ..models.models import User, Task, Subtask, Category, TaskCategory
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
