@@ -1,8 +1,11 @@
 package cs.vsu.taskbench.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +25,7 @@ import cs.vsu.taskbench.domain.model.Statistics
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.WeekStatistics
 import cs.vsu.taskbench.ui.theme.DarkGray
+import cs.vsu.taskbench.ui.theme.White
 import org.koin.compose.koinInject
 import java.time.LocalDate
 
@@ -44,6 +48,7 @@ fun StatisticsScreen(
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(16.dp)
                 .padding(padding),
         ) {
@@ -63,7 +68,12 @@ fun StatisticsScreen(
             )
 
             val graphData = FloatArray(7) { statistics.graphData[it] }
-            WeekStatistics(graphData)
+            WeekStatistics(
+                levels = graphData,
+                modifier = Modifier
+                    .background(color = White, shape = RoundedCornerShape(10.dp))
+                    .padding(16.dp),
+            )
         }
     }
 }

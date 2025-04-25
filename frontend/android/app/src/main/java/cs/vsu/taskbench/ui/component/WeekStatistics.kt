@@ -66,7 +66,7 @@ fun WeekStatistics(
                         .size(width = 24.dp, height = 200.dp),
                 ) {
                     Box(
-                        modifier
+                        Modifier
                             .background(color = AccentYellow)
                             .width(24.dp)
                             .fillMaxHeight(levels[i])
