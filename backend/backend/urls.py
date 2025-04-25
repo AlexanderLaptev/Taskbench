@@ -32,21 +32,3 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
 
-
-# from rest_framework.routers import DefaultRouter
-# from taskbench.views import UserViewSet, TaskViewSet, SubtaskViewSet, CategoryViewSet, TaskCategoryViewSet
-#
-# #НАЧАЛЬНЫЙ ВАРИАНТ
-#
-# router = DefaultRouter()
-# router.register(r'users', UserViewSet)
-# router.register(r'tasks', TaskViewSet)
-# router.register(r'subtasks', SubtaskViewSet)
-# router.register(r'categories', CategoryViewSet)
-# router.register(r'taskcategories', TaskCategoryViewSet)
-#
-# urlpatterns = [
-#     path('admin/', admin.site.urls),  # Админка
-#     path('api/', include(router.urls)),  # Добавляем 'api/' перед всеми маршрутами
-# ]
-

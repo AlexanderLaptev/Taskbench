@@ -1,9 +1,6 @@
 import json
 
-from django.contrib.auth import update_session_auth_hash
 from django.http import JsonResponse
-from rest_framework.authentication import BasicAuthentication
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -14,7 +11,6 @@ from ..services.jwt_service import get_token_from_request
 
 
 class RegisterView(APIView):
-    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
@@ -34,7 +30,6 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
-    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
@@ -54,12 +49,11 @@ class LoginView(APIView):
         return Response(serializer.errors, status=400)
 
 class DeleteUserView(APIView):
-    permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
         token = get_token_from_request(request)
         print(token)
-        serializer = JwtSerializer(token)
+        serializer = JwtSerializer(data=token)
         if serializer.is_valid():
             user = serializer.validated_data['user']
             user.delete()
@@ -71,7 +65,6 @@ class DeleteUserView(APIView):
 
 
 class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
 
     def patch(self, request, *args, **kwargs):
         old_password = request.data.get('old_password')
@@ -95,7 +88,6 @@ class ChangePasswordView(APIView):
         return Response(status=204)
 
 class TokenRefreshView(APIView):
-    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)

@@ -11,5 +11,5 @@ from taskbench.serializers.serializers import UserSerializer
 def get_token_from_request(request: HttpRequest):
     auth_header = request.headers.get('Authorization', '')
     token = auth_header.split(' ')[1] if auth_header.startswith('Bearer ') else None
-    print(token)
+    print('got token', token)
     return {'token': token}
