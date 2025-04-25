@@ -2,8 +2,11 @@ package cs.vsu.taskbench.ui.list
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -47,7 +50,6 @@ fun TaskListScreen(
         }
 
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(padding),
@@ -55,29 +57,45 @@ fun TaskListScreen(
             items(
                 items = tasks,
                 key = { it.id!! },
-            ) {
-                val debug = "${it.id}, P=${it.isHighPriority}, C=${it.categoryId}"
-                var dismissed by remember { mutableStateOf(false) }
-                AnimatedVisibility(
-                    visible = !dismissed,
-                ) {
-                    TaskCard(
-                        deadlineText = DateTimeFormatter.ISO_DATE_TIME.format(it.deadline),
-                        bodyText = "[$debug] ${it.content}",
-                        subtasks = it.subtasks,
-                        onClick = { Log.d(TAG, "clicked task with id=${it.id}") },
-                        modifier = Modifier.padding(horizontal = 16.dp),
+            ) { task ->
+                val debug = "${task.id}, P=${task.isHighPriority}, C=${task.categoryId}"
+                val visible = remember { MutableTransitionState(true) }
 
-                        onDismiss = {
-                            dismissed = true
-                            Log.d(TAG, "dismissed task with id=${it.id}")
-                        },
+                with(visible) {
+                    LaunchedEffect(isIdle) {
+                        if (isIdle && !currentState) {
+                            taskRepository.deleteTask(task)
+                            tasks = taskRepository.getTasks(
+                                LocalDate.now(),
+                                TaskRepository.SortByMode.Priority
+                            )
+                        }
+                    }
+                }
 
-                        onSubtaskCheckedChange = { subtask, selected ->
-                            val verb = if (selected) "selected" else "deselected"
-                            Log.d(TAG, "$verb subtask with id=${subtask.id}")
-                        },
-                    )
+                AnimatedVisibility(visibleState = visible) {
+                    Column {
+                        Spacer(Modifier.height(8.dp))
+                        TaskCard(
+                            deadlineText = DateTimeFormatter.ISO_DATE_TIME.format(task.deadline),
+                            bodyText = "[$debug] ${task.content}",
+                            subtasks = task.subtasks,
+                            onClick = { Log.d(TAG, "clicked task with id=${task.id}") },
+                            modifier = Modifier
+                                .animateItem()
+                                .padding(horizontal = 16.dp),
+
+                            onDismiss = {
+                                visible.targetState = false
+                                Log.d(TAG, "dismissed task with id=${task.id}")
+                            },
+
+                            onSubtaskCheckedChange = { subtask, selected ->
+                                val verb = if (selected) "selected" else "deselected"
+                                Log.d(TAG, "$verb subtask with id=${subtask.id}")
+                            },
+                        )
+                    }
                 }
             }
         }
