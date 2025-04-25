@@ -29,4 +29,10 @@
     <string name="error_user_incorrect_password">Неверный пароль</string>
     <string name="error_no_internet">Отсутствует подключение к сети</string>
     <string name="error_unknown">Неизвестная ошибка</string>
+
+    <string name="label_deadline">Выбрать время</string>
+    <string name="label_category">Категория</string>
+    <string name="label_priority">Приоритет</string>
+    <string name="label_task">Введите вашу задачу</string>
+    <string name="label_subtask">Введите подзадачу</string>
 </resources>

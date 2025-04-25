@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -152,6 +153,9 @@ private fun SubtaskTemplate(
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
+    val isEnabled = value.text.isNotEmpty()
+    val iconTint = if (isEnabled) Color.Unspecified else Color.LightGray
+
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -198,9 +202,9 @@ private fun SubtaskTemplate(
         Icon(
             painter = painterResource(mainActionIcon),
             contentDescription = null,
-            tint = Color.Unspecified,
+            tint = iconTint,
             modifier = Modifier
-                .clickable(onClick = onMainAction)
+                .clickable(enabled = isEnabled, onClick = onMainAction)
                 .size(32.dp),
         )
     }

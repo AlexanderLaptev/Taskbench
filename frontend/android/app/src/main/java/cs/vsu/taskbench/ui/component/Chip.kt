@@ -37,6 +37,7 @@ fun Chip(
     textColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    placeholder: String = "",
     icon: Painter? = null,
 ) {
     Row(
@@ -59,7 +60,7 @@ fun Chip(
         }
 
         Text(
-            text = text,
+            text = if (text.isBlank()) placeholder else text,
             fontSize = 16.sp,
             color = textColor,
         )
@@ -77,6 +78,14 @@ private fun Preview() {
             Chip("lorem ipsum", White, LightGray, {})
             Chip("lorem ipsum", AccentYellow, Black, {})
             Chip("lorem ipsum", White, Black, {}, icon = painterResource(R.drawable.ic_clock))
+            Chip(
+                "",
+                White,
+                Black,
+                {},
+                icon = painterResource(R.drawable.ic_clock),
+                placeholder ="введите дедлайн"
+            )
         }
     }
 }
