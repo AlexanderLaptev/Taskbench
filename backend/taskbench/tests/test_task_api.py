@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
-from .models import Task, Subtask, TaskCategory, Category, User
+from ..models.models import Task, Subtask, TaskCategory, Category, User
 import json
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware

@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 
 from django.urls import path, include
-from taskbench.views import task_list, task_detail, subtask_create, subtask_detail
+from taskbench.views.task_views import task_list, task_detail, subtask_create, subtask_detail
 
 
 

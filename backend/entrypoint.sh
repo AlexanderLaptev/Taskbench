@@ -3,7 +3,7 @@
 echo "Applying database migrations..."
 #python manage.py makemigrations
 python manage.py migrate
-python manage.py test taskbench
+python manage.py test taskbench/tests/
 
 echo "Marking container as ready..."
 touch /tmp/app_ready

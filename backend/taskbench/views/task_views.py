@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_datetime
-from .models import Task, Subtask, TaskCategory
+from ..models.models import Task, Subtask, TaskCategory
 import json
 
 # /tasks - GET, POST
