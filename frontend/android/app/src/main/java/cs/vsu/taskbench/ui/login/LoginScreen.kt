@@ -1,6 +1,5 @@
 package cs.vsu.taskbench.ui.login
 
-import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -10,13 +9,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Scaffold
@@ -151,16 +156,12 @@ private val loginControlsModifier = Modifier
     .height(360.dp)
     .fillMaxWidth(0.9f)
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 private fun LoginScreenContent(
     snackbarHostState: SnackbarHostState,
     state: LoginScreenState,
 ) {
-    Scaffold(
-        containerColor = Beige,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { _ ->
+    Scaffold(containerColor = Beige) { padding ->
         // We ignore paddings since our background vector is already
         // edge-to-edge, and our layout is sufficiently far away from
         // the edges of the screen.
@@ -189,6 +190,21 @@ private fun LoginScreenContent(
                 modifier = Modifier.align(Alignment.Start),
             )
         }
+
+        val systemBarHeight = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier
+                .let {
+                    if (
+                        WindowInsets.ime
+                            .asPaddingValues()
+                            .calculateBottomPadding() > systemBarHeight
+                    ) it else it.padding(padding)
+                }
+                .imePadding()
+                .fillMaxSize(),
+        ) { SnackbarHost(snackbarHostState) }
     }
 }
 
