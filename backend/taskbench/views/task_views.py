@@ -15,6 +15,7 @@ from ..services.jwt_service import get_token_from_request
 #пример: GET http://127.0.0.1:8000/tasks/
 #GET http://127.0.0.1:8000/tasks/?sort_by=priority
 #GET http://127.0.0.1:8000/tasks/?sort_by=deadline
+#GET http://127.0.0.1:8000/tasks/?date=2026-05-25  - с фильтром по дате
 #POST http://127.0.0.1:8000/tasks/
 # {
 #     "content": "Подготовить презентацию",
