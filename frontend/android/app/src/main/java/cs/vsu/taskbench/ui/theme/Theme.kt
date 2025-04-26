@@ -10,6 +10,7 @@ fun TaskbenchTheme(
 ) {
     val colorScheme = lightColorScheme(
         background = Beige,
+        surface = Beige,
         onSurface = Black,
     )
 

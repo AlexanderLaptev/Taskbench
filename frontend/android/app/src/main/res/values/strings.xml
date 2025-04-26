@@ -29,4 +29,9 @@
     <string name="error_user_incorrect_password">Неверный пароль</string>
     <string name="error_no_internet">Отсутствует подключение к сети</string>
     <string name="error_unknown">Неизвестная ошибка</string>
+    <string name="button_no">Нет</string>
+    <string name="button_yes">Да</string>
+    <string name="button_ok">ОК</string>
+    <string name="button_cancel">Отмена</string>
+    <string name="dialog_select_time">Выберите время</string>
 </resources>
