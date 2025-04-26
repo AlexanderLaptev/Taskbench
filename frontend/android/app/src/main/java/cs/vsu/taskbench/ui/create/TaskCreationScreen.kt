@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,7 +31,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
@@ -73,11 +71,11 @@ fun TaskCreationScreen(
                 viewModel.content = it
                 viewModel.updateSuggestions(it)},
             newSubtask = viewModel.newSubtask,
-            onSubtaskClick = {
+            onNewSubtaskChange = { viewModel.newSubtask = it },
+            onCreateSubtaskClick = {
                 viewModel.createSubtask()
                 viewModel.newSubtask = ""
                              },
-            onNewSubtaskChange = { viewModel.newSubtask = it },
             priority = viewModel.priority,
             deadline = viewModel.deadline,
             category = viewModel.category,
@@ -87,7 +85,9 @@ fun TaskCreationScreen(
             onPriority = { },
             onCategory = {},
             onAddTask = {},
-        )
+            onRemoveSubtask = { subtask -> viewModel.removeSubtask(subtask)},
+            onAddSubtask = { subtask -> viewModel.addSubtask(subtask)},
+            )
     }
 }
 
@@ -97,6 +97,7 @@ private fun TaskCreationContent(
     onTaskChange: (String) -> Unit,
     newSubtask: String,
     onNewSubtaskChange: (String) -> Unit,
+    onCreateSubtaskClick: () -> Unit,
     priority: String,
     deadline: String,
     category: String,
@@ -105,8 +106,9 @@ private fun TaskCreationContent(
     onDeadline: () -> Unit,
     onPriority: () -> Unit,
     onCategory: () -> Unit,
-    onSubtaskClick: () -> Unit,
     onAddTask: () -> Unit,
+    onRemoveSubtask: (Subtask) -> Unit,
+    onAddSubtask: (Subtask) -> Unit,
 ){
     val visibilitySubtask = if (subtasks.isEmpty()) false else true
     val visibilitySuggestion = if (suggestions.isEmpty()) false else true
@@ -139,7 +141,7 @@ private fun TaskCreationContent(
                 text = newSubtask,
                 onTextChange = onNewSubtaskChange,
                 placeholder = stringResource(R.string.label_subtask),
-                onAddButtonClick = onSubtaskClick,
+                onAddButtonClick = onCreateSubtaskClick,
             )
 
             Column(
@@ -159,7 +161,7 @@ private fun TaskCreationContent(
                         AddedSubtask(
                             text = subtask.content,
                             onTextChange = { subtask.content },
-                            onRemove = {},
+                            onRemove = {onRemoveSubtask(subtask)},
                         )
                     }
                 }
@@ -172,7 +174,7 @@ private fun TaskCreationContent(
                     for (suggestion in suggestions) {
                         Suggestion(
                             text = suggestion.content,
-                            onAdd = {},
+                            onAdd = {onAddSubtask(suggestion)},
                         )
                     }
                 }
@@ -250,8 +252,10 @@ private fun Preview() {
             onDeadline = { },
             onPriority = { },
             onCategory = {},
-            onSubtaskClick = {},
+            onCreateSubtaskClick = {},
             onAddTask = {},
+            onRemoveSubtask = {},
+            onAddSubtask = {},
         )
     }
 }

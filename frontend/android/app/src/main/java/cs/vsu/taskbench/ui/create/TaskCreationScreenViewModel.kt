@@ -60,18 +60,24 @@ class TaskCreationScreenViewModel(
             //сохранение подтасков
         }
     }
-//
-//    fun addSubtask(){
-//        viewModelScope.launch {
-//            _subtasks.update { existingList -> existingList + subtask }
-//        }
-//    }
 
     fun createSubtask(){
         val subtask = Subtask(id = null, content = newSubtask, isDone = false)
-
         viewModelScope.launch {
-            _subtasks.update { existingList -> existingList + subtask }
+            _subtasks.update { it + subtask }
+        }
+    }
+
+    fun removeSubtask(subtask: Subtask){
+        viewModelScope.launch {
+            _subtasks.update { it - subtask }
+        }
+    }
+
+    fun addSubtask(subtask: Subtask){
+        viewModelScope.launch {
+            _subtasks.update {  it + subtask }
+            _suggestions.update { it - subtask }
         }
     }
 
@@ -100,12 +106,5 @@ class TaskCreationScreenViewModel(
             }
         }
     }
-
-//    fun addSubtask(){
-//        val subtask = Subtask(id = null, content = curentSubtask, isDone = false)
-//        subtasks += subtask
-//        _subtaskFlow.update { subtasks }
-//    }
-
 
 }
