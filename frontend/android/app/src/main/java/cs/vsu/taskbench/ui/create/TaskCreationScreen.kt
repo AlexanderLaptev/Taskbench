@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,11 +32,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.ui.ScreenTransitions
+import cs.vsu.taskbench.ui.component.AddedSubtask
 import cs.vsu.taskbench.ui.component.BoxEdit
 import cs.vsu.taskbench.ui.component.Chip
 import cs.vsu.taskbench.ui.component.CreateSubtaskField
@@ -70,7 +73,10 @@ fun TaskCreationScreen(
                 viewModel.content = it
                 viewModel.updateSuggestions(it)},
             newSubtask = viewModel.newSubtask,
-            onSubtaskClick = {},
+            onSubtaskClick = {
+                viewModel.createSubtask()
+                viewModel.newSubtask = ""
+                             },
             onNewSubtaskChange = { viewModel.newSubtask = it },
             priority = viewModel.priority,
             deadline = viewModel.deadline,
@@ -102,18 +108,22 @@ private fun TaskCreationContent(
     onSubtaskClick: () -> Unit,
     onAddTask: () -> Unit,
 ){
+    val visibilitySubtask = if (subtasks.isEmpty()) false else true
+    val visibilitySuggestion = if (suggestions.isEmpty()) false else true
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Beige)
     ){
-        Icon(
-            painter = painterResource(R.drawable.logo_full_dark),
-            contentDescription = "",
-            tint = Color.Unspecified,
-            modifier = Modifier.align(Alignment.Center)
-        )
+        if(!(visibilitySubtask || visibilitySuggestion)) {
+            Icon(
+                painter = painterResource(R.drawable.logo_full_dark),
+                contentDescription = "",
+                tint = Color.Unspecified,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
 
         Column(
             modifier = Modifier
@@ -125,7 +135,6 @@ private fun TaskCreationContent(
                     bottom = 96.dp
                 ),
         ) {
-
             CreateSubtaskField(
                 text = newSubtask,
                 onTextChange = onNewSubtaskChange,
@@ -136,27 +145,37 @@ private fun TaskCreationContent(
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
-                    .height(489.dp)
+                    .height(389.dp)
                     .verticalScroll(rememberScrollState())
                     .padding(top = 8.dp, bottom = 48.dp)
             ){
-                Text(
-                    text = stringResource(R.string.list_subtasks),
-                    fontSize = 14.sp,
-                    color = DarkGray,
-                )
-                Text(
-                    text = stringResource(R.string.list_suggestions),
-                    fontSize = 14.sp,
-                    color = DarkGray,
-                )
-
-                for (suggestion in suggestions) {
-                    Suggestion(
-                         text = suggestion.content,
-                         onAdd = {},
-                     )
-                 }
+                if(visibilitySubtask) {
+                    Text(
+                        text = stringResource(R.string.list_subtasks),
+                        fontSize = 14.sp,
+                        color = DarkGray
+                    )
+                    for (subtask in subtasks) {
+                        AddedSubtask(
+                            text = subtask.content,
+                            onTextChange = { subtask.content },
+                            onRemove = {},
+                        )
+                    }
+                }
+                if(visibilitySuggestion) {
+                    Text(
+                        text = stringResource(R.string.list_suggestions),
+                        fontSize = 14.sp,
+                        color = DarkGray,
+                    )
+                    for (suggestion in suggestions) {
+                        Suggestion(
+                            text = suggestion.content,
+                            onAdd = {},
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
