@@ -8,6 +8,9 @@ servers:
   - url: https://api.taskbench.ru/v1
     description: Production server
 
+security:
+  - BearerAuth: []
+
 paths:
   /ai/suggestions:
     post:
@@ -205,6 +208,108 @@ paths:
         '204':
           description: Subtask removed successfully
 
+  /user/register:
+    post:
+      summary: Create user and get json web tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: mySecret12
+      responses:
+        '201':
+          description: Successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                    example: 42
+                  access:
+                    type: string
+                    description: JWT access token
+                    example: eyJ0eXAiOiJKV1QiLCJhbGci...
+                  refresh:
+                    type: string
+                    description: JWT refresh token
+                    example: eyJ0eXAiOiJKV1QiLCJhbGci...
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Email already exists
+      security: []
+       
+  /user/login/:
+    post:
+      summary: Login an existing user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: mySecret123
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                    example: 42
+                  access:
+                    type: string
+                    description: JWT access token
+                    example: eyJ0eXAiOiJKV1QiLCJhbGci...
+                  refresh:
+                    type: string
+                    description: JWT refresh token
+                    example: eyJ0eXAiOiJKV1QiLCJhbGci...
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid email or password
+      security: []
+      
   /user/password:
     patch:
       summary: Change user password
@@ -222,6 +327,50 @@ paths:
       responses:
         '204':
           description: Password changed successfully
+
+  /user/delete:
+    delete:
+      summary: Delete an existing user
+      description: Delete the current authenticated user.
+      responses:
+        '200':
+          description: Successfully deleted user
+        '401':
+          description: Unauthorized — invalid or missing token
+        '404':
+          description: User not found
+      security:
+        - BearerAuth: []
+
+  /token/refresh/:
+    post:
+      summary: Refresh access token
+      description: Obtain a new access token using a valid refresh token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh
+              properties:
+                refresh:
+                  type: string
+                  example: eyJ0eXAiOiJKV1QiLCJhbGci...
+      responses:
+        '200':
+          description: New access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+                    example: eyJ0eXAiOiJKV1QiLCJhbGci...
+        '401':
+          description: Invalid or expired refresh token
 
   /bootstrap:
     get:
@@ -267,6 +416,13 @@ paths:
                     minItems: 7
 
 components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      
   schemas:
     DPC:
       type: object
