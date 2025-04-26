@@ -38,7 +38,7 @@
     <string name="list_subtasks">Подзадачи:</string>
     <string name="list_suggestions">Предложения ИИ:</string>
 
-    <string name="high_priority">Высокий приоритет</string>
-    <string name="low_priority">Низкий приоритет</string>
+    <string name="priority_high">Высокий приоритет</string>
+    <string name="priority_low">Низкий приоритет</string>
 
 </resources>

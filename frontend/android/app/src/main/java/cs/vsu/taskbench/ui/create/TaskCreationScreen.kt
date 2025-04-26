@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,7 +41,6 @@ import cs.vsu.taskbench.ui.component.Chip
 import cs.vsu.taskbench.ui.component.CreateSubtaskField
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.Suggestion
-import cs.vsu.taskbench.ui.create.TaskCreationScreenViewModel.TaskViewModel
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
@@ -54,8 +54,10 @@ import org.koin.androidx.compose.koinViewModel
 fun TaskCreationScreen(
         navController: NavController,
 ) {
-//    val viewModel = koinViewModel<TaskCreationScreenViewModel>()
-    val taskViewModel = koinViewModel<TaskViewModel>()
+    val viewModel = koinViewModel<TaskCreationScreenViewModel>()
+    val suggestions by viewModel.suggestions.collectAsState()
+    val subtasks by viewModel.subtasks.collectAsState()
+
     Scaffold(
         bottomBar = {
             NavigationBar(navController)
@@ -63,21 +65,21 @@ fun TaskCreationScreen(
     ) { padding ->
 
         TaskCreationContent(
-            task = taskViewModel.content,
+            task = viewModel.content,
             onTaskChange = {
-                taskViewModel.content = it
-                taskViewModel.updateSuggestions(it)},
-            newSubtask = taskViewModel.newSubtask,
-            onNewSubtaskChange = { taskViewModel.newSubtask = it },
-            priority = taskViewModel.priority,
-            deadline = taskViewModel.deadline,
-            category = taskViewModel.category,
-            subtasks = taskViewModel.subtasks,
-            suggestions = taskViewModel.suggestions,
+                viewModel.content = it
+                viewModel.updateSuggestions(it)},
+            newSubtask = viewModel.newSubtask,
+            onSubtaskClick = {},
+            onNewSubtaskChange = { viewModel.newSubtask = it },
+            priority = viewModel.priority,
+            deadline = viewModel.deadline,
+            category = viewModel.category,
+            subtasks = subtasks,
+            suggestions = suggestions,
             onDeadline = { },
             onPriority = { },
             onCategory = {},
-            onSubtaskClick = {},
             onAddTask = {},
         )
     }
@@ -93,17 +95,13 @@ private fun TaskCreationContent(
     deadline: String,
     category: String,
     subtasks: List<Subtask>,
-    suggestions: List<String>,
-//    suggestions: List<Subtask>,
+    suggestions: List<Subtask>,
     onDeadline: () -> Unit,
     onPriority: () -> Unit,
     onCategory: () -> Unit,
     onSubtaskClick: () -> Unit,
     onAddTask: () -> Unit,
 ){
-
-//    val suggestionRepository = koinInject<SuggestionRepository>()
-//    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -155,7 +153,7 @@ private fun TaskCreationContent(
 
                 for (suggestion in suggestions) {
                     Suggestion(
-                         text = suggestion,
+                         text = suggestion.content,
                          onAdd = {},
                      )
                  }
@@ -197,11 +195,6 @@ private fun TaskCreationContent(
                 BoxEdit(
                     value = task,
                     onValueChange = onTaskChange,
-//                        {
-//                            onTaskChange(it)
-//                            scope.launch { suggestions = suggestionRepository.getSuggestions(it) }
-//
-//                        },
                     buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
                     inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
                     placeholder = stringResource(R.string.label_task),
@@ -222,8 +215,7 @@ private fun Preview() {
     var deadline by remember { mutableStateOf("")}
     var category by remember { mutableStateOf("")}
     var subtasks: List<Subtask> by remember { mutableStateOf(emptyList())}
-//    var suggestions: List<Subtask> by remember { mutableStateOf(emptyList())}
-    var suggestions: List<String> by remember { mutableStateOf(emptyList())}
+    var suggestions: List<Subtask> by remember { mutableStateOf(emptyList())}
 
     TaskbenchTheme {
         TaskCreationContent(

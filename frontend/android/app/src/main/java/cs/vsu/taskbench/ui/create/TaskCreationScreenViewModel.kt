@@ -12,78 +12,100 @@ import cs.vsu.taskbench.data.task.SuggestionRepository
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class TaskCreationScreenViewModel() {
+class TaskCreationScreenViewModel(
+    private val taskRepository: TaskRepository,
+    private val suggestionRepository: SuggestionRepository,
+    private val categoryRepository: CategoryRepository,
+) : ViewModel(){
 
-    class TaskViewModel(
-        private val repoTask: TaskRepository,
-        private val repoSuggestions: SuggestionRepository,
-        private val repoCategory: CategoryRepository,
-    ) : ViewModel(){
-        var content by mutableStateOf("")
-        var newSubtask by mutableStateOf("")
-        var priority by mutableStateOf("")
-        var deadline by mutableStateOf("")
-        var category by mutableStateOf("")
-        val subtasks: List<Subtask> by mutableStateOf(emptyList())
-        var suggestions: List<Subtask> by mutableStateOf(emptyList())
+    var newSubtask by mutableStateOf("")
+    var content by mutableStateOf("")
+    var priority by mutableStateOf("")
+    var deadline by mutableStateOf("")
+    var category by mutableStateOf("")
 
-        private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    private val _subtasks = MutableStateFlow<List<Subtask>>(emptyList())
+    val subtasks = _subtasks.asStateFlow()
 
-        fun createTask(context: Context){
-            val task = Task(
-                id = null,
-                content = content,
-                deadline = deadlineConvertToDateTime(deadline),
-                isHighPriority = priority == context.getString(R.string.high_priority),
-                subtasks = subtasks,
-                categoryId = getCategoryId(category),
-            )
+    private val _suggestions = MutableStateFlow<List<Subtask>>(emptyList())
+    val suggestions = _suggestions.asStateFlow()
 
-            viewModelScope.launch {
-                repoTask.saveTask(task)
-            }
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
+    fun createTask(context: Context){
+        val task = Task(
+            id = null,
+            content = content,
+            deadline = deadlineConvertToDateTime(deadline),
+            isHighPriority = priority == context.getString(R.string.priority_high),
+            subtasks = _subtasks.value,
+            categoryId = getCategoryId(category),
+        )
+
+        viewModelScope.launch {
+            taskRepository.saveTask(task)
         }
 
-        fun deadlineConvertToDateTime(deadline: String): LocalDateTime{
-            return LocalDateTime.parse(deadline, dateTimeFormatter)
+        for (subtask in _subtasks.value){
+            //сохранение подтасков
         }
+    }
+//
+//    fun addSubtask(){
+//        viewModelScope.launch {
+//            _subtasks.update { existingList -> existingList + subtask }
+//        }
+//    }
 
-        fun deadlineConvertToString(deadline: LocalDateTime): String{
-            return deadline.format(dateTimeFormatter)
+    fun createSubtask(){
+        val subtask = Subtask(id = null, content = newSubtask, isDone = false)
+
+        viewModelScope.launch {
+            _subtasks.update { existingList -> existingList + subtask }
         }
+    }
 
-        fun getCategoryId(category: String): Int{
-            //find in repo
-            return 0
-        }
+    fun deadlineConvertToDateTime(deadline: String): LocalDateTime{
+        return LocalDateTime.parse(deadline, dateTimeFormatter)
+    }
 
-        fun updateSuggestions(it: String) {
-            viewModelScope.launch {
-                suggestions = repoSuggestions.getSuggestions(it)
+    fun deadlineConvertToString(deadline: LocalDateTime): String{
+        return deadline.format(dateTimeFormatter)
+    }
+
+    fun getCategoryId(category: String): Int{
+        //find in repo
+        return 0
+    }
+
+    fun updateSuggestions(it: String) {
+        viewModelScope.launch {
+            delay(300)
+            _suggestions.value = emptyList()
+
+            val newSuggestions = suggestionRepository.getSuggestions(it)
+
+            _suggestions.value = newSuggestions.map { content ->
+                Subtask(id = null, content = content, isDone = false)
             }
         }
     }
 
-    class SubTaskViewModel(
-        private val repoTask: TaskRepository,
-    ) : ViewModel(){
-        var curentSubtask by mutableStateOf("")
+//    fun addSubtask(){
+//        val subtask = Subtask(id = null, content = curentSubtask, isDone = false)
+//        subtasks += subtask
+//        _subtaskFlow.update { subtasks }
+//    }
 
-        private val _subtaskFlow = MutableStateFlow<List<Subtask>>()
-        val subtaskFlow = _subtaskFlow.asSharedFlow()
-
-        fun addSubtask(){
-            val subtask = Subtask(id = null, content = curentSubtask, isDone = false)
-            subtasks += subtask
-            _subtaskFlow.update { subtasks }
-        }
-    }
 
 }
