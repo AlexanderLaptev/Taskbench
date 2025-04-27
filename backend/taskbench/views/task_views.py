@@ -2,15 +2,21 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_datetime
+from rest_framework.views import APIView
+
 from ..models.models import Task, Subtask, TaskCategory
 import json
 
+from ..serializers.user_serializers import JwtSerializer
+from ..services.jwt_service import get_token_from_request
+
+
 # /tasks - GET, POST
-#пример: GET http://127.0.0.1:8000/tasks/?user_id=1
-#user_id явно в параметрах/теле запроса Это временное решение
-#GET http://127.0.0.1:8000/tasks/?user_id=1&sort_by=priority
-#GET http://127.0.0.1:8000/tasks/?user_id=1&sort_by=deadline
-#POST http://127.0.0.1:8000/tasks/?user_id=1
+#пример: GET http://127.0.0.1:8000/tasks/
+#GET http://127.0.0.1:8000/tasks/?sort_by=priority
+#GET http://127.0.0.1:8000/tasks/?sort_by=deadline
+#GET http://127.0.0.1:8000/tasks/?date=2026-05-25  - с фильтром по дате
+#POST http://127.0.0.1:8000/tasks/
 # {
 #     "content": "Подготовить презентацию",
 #     "dpc": {
@@ -27,37 +33,46 @@ import json
 #         }
 #     ]
 # }
-@csrf_exempt
-def task_list(request):
-    if request.method == 'GET':
+class TaskListView(APIView):
+    def get(self, request, *args, **kwargs):
         try:
-            # Получаем параметры запроса
+            # Get token from request and validate user
+            token = get_token_from_request(request)
+            serializer = JwtSerializer(data=token)
+            if not serializer.is_valid():
+                return JsonResponse({'error': 'Invalid token'}, status=401)
+            user = serializer.validated_data['user']
+
+            # Get request parameters
             category_id = request.GET.get('category_id')
             sort_by = request.GET.get('sort_by')
             date = request.GET.get('date')
             offset = int(request.GET.get('offset', 0))
             limit = int(request.GET.get('limit', 10))
-            user_id = request.GET.get('user_id')
 
-            if not user_id:
-                return JsonResponse({'error': 'user_id parameter is required'}, status=400)
-
-            # Базовый запрос - исключаем completed задачи
-            tasks = Task.objects.filter(user_id=user_id, is_completed=False) \
+            # Base query - exclude completed tasks
+            tasks = Task.objects.filter(user=user, is_completed=False) \
                 .prefetch_related('subtasks', 'task_categories__category')
 
-            # Применяем фильтры
+            # Apply filters
             if category_id:
                 tasks = tasks.filter(task_categories__category_id=category_id)
             if date:
                 tasks = tasks.filter(deadline__date=date)
-            if sort_by in ['priority', 'deadline']:
-                tasks = tasks.order_by(sort_by)
 
-            # Пагинация
+            # Apply sorting - primary by requested field, secondary by the other field
+            if sort_by == 'priority':
+                tasks = tasks.order_by('priority', 'deadline')  # Сначала по приоритету, потом по дедлайну
+            elif sort_by == 'deadline':
+                tasks = tasks.order_by('deadline', 'priority')  # Сначала по дедлайну, потом по приоритету
+            else:
+                # Default sorting if none specified
+                tasks = tasks.order_by('priority', 'deadline')
+
+            # Pagination
             tasks = tasks[offset:offset + limit]
 
-            # Формируем ответ
+            # Prepare response
             data = []
             for task in tasks:
                 category = task.task_categories.first().category if task.task_categories.first() else None
@@ -65,7 +80,7 @@ def task_list(request):
                 task_data = {
                     "id": task.task_id,
                     "content": task.title,
-                    "is_done": False,  # Все задачи здесь активные, поэтому всегда False
+                    "is_done": False,
                     "dpc": {
                         "deadline": task.deadline.isoformat(),
                         "priority": task.priority,
@@ -88,31 +103,37 @@ def task_list(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
-    elif request.method == 'POST':
+    def post(self, request, *args, **kwargs):
         try:
+            # Get token from request and validate user
+            token = get_token_from_request(request)
+            serializer = JwtSerializer(data=token)
+            if not serializer.is_valid():
+                return JsonResponse({'error': 'Invalid token'}, status=401)
+            user = serializer.validated_data['user']
+
             data = json.loads(request.body)
             task_text = data.get('content')
-            user_id = request.GET.get('user_id')  # Теперь берем из URL параметров
             dpc = data.get('dpc', {})
-            subtasks = data.get('subtasks', [])  # Получаем список подзадач
+            subtasks = data.get('subtasks', [])
 
-            if not all([task_text, user_id]):
-                return JsonResponse({'error': 'Missing required fields: content and user_id'}, status=400)
+            if not task_text:
+                return JsonResponse({'error': 'Missing required field: content'}, status=400)
 
-            # Создаем задачу
+            # Create task
             task = Task.objects.create(
                 title=task_text,
                 deadline=parse_datetime(dpc.get('deadline')) if dpc.get('deadline') else None,
                 priority=dpc.get('priority', 0),
-                user_id=user_id,
+                user=user,
                 is_completed=False
             )
 
-            # Добавляем категорию, если указана
+            # Add category if specified
             if 'category_id' in dpc:
                 TaskCategory.objects.create(task=task, category_id=dpc['category_id'])
 
-            # Создаем подзадачи
+            # Create subtasks
             for subtask_data in subtasks:
                 Subtask.objects.create(
                     text=subtask_data['content'],
@@ -120,7 +141,7 @@ def task_list(request):
                     is_completed=False
                 )
 
-            # Получаем обновленные данные задачи
+            # Get updated task data
             category = task.task_categories.first().category if task.task_categories.first() else None
             subtasks_data = [{
                 "id": s.subtask_id,
@@ -161,25 +182,35 @@ def task_list(request):
 #     "category_id": 5
 #   }
 # }
-
-@csrf_exempt
-def task_detail(request, task_id):
-    try:
-        task = Task.objects.get(task_id=task_id)
-    except Task.DoesNotExist:
-        return JsonResponse({'error': 'Task not found'}, status=404)
-
-    if request.method == 'DELETE':
+class TaskDetailView(APIView):
+    def get_task(self, task_id, user):
         try:
-            # Проверяем, не завершена ли задача уже
+            return Task.objects.get(task_id=task_id, user=user)
+        except Task.DoesNotExist:
+            return None
+
+    def delete(self, request, task_id, *args, **kwargs):
+        # Get token from request and validate user
+        token = get_token_from_request(request)
+        serializer = JwtSerializer(data=token)
+        if not serializer.is_valid():
+            return JsonResponse({'error': 'Invalid token'}, status=401)
+        user = serializer.validated_data['user']
+
+        task = self.get_task(task_id, user)
+        if not task:
+            return JsonResponse({'error': 'Task not found'}, status=404)
+
+        try:
+            # Check if task is already completed
             if task.is_completed:
                 return JsonResponse({'error': 'Task already completed'}, status=400)
 
-            # Помечаем задачу как выполненную
+            # Mark task as completed
             task.is_completed = True
             task.save()
 
-            # Возвращаем обновленную задачу
+            # Return updated task
             category = task.task_categories.first().category if task.task_categories.first() else None
             response_data = {
                 "id": task.task_id,
@@ -204,10 +235,21 @@ def task_detail(request, task_id):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
-    elif request.method == 'PATCH':
+    def patch(self, request, task_id, *args, **kwargs):
+        # Get token from request and validate user
+        token = get_token_from_request(request)
+        serializer = JwtSerializer(data=token)
+        if not serializer.is_valid():
+            return JsonResponse({'error': 'Invalid token'}, status=401)
+        user = serializer.validated_data['user']
+
+        task = self.get_task(task_id, user)
+        if not task:
+            return JsonResponse({'error': 'Task not found'}, status=404)
+
         try:
             data = json.loads(request.body)
-            # Обновляем только разрешенные поля задачи
+            # Update allowed task fields
             if 'content' in data:
                 task.title = data['content']
             if 'dpc' in data:
@@ -216,13 +258,13 @@ def task_detail(request, task_id):
                     task.deadline = parse_datetime(dpc['deadline']) if dpc['deadline'] else None
                 if 'priority' in dpc:
                     task.priority = dpc['priority']
-                # Обновляем только category_id (игнорируем category_name из запроса)
+                # Update only category_id (ignore category_name from request)
                 if 'category_id' in dpc:
                     task.task_categories.all().delete()
                     if dpc['category_id']:
                         TaskCategory.objects.create(task=task, category_id=dpc['category_id'])
             task.save()
-            # Формируем ответ с именем категории из БД
+            # Form response with category name from DB
             category = task.task_categories.first().category if task.task_categories.first() else None
             response_data = {
                 "id": task.task_id,
@@ -232,7 +274,7 @@ def task_detail(request, task_id):
                     "deadline": task.deadline.isoformat() if task.deadline else None,
                     "priority": task.priority,
                     "category_id": category.category_id if category else 0,
-                    "category_name": category.name if category else ""  # Берем имя из БД
+                    "category_name": category.name if category else ""
                 },
                 "subtasks": [
                     {
@@ -247,8 +289,6 @@ def task_detail(request, task_id):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 # /subtasks - POST
@@ -257,37 +297,44 @@ def task_detail(request, task_id):
 #   "content": "Новая подзадача2",
 #   "is_done": false
 # }
-@csrf_exempt
-def subtask_create(request):
-    if request.method == 'POST':
+
+class SubtaskCreateView(APIView):
+    def post(self, request, *args, **kwargs):
         try:
-            # Получаем task_id из параметров запроса
+            # Get token from request and validate user
+            token = get_token_from_request(request)
+            serializer = JwtSerializer(data=token)
+            if not serializer.is_valid():
+                return JsonResponse({'error': 'Invalid token'}, status=401)
+            user = serializer.validated_data['user']
+
+            # Get task_id from request parameters
             task_id = request.GET.get('task_id')
             if not task_id:
                 return JsonResponse({'error': 'task_id parameter is required'}, status=400)
 
-            # Проверяем существование задачи
+            # Check if task exists and belongs to user
             try:
-                task = Task.objects.get(task_id=task_id)
+                task = Task.objects.get(task_id=task_id, user=user)
             except Task.DoesNotExist:
                 return JsonResponse({'error': 'Task not found'}, status=404)
 
-            # Парсим тело запроса
+            # Parse request body
             data = json.loads(request.body)
             content = data.get('content')
-            is_done = data.get('is_done', False)  # По умолчанию False, если не указано
+            is_done = data.get('is_done', False)
 
             if not content:
                 return JsonResponse({'error': 'content is required'}, status=400)
 
-            # Создаем подзадачу
+            # Create subtask
             subtask = Subtask.objects.create(
                 text=content,
                 task=task,
                 is_completed=is_done
             )
 
-            # Формируем ответ
+            # Prepare response
             response_data = {
                 "id": subtask.subtask_id,
                 "content": subtask.text,
@@ -300,8 +347,6 @@ def subtask_create(request):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 #PATCH (/subtasks/{subtask_id})
@@ -313,30 +358,41 @@ def subtask_create(request):
 #DELETE
 #http://127.0.0.1:8000/subtasks/4/
 #/subtasks/{subtask_id}
-@csrf_exempt
-def subtask_detail(request, subtask_id):
-    if request.method == 'PATCH':
+class SubtaskDetailView(APIView):
+    def get_subtask(self, subtask_id, user):
         try:
-            # Получаем подзадачу
-            try:
-                subtask = Subtask.objects.get(subtask_id=subtask_id)
-            except Subtask.DoesNotExist:
+            return Subtask.objects.get(subtask_id=subtask_id, task__user=user)
+        except Subtask.DoesNotExist:
+            return None
+
+    def patch(self, request, subtask_id, *args, **kwargs):
+        try:
+            # Get token from request and validate user
+            token = get_token_from_request(request)
+            serializer = JwtSerializer(data=token)
+            if not serializer.is_valid():
+                return JsonResponse({'error': 'Invalid token'}, status=401)
+            user = serializer.validated_data['user']
+
+            # Get subtask
+            subtask = self.get_subtask(subtask_id, user)
+            if not subtask:
                 return JsonResponse({'error': 'Subtask not found'}, status=404)
 
-            # Парсим тело запроса
+            # Parse request body
             data = json.loads(request.body)
 
-            # Обновляем текст если он есть в запросе
+            # Update text if present in request
             if 'content' in data:
                 subtask.text = data['content']
 
-            # Обновляем статус если он есть в запросе
+            # Update status if present in request
             if 'is_done' in data:
                 subtask.is_completed = data['is_done']
 
             subtask.save()
 
-            # Формируем ответ
+            # Prepare response
             response_data = {
                 "id": subtask.subtask_id,
                 "content": subtask.text,
@@ -350,18 +406,22 @@ def subtask_detail(request, subtask_id):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
-
-    elif request.method == 'DELETE':
+    def delete(self, request, subtask_id, *args, **kwargs):
         try:
-            # Получаем и сразу удаляем подзадачу
-            try:
-                subtask = Subtask.objects.get(subtask_id=subtask_id)
-                subtask.delete()
-                return HttpResponse(status=204)  # 204 No Content - стандартный ответ для успешного удаления
-            except Subtask.DoesNotExist:
+            # Get token from request and validate user
+            token = get_token_from_request(request)
+            serializer = JwtSerializer(data=token)
+            if not serializer.is_valid():
+                return JsonResponse({'error': 'Invalid token'}, status=401)
+            user = serializer.validated_data['user']
+
+            # Get and delete subtask
+            subtask = self.get_subtask(subtask_id, user)
+            if not subtask:
                 return JsonResponse({'error': 'Subtask not found'}, status=404)
+
+            subtask.delete()
+            return HttpResponse(status=204)
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
