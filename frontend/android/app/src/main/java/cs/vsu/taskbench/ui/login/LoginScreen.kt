@@ -1,6 +1,5 @@
 package cs.vsu.taskbench.ui.login
 
-import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -10,13 +9,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Scaffold
@@ -54,6 +59,7 @@ import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.TextField
+import cs.vsu.taskbench.ui.login.LoginScreenViewModel.Event.Error
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightYellow
@@ -94,11 +100,22 @@ fun LoginScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is LoginScreenViewModel.Event.Error -> scope.launch {
+                is Error -> scope.launch {
+                    val messageId = when (event) {
+                        Error.EmptyEmail -> R.string.error_empty_email
+                        Error.InvalidEmail -> R.string.error_invalid_email
+                        Error.EmptyPassword -> R.string.error_empty_password
+                        Error.PasswordsDoNotMatch -> R.string.error_passwords_do_not_match
+                        Error.UserDoesNotExist -> R.string.error_user_does_not_exist
+                        Error.UserAlreadyExists -> R.string.error_user_already_exists
+                        Error.IncorrectPassword -> R.string.error_user_incorrect_password
+                        Error.NoInternet -> R.string.error_no_internet
+                        Error.Unknown -> R.string.error_unknown
+                    }
                     with(snackbarHostState) {
                         currentSnackbarData?.dismiss()
                         showSnackbar(
-                            resources.getString(event.messageId),
+                            resources.getString(messageId),
                             withDismissAction = true
                         )
                     }
@@ -151,16 +168,12 @@ private val loginControlsModifier = Modifier
     .height(360.dp)
     .fillMaxWidth(0.9f)
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 private fun LoginScreenContent(
     snackbarHostState: SnackbarHostState,
     state: LoginScreenState,
 ) {
-    Scaffold(
-        containerColor = Beige,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { _ ->
+    Scaffold(containerColor = Beige) { padding ->
         // We ignore paddings since our background vector is already
         // edge-to-edge, and our layout is sufficiently far away from
         // the edges of the screen.
@@ -189,6 +202,21 @@ private fun LoginScreenContent(
                 modifier = Modifier.align(Alignment.Start),
             )
         }
+
+        val systemBarHeight = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier
+                .let {
+                    if (
+                        WindowInsets.ime
+                            .asPaddingValues()
+                            .calculateBottomPadding() > systemBarHeight
+                    ) it else it.padding(padding)
+                }
+                .imePadding()
+                .fillMaxSize(),
+        ) { SnackbarHost(snackbarHostState) }
     }
 }
 
