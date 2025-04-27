@@ -2,13 +2,11 @@ package cs.vsu.taskbench.ui.login
 
 import android.util.Log
 import android.util.Patterns
-import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.AuthService.LoginResult
 import cs.vsu.taskbench.data.auth.AuthService.SignUpResult
@@ -31,18 +29,17 @@ class LoginScreenViewModel(
         SignUp,
     }
 
-
     sealed interface Event {
-        enum class Error(@StringRes val messageId: Int) : Event {
-            EmptyEmail(R.string.error_empty_email),
-            InvalidEmail(R.string.error_invalid_email),
-            EmptyPassword(R.string.error_empty_password),
-            PasswordsDoNotMatch(R.string.error_passwords_do_not_match),
-            UserDoesNotExist(R.string.error_user_does_not_exist),
-            UserAlreadyExists(R.string.error_user_already_exists),
-            IncorrectPassword(R.string.error_user_incorrect_password),
-            NoInternet(R.string.error_no_internet),
-            Unknown(R.string.error_unknown),
+        enum class Error : Event {
+            EmptyEmail,
+            InvalidEmail,
+            EmptyPassword,
+            PasswordsDoNotMatch,
+            UserDoesNotExist,
+            UserAlreadyExists,
+            IncorrectPassword,
+            NoInternet,
+            Unknown,
         }
 
         data object LoggedIn : Event
