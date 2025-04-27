@@ -17,7 +17,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -56,8 +56,12 @@ fun TaskCreationScreen(
         navController: NavController,
 ) {
     val viewModel = koinViewModel<TaskCreationScreenViewModel>()
-    val suggestions by viewModel.suggestions.collectAsState()
-    val subtasks by viewModel.subtasks.collectAsState()
+    val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
+    val subtasks by viewModel.subtasks.collectAsStateWithLifecycle()
+
+    val deadline by viewModel.deadline.collectAsStateWithLifecycle()
+    val highPriority by viewModel.highPriority.collectAsStateWithLifecycle()
+    val category by viewModel.category.collectAsStateWithLifecycle()
 
     Scaffold(
         bottomBar = {
@@ -66,25 +70,26 @@ fun TaskCreationScreen(
     ) { padding ->
 
         TaskCreationContent(
-            task = viewModel.content,
+            task = viewModel.contentInput,
             onTaskChange = {
-                viewModel.content = it
+                viewModel.contentInput = it
                 viewModel.updateSuggestions(it)},
-            newSubtask = viewModel.newSubtask,
-            onNewSubtaskChange = { viewModel.newSubtask = it },
+            newSubtask = viewModel.subtaskInput,
+            onNewSubtaskChange = { viewModel.subtaskInput = it },
             onCreateSubtaskClick = {
                 viewModel.addSubtask()
-                viewModel.newSubtask = ""
+                viewModel.subtaskInput = ""
                              },
-            priority = viewModel.priority,
-            deadline = viewModel.deadline,
-            category = viewModel.category,
+
+            deadline = "TODO",
+            priority = if (highPriority) "высокий приоритет" else "обычный приоритет",
+            category = "TODO",
             subtasks = subtasks,
             suggestions = suggestions,
             onDeadline = { },
             onPriority = { },
             onCategory = {},
-            onAddTask = { viewModel.saveSubtask() },
+            onAddTask = { viewModel.saveTask() },
             onRemoveSubtask = { subtask -> viewModel.removeSubtask(subtask)},
             onAddSubtask = { subtask -> viewModel.addSuggestion(subtask) },
             )
