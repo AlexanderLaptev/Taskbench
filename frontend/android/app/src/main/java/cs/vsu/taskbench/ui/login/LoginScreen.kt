@@ -59,6 +59,7 @@ import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.TextField
+import cs.vsu.taskbench.ui.login.LoginScreenViewModel.Event.Error
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightYellow
@@ -99,11 +100,22 @@ fun LoginScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is LoginScreenViewModel.Event.Error -> scope.launch {
+                is Error -> scope.launch {
+                    val messageId = when (event) {
+                        Error.EmptyEmail -> R.string.error_empty_email
+                        Error.InvalidEmail -> R.string.error_invalid_email
+                        Error.EmptyPassword -> R.string.error_empty_password
+                        Error.PasswordsDoNotMatch -> R.string.error_passwords_do_not_match
+                        Error.UserDoesNotExist -> R.string.error_user_does_not_exist
+                        Error.UserAlreadyExists -> R.string.error_user_already_exists
+                        Error.IncorrectPassword -> R.string.error_user_incorrect_password
+                        Error.NoInternet -> R.string.error_no_internet
+                        Error.Unknown -> R.string.error_unknown
+                    }
                     with(snackbarHostState) {
                         currentSnackbarData?.dismiss()
                         showSnackbar(
-                            resources.getString(event.messageId),
+                            resources.getString(messageId),
                             withDismissAction = true
                         )
                     }
