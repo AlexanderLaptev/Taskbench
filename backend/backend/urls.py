@@ -29,6 +29,7 @@ from taskbench.views.task_views import (
     TaskDetailView,
     SubtaskCreateView,
     SubtaskDetailView,
+    CategoryListView
 )
 
 urlpatterns = [
@@ -41,6 +42,8 @@ urlpatterns = [
     # Subtasks endpoints
     path('subtasks/', SubtaskCreateView.as_view(), name='subtask_create'),
     path('subtasks/<int:subtask_id>/', SubtaskDetailView.as_view(), name='subtask_detail'),
+
+    path('categories/', CategoryListView.as_view(), name='categories'),
 
     path('user/register/', RegisterView.as_view(), name='register'), # POST - создание пользователя
     path('user/login', LoginView.as_view(), name='login'), # POST - валидация пользователя, возвращение jwt

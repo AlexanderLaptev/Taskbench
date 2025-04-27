@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_datetime
 from rest_framework.views import APIView
 
-from ..models.models import Task, Subtask, TaskCategory
+from ..models.models import Task, Subtask, TaskCategory, Category
 import json
 
 from ..serializers.user_serializers import JwtSerializer
@@ -423,5 +423,70 @@ class SubtaskDetailView(APIView):
             subtask.delete()
             return HttpResponse(status=204)
 
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+# GET
+# http://127.0.0.1:8000/categories/
+# POST
+# {
+#     "name": "Хехе"
+# }
+class CategoryListView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Аутентификация
+            token = get_token_from_request(request)
+            serializer = JwtSerializer(data=token)
+            if not serializer.is_valid():
+                return JsonResponse({'error': 'Invalid token'}, status=401)
+            user = serializer.validated_data['user']
+
+            categories = Category.objects.filter(user=user)
+
+            data = [{
+                "id": category.category_id,
+                "name": category.name
+            } for category in categories]
+
+            return JsonResponse(data, safe=False)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            token = get_token_from_request(request)
+            serializer = JwtSerializer(data=token)
+            if not serializer.is_valid():
+                return JsonResponse({'error': 'Invalid token'}, status=401)
+            user = serializer.validated_data['user']
+
+            data = json.loads(request.body)
+            category_name = data.get('name')
+
+            if not category_name:
+                return JsonResponse({'error': 'Name is required'}, status=400)
+
+            if len(category_name) > 50:
+                return JsonResponse({'error': 'Category name too long (max 50 chars)'}, status=400)
+
+            if Category.objects.filter(user=user, name=category_name).exists():
+                return JsonResponse({'error': 'Category already exists'}, status=409)
+
+            # Создание категории
+            category = Category.objects.create(
+                name=category_name,
+                user=user
+            )
+
+            return JsonResponse({
+                "id": category.category_id,
+                "name": category.name
+            }, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
