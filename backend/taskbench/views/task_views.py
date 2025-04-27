@@ -131,7 +131,17 @@ class TaskListView(APIView):
 
             # Add category if specified
             if 'category_id' in dpc:
-                TaskCategory.objects.create(task=task, category_id=dpc['category_id'])
+                category_id = dpc['category_id']
+                try:
+                    # Проверяем что категория принадлежит текущему пользователю
+                    category = Category.objects.get(category_id=category_id, user=user)
+                except Category.DoesNotExist:
+                    return JsonResponse(
+                        {'error': 'Category not found or access denied'},
+                        status=400
+                    )
+
+                TaskCategory.objects.create(task=task, category=category)
 
             # Create subtasks
             for subtask_data in subtasks:
@@ -258,12 +268,22 @@ class TaskDetailView(APIView):
                     task.deadline = parse_datetime(dpc['deadline']) if dpc['deadline'] else None
                 if 'priority' in dpc:
                     task.priority = dpc['priority']
-                # Update only category_id (ignore category_name from request)
                 if 'category_id' in dpc:
                     task.task_categories.all().delete()
                     if dpc['category_id']:
-                        TaskCategory.objects.create(task=task, category_id=dpc['category_id'])
-            task.save()
+                        try:
+                            # Проверяем, что категория принадлежит текущему пользователю
+                            category = Category.objects.get(
+                                category_id=dpc['category_id'],
+                                user=user
+                            )
+                            TaskCategory.objects.create(task=task, category=category)
+                        except Category.DoesNotExist:
+                            return JsonResponse(
+                                {'error': 'Category not found or access denied'},
+                                status=400
+                            )
+                task.save()
             # Form response with category name from DB
             category = task.task_categories.first().category if task.task_categories.first() else None
             response_data = {
