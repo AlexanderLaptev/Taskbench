@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,19 +46,20 @@ import cs.vsu.taskbench.ui.component.Chip
 import cs.vsu.taskbench.ui.component.CreateSubtaskField
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.Suggestion
+import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
+import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
 import org.koin.androidx.compose.koinViewModel
+import java.time.LocalDateTime
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
-fun TaskCreationScreen(
-        navController: NavController,
-) {
+fun TaskCreationScreen(navController: NavController) {
     val viewModel = koinViewModel<TaskCreationScreenViewModel>()
     val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
     val subtasks by viewModel.subtasks.collectAsStateWithLifecycle()
@@ -68,62 +73,66 @@ fun TaskCreationScreen(
             NavigationBar(navController)
         }
     ) { padding ->
-
+        val imePadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
         TaskCreationContent(
-            task = viewModel.contentInput,
-            onTaskChange = {
+            contentInput = viewModel.contentInput,
+            subtaskInput = viewModel.subtaskInput,
+            onSubtaskInputChange = { viewModel.subtaskInput = it },
+            deadline = deadline,
+            highPriority = highPriority,
+            category = category?.name ?: "",
+            subtasks = subtasks,
+            suggestions = suggestions,
+            onDeadlineClick = {},
+            onPriorityClick = {},
+            onCategoryClick = {},
+            onSaveTask = { viewModel.saveTask() },
+            onRemoveSubtask = { subtask -> viewModel.removeSubtask(subtask) },
+            onAddSubtask = { subtask -> viewModel.addSuggestion(subtask) },
+            modifier = Modifier.padding(
+                top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding(),
+                bottom = if (imePadding > 0.dp) imePadding else padding.calculateBottomPadding()
+            ),
+
+            onContentInputChange = {
                 viewModel.contentInput = it
-                viewModel.updateSuggestions(it)},
-            newSubtask = viewModel.subtaskInput,
-            onNewSubtaskChange = { viewModel.subtaskInput = it },
+                viewModel.updateSuggestions(it)
+            },
+
             onCreateSubtaskClick = {
                 viewModel.addSubtask()
                 viewModel.subtaskInput = ""
-                             },
-
-            deadline = "TODO",
-            priority = if (highPriority) "высокий приоритет" else "обычный приоритет",
-            category = "TODO",
-            subtasks = subtasks,
-            suggestions = suggestions,
-            onDeadline = { },
-            onPriority = { },
-            onCategory = {},
-            onAddTask = { viewModel.saveTask() },
-            onRemoveSubtask = { subtask -> viewModel.removeSubtask(subtask)},
-            onAddSubtask = { subtask -> viewModel.addSuggestion(subtask) },
-            )
+            },
+        )
     }
 }
 
 @Composable
 private fun TaskCreationContent(
-    task: String,
-    onTaskChange: (String) -> Unit,
-    newSubtask: String,
-    onNewSubtaskChange: (String) -> Unit,
+    contentInput: String,
+    onContentInputChange: (String) -> Unit,
+    subtaskInput: String,
+    onSubtaskInputChange: (String) -> Unit,
     onCreateSubtaskClick: () -> Unit,
-    priority: String,
-    deadline: String,
+    highPriority: Boolean,
+    deadline: LocalDateTime?,
     category: String,
     subtasks: List<Subtask>,
     suggestions: List<Subtask>,
-    onDeadline: () -> Unit,
-    onPriority: () -> Unit,
-    onCategory: () -> Unit,
-    onAddTask: () -> Unit,
+    onDeadlineClick: () -> Unit,
+    onPriorityClick: () -> Unit,
+    onCategoryClick: () -> Unit,
+    onSaveTask: () -> Unit,
     onRemoveSubtask: (Subtask) -> Unit,
     onAddSubtask: (Subtask) -> Unit,
-){
-    val visibilitySubtask = if (subtasks.isEmpty()) false else true
-    val visibilitySuggestion = if (suggestions.isEmpty()) false else true
-
+    modifier: Modifier = Modifier,
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(color = Beige)
-    ){
-        if(!(visibilitySubtask || visibilitySuggestion)) {
+    ) {
+        if (subtasks.isEmpty() && suggestions.isEmpty()) {
             Icon(
                 painter = painterResource(R.drawable.logo_full_dark),
                 contentDescription = "",
@@ -134,132 +143,137 @@ private fun TaskCreationContent(
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 48.dp,
-                    bottom = 96.dp
-                ),
+                .padding(16.dp)
+                .fillMaxSize(),
         ) {
             CreateSubtaskField(
-                text = newSubtask,
-                onTextChange = onNewSubtaskChange,
+                text = subtaskInput,
+                onTextChange = onSubtaskInputChange,
                 placeholder = stringResource(R.string.label_subtask),
                 onAddButtonClick = onCreateSubtaskClick,
             )
 
-            Column(
+            LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
-                    .height(389.dp)
-                    .verticalScroll(rememberScrollState())
+                    .weight(1.0f)
                     .padding(top = 8.dp, bottom = 48.dp)
-            ){
-                if(visibilitySubtask) {
-                    Text(
-                        text = stringResource(R.string.list_subtasks),
-                        fontSize = 14.sp,
-                        color = DarkGray
-                    )
-                    for (subtask in subtasks) {
+            ) {
+                // TODO: make keys unique
+                if (subtasks.isNotEmpty()) {
+                    item(key = 0) {
+                        Text(
+                            text = stringResource(R.string.list_subtasks),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DarkGray,
+                        )
+                    }
+                    items(subtasks, key = { it.content }) { subtask ->
                         AddedSubtask(
                             text = subtask.content,
                             onTextChange = { subtask.content },
-                            onRemove = {onRemoveSubtask(subtask)},
+                            onRemove = { onRemoveSubtask(subtask) },
+                            modifier = Modifier.animateItem(),
                         )
                     }
                 }
-                if(visibilitySuggestion) {
-                    Text(
-                        text = stringResource(R.string.list_suggestions),
-                        fontSize = 14.sp,
-                        color = DarkGray,
-                    )
-                    for (suggestion in suggestions) {
+
+                if (suggestions.isNotEmpty()) {
+                    item(key = 1) {
+                        Text(
+                            text = stringResource(R.string.list_suggestions),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = DarkGray,
+                        )
+                    }
+                    items(suggestions, key = { it.content }) { suggestion ->
                         Suggestion(
                             text = suggestion.content,
-                            onAdd = {onAddSubtask(suggestion)},
+                            onAdd = { onAddSubtask(suggestion) },
+                            modifier = Modifier.animateItem(),
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
             Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                 ) {
                     Chip(
+                        text = if (deadline != null) {
+                            ""
+                        } else stringResource(R.string.label_deadline), // TODO: format date
+
                         icon = painterResource(R.drawable.ic_clock),
-                        text = "",
+                        textColor = if (deadline != null) Black else LightGray,
                         color = White,
-                        textColor = Black,
-                        onClick = {},
-                        placeholder = stringResource(R.string.label_deadline)
+                        onClick = onDeadlineClick,
                     )
                     Chip(
-                        text = "",
-                        color = White,
+                        text = stringResource(
+                            if (highPriority) {
+                                R.string.priority_high
+                            } else R.string.priority_low
+                        ),
+
+                        color = if (highPriority) AccentYellow else White,
                         textColor = Black,
-                        onClick = {},
-                        placeholder = stringResource(R.string.label_priority)
+                        onClick = onPriorityClick,
                     )
                     Chip(
-                        text = "",
+                        text = category.ifEmpty { stringResource(R.string.label_category) },
                         color = White,
-                        textColor = Black,
-                        onClick = {},
-                        placeholder = stringResource(R.string.label_category)
+                        textColor = if (category.isEmpty()) LightGray else Black,
+                        onClick = onCategoryClick,
                     )
                 }
+
                 BoxEdit(
-                    value = task,
-                    onValueChange = onTaskChange,
+                    value = contentInput,
+                    onValueChange = onContentInputChange,
                     buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
                     inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
                     placeholder = stringResource(R.string.label_task),
-                    onClick = onAddTask
+                    onClick = onSaveTask,
                 )
             }
-
         }
     }
 }
 
-
 @Preview
 @Composable
 private fun Preview() {
-    var task by remember { mutableStateOf("")}
-    var newSubtask by remember { mutableStateOf("")}
-    var priority by remember { mutableStateOf("")}
-    var deadline by remember { mutableStateOf("")}
-    var category by remember { mutableStateOf("")}
-    var subtasks: List<Subtask> by remember { mutableStateOf(emptyList())}
-    var suggestions: List<Subtask> by remember { mutableStateOf(emptyList())}
+    var task by remember { mutableStateOf("") }
+    var newSubtask by remember { mutableStateOf("") }
+    val highPriority by remember { mutableStateOf(false) }
+    val deadline by remember { mutableStateOf(LocalDateTime.now()) }
+    val category by remember { mutableStateOf("") }
+    val subtasks: List<Subtask> by remember { mutableStateOf(emptyList()) }
+    val suggestions: List<Subtask> by remember { mutableStateOf(emptyList()) }
 
     TaskbenchTheme {
         TaskCreationContent(
-            task = task,
-            onTaskChange = { task = it },
-            newSubtask = newSubtask,
-            onNewSubtaskChange = { newSubtask = it },
-            priority = priority,
+            contentInput = task,
+            onContentInputChange = { task = it },
+            subtaskInput = newSubtask,
+            onSubtaskInputChange = { newSubtask = it },
+            highPriority = highPriority,
             deadline = deadline,
             category = category,
             subtasks = subtasks,
             suggestions = suggestions,
-            onDeadline = { },
-            onPriority = { },
-            onCategory = {},
+            onDeadlineClick = {},
+            onPriorityClick = {},
+            onCategoryClick = {},
             onCreateSubtaskClick = {},
-            onAddTask = {},
+            onSaveTask = {},
             onRemoveSubtask = {},
             onAddSubtask = {},
         )

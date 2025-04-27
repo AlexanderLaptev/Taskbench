@@ -1,6 +1,5 @@
 package cs.vsu.taskbench.ui.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -13,10 +12,12 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
@@ -30,6 +31,8 @@ import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
 
+private val shape = RoundedCornerShape(10.dp)
+
 @Composable
 fun Chip(
     text: String,
@@ -37,22 +40,24 @@ fun Chip(
     textColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    placeholder: String = "",
     icon: Painter? = null,
+    iconTint: Color = Color.Unspecified,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .clip(shape)
             .clickable(onClick = onClick)
-            .background(color = color, shape = RoundedCornerShape(10.dp))
+            .background(color = color, shape = shape)
             .requiredHeight(32.dp)
             .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
         if (icon != null) {
-            Image(
+            Icon(
                 painter = icon,
                 contentDescription = null,
+                tint = iconTint,
                 modifier = Modifier
                     .size(20.dp)
                     .aspectRatio(1.0f),
@@ -60,7 +65,7 @@ fun Chip(
         }
 
         Text(
-            text = if (text.isBlank()) placeholder else text,
+            text = text,
             fontSize = 16.sp,
             color = textColor,
         )
@@ -78,14 +83,6 @@ private fun Preview() {
             Chip("lorem ipsum", White, LightGray, {})
             Chip("lorem ipsum", AccentYellow, Black, {})
             Chip("lorem ipsum", White, Black, {}, icon = painterResource(R.drawable.ic_clock))
-            Chip(
-                "",
-                White,
-                Black,
-                {},
-                icon = painterResource(R.drawable.ic_clock),
-                placeholder ="введите дедлайн"
-            )
         }
     }
 }

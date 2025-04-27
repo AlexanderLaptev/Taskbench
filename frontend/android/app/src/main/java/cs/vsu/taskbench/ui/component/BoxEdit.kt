@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -26,6 +25,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.theme.Black
-import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
@@ -65,6 +64,7 @@ fun BoxEdit(
     val currentIcon = if (isEnabled) buttonIcon else inactiveButtonIcon
 
     val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.Bottom,
@@ -72,15 +72,18 @@ fun BoxEdit(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-            ) { focusRequester.requestFocus() }
-            .heightIn(min = 140.dp, max = 180.dp)
+            ) {
+                focusRequester.requestFocus()
+                keyboardController?.show()
+            }
+            .heightIn(min = 90.dp, max = 180.dp)
             .fillMaxWidth()
             .background(color = White, shape = RoundedCornerShape(10.dp))
             .padding(
                 start = 16.dp,
                 top = 16.dp,
-                bottom = 8.dp,
-                end = 8.dp,
+                bottom = 4.dp,
+                end = 4.dp,
             ),
     ) {
         BasicTextField(
@@ -108,13 +111,12 @@ fun BoxEdit(
         IconButton(
             onClick = onClick,
             enabled = isEnabled,
-            modifier = Modifier.requiredSize(32.dp),
         ) {
             Image(
                 painter = currentIcon,
                 contentDescription = null,
-                modifier = Modifier.size(28.dp),
                 colorFilter = iconTint,
+                modifier = Modifier.size(32.dp),
             )
         }
     }
