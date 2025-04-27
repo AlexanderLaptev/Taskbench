@@ -73,7 +73,7 @@ fun TaskCreationScreen(
             newSubtask = viewModel.newSubtask,
             onNewSubtaskChange = { viewModel.newSubtask = it },
             onCreateSubtaskClick = {
-                viewModel.createSubtask()
+                viewModel.addSubtask()
                 viewModel.newSubtask = ""
                              },
             priority = viewModel.priority,
@@ -84,9 +84,9 @@ fun TaskCreationScreen(
             onDeadline = { },
             onPriority = { },
             onCategory = {},
-            onAddTask = {viewModel.createTask()},
+            onAddTask = { viewModel.saveSubtask() },
             onRemoveSubtask = { subtask -> viewModel.removeSubtask(subtask)},
-            onAddSubtask = { subtask -> viewModel.addSubtask(subtask)},
+            onAddSubtask = { subtask -> viewModel.addSuggestion(subtask) },
             )
     }
 }
