@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.ui.create
 
+import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,23 +43,34 @@ class TaskCreationScreenViewModel(
 
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-    fun createTask(context: Context){
+    fun createTask(){
         val task = Task(
             id = null,
             content = content,
             deadline = deadlineConvertToDateTime(deadline),
-            isHighPriority = priority == context.getString(R.string.priority_high),
+//            isHighPriority = priority == context.getString(R.string.priority_high), надо передавать Context
+            isHighPriority = priority == "Высокий приоритет",
             subtasks = _subtasks.value,
             categoryId = getCategoryId(category),
         )
-
         viewModelScope.launch {
             taskRepository.saveTask(task)
         }
-
         for (subtask in _subtasks.value){
             //сохранение подтасков
         }
+
+        newTask()
+    }
+
+    fun newTask() {
+        newSubtask = ""
+        content = ""
+        priority = ""
+        deadline = ""
+        category = ""
+        _subtasks.value = emptyList()
+        _suggestions.value = emptyList()
     }
 
     fun createSubtask(){
@@ -82,7 +94,8 @@ class TaskCreationScreenViewModel(
     }
 
     fun deadlineConvertToDateTime(deadline: String): LocalDateTime{
-        return LocalDateTime.parse(deadline, dateTimeFormatter)
+//        return LocalDateTime.parse(deadline, dateTimeFormatter)
+        return LocalDateTime.now()
     }
 
     fun deadlineConvertToString(deadline: LocalDateTime): String{

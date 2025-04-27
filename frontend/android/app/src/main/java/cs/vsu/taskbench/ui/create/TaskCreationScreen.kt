@@ -84,7 +84,7 @@ fun TaskCreationScreen(
             onDeadline = { },
             onPriority = { },
             onCategory = {},
-            onAddTask = {},
+            onAddTask = {viewModel.createTask()},
             onRemoveSubtask = { subtask -> viewModel.removeSubtask(subtask)},
             onAddSubtask = { subtask -> viewModel.addSubtask(subtask)},
             )
@@ -219,6 +219,7 @@ private fun TaskCreationContent(
                     buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
                     inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
                     placeholder = stringResource(R.string.label_task),
+                    onClick = onAddTask
                 )
             }
 

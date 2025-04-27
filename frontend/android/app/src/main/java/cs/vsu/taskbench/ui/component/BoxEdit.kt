@@ -58,6 +58,7 @@ fun BoxEdit(
     modifier: Modifier = Modifier,
     placeholder: String = "",
     interactionSource: MutableInteractionSource? = null,
+    onClick: () -> Unit,
 ) {
     val isEnabled = value.isNotEmpty()
     val iconTint = if (isEnabled) null else ColorFilter.tint(LightGray)
@@ -105,7 +106,7 @@ fun BoxEdit(
         )
 
         IconButton(
-            onClick = {},
+            onClick = onClick,
             enabled = isEnabled,
             modifier = Modifier.requiredSize(32.dp),
         ) {
@@ -130,6 +131,7 @@ private fun Preview() {
             buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
             inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
             placeholder = "Enter text",
+            onClick = {}
         )
     }
 }
@@ -144,6 +146,7 @@ private fun PreviewFilled() {
             onValueChange = { value = it },
             buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
             inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
+            onClick = {}
         )
     }
 }
