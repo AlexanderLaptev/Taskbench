@@ -1,0 +1,139 @@
+package cs.vsu.taskbench.ui.component
+
+import android.util.Log
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import cs.vsu.taskbench.R
+import cs.vsu.taskbench.ui.theme.AccentYellow
+import cs.vsu.taskbench.ui.theme.Black
+import cs.vsu.taskbench.ui.theme.DarkGray
+import cs.vsu.taskbench.ui.theme.TaskbenchTheme
+import cs.vsu.taskbench.ui.theme.White
+
+private val shape = RoundedCornerShape(4.dp)
+
+@Composable
+fun TitleDailyStats(
+    text: String,
+    dailyStat: Int,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .background(White, shape)
+            .size(width = 198.dp, height = 168.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+
+        ) {
+        Text(
+            text = text,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Normal,
+            color = Black,
+        )
+        Text(
+            text = dailyStat.toString(),
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold,
+            color = DarkGray,
+        )
+    }
+}
+
+@Composable
+fun Title(
+    text: String,
+    @DrawableRes icon: Int,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .background(White, shape)
+            .size(198.dp)
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+
+        ) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier
+                .size(72.dp)
+            )
+
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Black,
+            lineHeight = 16.sp,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+
+@Composable
+@Preview
+private fun Preview() {
+    TaskbenchTheme {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                TitleDailyStats(
+                    text = "Полезных дел сегодня сделано:",
+                    dailyStat = 55,
+                )
+                TitleDailyStats(
+                    text = "Рекорд по количеству дел в день:",
+                    dailyStat = 55,
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Title(
+                    text = "Умное назначение  дедлайнов",
+                    icon = R.drawable.img_deadline,
+                )
+                Title(
+                    text = "Автоматическое определение приоритетов",
+                    icon = R.drawable.img_priority,
+                )
+            }
+        }
+    }
+}

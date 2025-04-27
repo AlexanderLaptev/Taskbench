@@ -95,7 +95,7 @@ class TaskCreationScreenViewModel(
             _suggestions.update { emptyList() }
             val newSuggestions = suggestionRepository.getSuggestions(it)
             _suggestions.update {
-                newSuggestions.map { content ->
+                newSuggestions.subtasks.map { content ->
                     Subtask(id = null, content = content, isDone = false)
                 }
             }
