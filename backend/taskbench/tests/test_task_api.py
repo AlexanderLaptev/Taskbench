@@ -203,3 +203,135 @@ class TaskAPITests(TestCase):
             **self.get_auth_headers()
         )
         self.assertEqual(response.status_code, 400)
+
+
+class CategoryAPITests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create(email='test@example.com')
+        self.user.set_password('testpass123')
+        self.user.save()
+
+        # Создаем несколько категорий для пользователя
+        self.category1 = Category.objects.create(
+            name='Category 1',
+            user=self.user
+        )
+        self.category2 = Category.objects.create(
+            name='Category 2',
+            user=self.user
+        )
+
+        # Создаем другого пользователя с категорией
+        self.other_user = User.objects.create(email='other@example.com')
+        self.other_user.set_password('testpass123')
+        self.other_user.save()
+        Category.objects.create(
+            name='Other Category',
+            user=self.other_user
+        )
+
+        refresh = RefreshToken.for_user(self.user)
+        self.access_token = str(refresh.access_token)
+
+    def get_auth_headers(self):
+        return {
+            'HTTP_AUTHORIZATION': f'Bearer {self.access_token}',
+            'content_type': 'application/json'
+        }
+
+    def test_get_categories(self):
+        url = reverse('categories')
+        response = self.client.get(url, **self.get_auth_headers())
+        self.assertEqual(response.status_code, 200)
+
+        expected_data = [
+            {
+                "id": self.category1.category_id,
+                "name": "Category 1"
+            },
+            {
+                "id": self.category2.category_id,
+                "name": "Category 2"
+            }
+        ]
+        self.assertJSONEqual(response.content, expected_data)
+        self.assertEqual(len(response.json()), 2)
+
+    def test_create_category_success(self):
+        url = reverse('categories')
+        data = {
+            "name": "New Category"
+        }
+        response = self.client.post(
+            url,
+            data=json.dumps(data),
+            **self.get_auth_headers()
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Category.objects.count(), 4)  # 3 из setUp + 1 новая
+
+        response_data = response.json()
+        self.assertEqual(response_data['name'], 'New Category')
+        self.assertTrue('id' in response_data)
+
+    def test_create_category_missing_name(self):
+        url = reverse('categories')
+        data = {}
+        response = self.client.post(
+            url,
+            data=json.dumps(data),
+            **self.get_auth_headers()
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('error', response.json())
+
+    def test_create_category_long_name(self):
+        url = reverse('categories')
+        data = {
+            "name": "A" * 51  # 51 символ
+        }
+        response = self.client.post(
+            url,
+            data=json.dumps(data),
+            **self.get_auth_headers()
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('error', response.json())
+
+    def test_create_category_duplicate_name(self):
+        url = reverse('categories')
+        data = {
+            "name": "Category 1"  # Уже существует у пользователя
+        }
+        response = self.client.post(
+            url,
+            data=json.dumps(data),
+            **self.get_auth_headers()
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertIn('error', response.json())
+
+    def test_unauthenticated_access(self):
+        url = reverse('categories')
+        # GET без токена
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 401)
+
+        # POST без токена (исправленная версия)
+        response = self.client.post(
+            url,
+            data=json.dumps({"name": "Test"}),
+            content_type='application/json'  # Добавьте этот параметр
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_invalid_json_post(self):
+        url = reverse('categories')
+        response = self.client.post(
+            url,
+            data='invalid json',
+            **self.get_auth_headers()
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('error', response.json())
