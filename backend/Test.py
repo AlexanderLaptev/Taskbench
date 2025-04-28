@@ -9,7 +9,7 @@ from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 django.setup()
 
-from taskbench.models import User, Task, Subtask, Category, TaskCategory, Subscription
+from taskbench.models.models import User, Task, Subtask, Category, TaskCategory, Subscription
 
 # Очистим все старые данные (если нужно)
 TaskCategory.objects.all().delete()
@@ -23,10 +23,11 @@ User.objects.all().delete()
 users = []
 for i in range(10):
     user = User.objects.create(
-        username=f"user{i}",
         email=f"user{i}@example.com",
         password_hash="hash12345"
     )
+    user.set_password("password123")
+    user.save()
     users.append(user)
 
 # Создание задач для каждого пользователя
@@ -34,10 +35,9 @@ tasks = []
 for user in users:
     for i in range(2):
         task = Task.objects.create(
-            title=f"Task {i} for {user.username}",
+            title=f"Task {i} for {user.email}",
             deadline=timezone.now() + timedelta(days=random.randint(1, 30)),
             priority=random.randint(1, 5),  # теперь это int
-            status=random.choice(['active', 'completed', 'pending']),
             ai_processed=random.choice([True, False]),
             user=user
         )
@@ -58,7 +58,7 @@ categories = []
 for user in users:
     for i in range(1, 3):
         category = Category.objects.create(
-            name=f"Category{i} of {user.username}",
+            name=f"Category{i} of {user.email}",
             user=user
         )
         categories.append(category)
