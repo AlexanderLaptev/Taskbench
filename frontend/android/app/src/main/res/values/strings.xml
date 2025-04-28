@@ -52,6 +52,7 @@
     <string name="button_buy_premium">Купите премиум, чтобы стать продуктивнее</string>
     <string name="label_premium_status">Статус премиума:</string>
     <string name="label_premium_active">активный</string>
-    <string name="label_premium_until">Подписка истекает: %s</string>
+    <string name="label_premium_until">Действует до:</string>
+    <string name="pattern_date">d MMMM YYYY \'г.\'</string>
 
 </resources>

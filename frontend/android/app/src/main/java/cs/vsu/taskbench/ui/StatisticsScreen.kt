@@ -49,6 +49,7 @@ import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.White
 import org.koin.compose.koinInject
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
@@ -62,6 +63,9 @@ fun StatisticsScreen(
         var statistics by remember { mutableStateOf<Statistics?>(null) }
         val userRepo = koinInject<UserRepository>()
         val user = userRepo.user!!
+
+        val datePattern = stringResource(R.string.pattern_date)
+        val dateFormatter = remember { DateTimeFormatter.ofPattern(datePattern) }
 
         LaunchedEffect(Unit) {
             statistics = statsRepository.getStatistics(LocalDate.now())
@@ -117,13 +121,13 @@ fun StatisticsScreen(
                             contentDescription = null,
                             modifier = Modifier
                                 .background(White, RoundedCornerShape(25.dp))
-                                .size(80.dp)
+                                .size(64.dp),
                         )
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text(
-                                buildAnnotatedString {
+                                text = buildAnnotatedString {
                                     append(stringResource(R.string.label_premium_status))
                                     append(" ")
                                     withStyle(
@@ -138,10 +142,16 @@ fun StatisticsScreen(
                                 color = Black,
                             )
                             Text(
-                                text = stringResource(
-                                    R.string.label_premium_until,
-                                    user.status.activeUntil
-                                ),
+                                text = buildAnnotatedString {
+                                    append(stringResource(R.string.label_premium_until))
+                                    append(" ")
+                                    withStyle(
+                                        style = SpanStyle(
+                                            color = DarkGray,
+                                            fontWeight = FontWeight.Bold,
+                                        ),
+                                    ) { append(dateFormatter.format(user.status.activeUntil)) }
+                                },
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = Black,
@@ -156,9 +166,9 @@ fun StatisticsScreen(
                     textStyle = TextStyle(
                         fontSize = 18.sp,
                         color = DarkGray,
-                        fontWeight = FontWeight.Black
+                        fontWeight = FontWeight.Black,
                     ),
-                    onClick = {}
+                    onClick = {},
                 )
             }
         }
