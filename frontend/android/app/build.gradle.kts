@@ -42,7 +42,6 @@ android {
 }
 
 dependencies {
-    ksp(libs.composeDestinations.ksp)
     coreLibraryDesugaring(libs.android.tools.desugar)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -61,12 +60,19 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
     implementation(libs.koin.androidx.compose.navigation)
+
     implementation(libs.retrofit)
+    implementation(libs.retrofit.converters.moshi)
+    implementation(libs.moshi.kotlin)
+    ksp(libs.moshi.kotlin.codegen)
+
     implementation(libs.composeDestinations.core)
     implementation(libs.composeDestinations.bottomSheet)
+    ksp(libs.composeDestinations.ksp)
 }

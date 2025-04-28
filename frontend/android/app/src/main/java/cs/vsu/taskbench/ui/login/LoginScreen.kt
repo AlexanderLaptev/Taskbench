@@ -104,11 +104,11 @@ fun LoginScreen(
                     val messageId = when (event) {
                         Error.EmptyEmail -> R.string.error_empty_email
                         Error.InvalidEmail -> R.string.error_invalid_email
+                        Error.LoginFailure -> R.string.error_login_failure
                         Error.EmptyPassword -> R.string.error_empty_password
                         Error.PasswordsDoNotMatch -> R.string.error_passwords_do_not_match
                         Error.UserDoesNotExist -> R.string.error_user_does_not_exist
                         Error.UserAlreadyExists -> R.string.error_user_already_exists
-                        Error.IncorrectPassword -> R.string.error_user_incorrect_password
                         Error.NoInternet -> R.string.error_no_internet
                         Error.Unknown -> R.string.error_unknown
                     }

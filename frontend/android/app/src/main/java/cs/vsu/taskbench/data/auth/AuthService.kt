@@ -8,8 +8,7 @@ data class AuthTokens(
 interface AuthService {
     enum class LoginResult {
         Success,
-        UserNotFound,
-        IncorrectPassword,
+        Failure,
         UnknownError,
     }
 

@@ -18,10 +18,10 @@
     <string name="label_password">Пароль</string>
     <string name="label_confirm_password">Подтвердите пароль</string>
     <string name="label_forgot_password">Забыли пароль?</string>
+
     <string name="error_empty_email">Введите адрес электронной почты</string>
     <string name="error_invalid_email">Неверный адрес электронной почты</string>
-    <!-- TODO: remove -->
-    <string name="placeholder">Lorem ipsum dolor sit amet</string>
+    <string name="error_login_failure">Неверный адрес электронной почты или пароль</string>
     <string name="error_empty_password">Введите пароль</string>
     <string name="error_passwords_do_not_match">Пароли не совпадают</string>
     <string name="error_user_does_not_exist">Пользователя не существует</string>
@@ -29,6 +29,9 @@
     <string name="error_user_incorrect_password">Неверный пароль</string>
     <string name="error_no_internet">Отсутствует подключение к сети</string>
     <string name="error_unknown">Неизвестная ошибка</string>
+
+    <!-- TODO: remove -->
+    <string name="placeholder">Lorem ipsum dolor sit amet</string>
 
     <string name="label_deadline">Выбрать срок</string>
     <string name="label_category">Категория</string>

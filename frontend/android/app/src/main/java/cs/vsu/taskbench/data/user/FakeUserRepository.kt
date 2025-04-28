@@ -24,13 +24,9 @@ class FakeUserRepository(
         }
 
         val decoded = JWT.decode(tokens.access)
-        val email = decoded.subject!!
-        val id = decoded.getClaim("id").asInt()
-        val status = if (email.startsWith("premium")) {
-            User.Status.Premium(LocalDate.now().plusDays(7))
-        } else User.Status.Unpaid
+        val status = User.Status.Premium(LocalDate.now().plusDays(7))
 
-        _user = User(id, email, status)
+        _user = User(0, "", status)
         Log.d(TAG, "loaded user data: $_user")
         return true
     }

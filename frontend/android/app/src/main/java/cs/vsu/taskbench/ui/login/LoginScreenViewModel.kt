@@ -32,12 +32,12 @@ class LoginScreenViewModel(
     sealed interface Event {
         enum class Error : Event {
             EmptyEmail,
-            InvalidEmail,
             EmptyPassword,
+            InvalidEmail,
+            LoginFailure,
             PasswordsDoNotMatch,
             UserDoesNotExist,
             UserAlreadyExists,
-            IncorrectPassword,
             NoInternet,
             Unknown,
         }
@@ -71,8 +71,7 @@ class LoginScreenViewModel(
                 _events.tryEmit(Event.LoggedIn)
             }
 
-            LoginResult.UserNotFound -> _events.tryEmit(Event.Error.UserDoesNotExist)
-            LoginResult.IncorrectPassword -> _events.tryEmit(Event.Error.IncorrectPassword)
+            LoginResult.Failure -> _events.tryEmit(Event.Error.LoginFailure)
             LoginResult.UnknownError -> _events.tryEmit(Event.Error.Unknown)
         }
     }

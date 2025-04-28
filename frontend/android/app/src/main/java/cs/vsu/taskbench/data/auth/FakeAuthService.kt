@@ -81,11 +81,11 @@ class FakeAuthService(
 
         val userData = users[email] ?: let {
             Log.d(TAG, "user '$email' not found")
-            return LoginResult.UserNotFound
+            return LoginResult.Failure
         }
         if (password != userData.password) {
             Log.d(TAG, "incorrect password")
-            return LoginResult.IncorrectPassword
+            return LoginResult.Failure
         }
 
         generateNewTokens(email)
