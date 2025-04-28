@@ -49,7 +49,7 @@ class FakeAuthService(
             refresh = it[REFRESH_KEY]
         }
         if (access.isNullOrEmpty() || refresh.isNullOrEmpty()) {
-            throw NotAuthorizedException("No saved tokens on the device")
+            throw UnauthorizedException("No saved tokens on the device")
         }
 
         val saved = AuthTokens(access, refresh)
@@ -61,7 +61,7 @@ class FakeAuthService(
 
     override suspend fun refreshTokens() {
         Log.d(TAG, "refreshing tokens")
-        val refresh = tokens?.refresh ?: throw NotAuthorizedException()
+        val refresh = tokens?.refresh ?: throw UnauthorizedException()
         val email = JWT.decode(refresh).subject
         generateNewTokens(email)
     }

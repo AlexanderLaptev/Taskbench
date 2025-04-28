@@ -17,7 +17,9 @@ import cs.vsu.taskbench.data.task.SuggestionRepository
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.data.user.FakeUserRepository
 import cs.vsu.taskbench.data.user.UserRepository
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
+import org.koin.dsl.binds
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -39,10 +41,16 @@ val dataModule = module {
     }
 
     single<NetworkAuthenticator> { get<Retrofit>().create(NetworkAuthenticator::class.java) }
-    single<AuthService> { NetworkAuthService(get(), get()) }
-    single<UserRepository> { FakeUserRepository(get()) } bind PreloadRepository::class
-    single<CategoryRepository> { FakeCategoryRepository } bind PreloadRepository::class
-    single<StatisticsRepository> { FakeStatisticsRepository } bind PreloadRepository::class
-    single<SuggestionRepository> { FakeSuggestionRepository }
-    single<TaskRepository> { FakeTaskRepository(get()) } bind PreloadRepository::class
+    singleOf(::NetworkAuthService) bind AuthService::class
+    singleOf(::FakeUserRepository) binds arrayOf(UserRepository::class, PreloadRepository::class)
+    single { FakeCategoryRepository } binds arrayOf(
+        CategoryRepository::class,
+        PreloadRepository::class
+    )
+    single { FakeStatisticsRepository } binds arrayOf(
+        StatisticsRepository::class,
+        PreloadRepository::class
+    )
+    single { FakeSuggestionRepository } bind SuggestionRepository::class
+    singleOf(::FakeTaskRepository) binds arrayOf(TaskRepository::class, PreloadRepository::class)
 }

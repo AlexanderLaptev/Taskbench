@@ -7,8 +7,12 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.AuthTokens
-import cs.vsu.taskbench.data.auth.NotAuthorizedException
+import cs.vsu.taskbench.data.auth.EMAIL_PREFERENCES_KEY
+import cs.vsu.taskbench.data.auth.LoginException
+import cs.vsu.taskbench.data.auth.UnauthorizedException
+import cs.vsu.taskbench.util.HttpStatusCode
 import kotlinx.coroutines.flow.first
+import retrofit2.HttpException
 
 class NetworkAuthService(
     private val networkAuthenticator: NetworkAuthenticator,
@@ -38,7 +42,7 @@ class NetworkAuthService(
         }
 
         if (access.isNullOrEmpty() || refresh.isNullOrEmpty()) {
-            throw NotAuthorizedException("No tokens saved on the device")
+            throw UnauthorizedException("No tokens saved on the device")
         }
 
         Log.d(TAG, "getSavedTokens: returning saved tokens")
@@ -63,11 +67,22 @@ class NetworkAuthService(
     override suspend fun login(email: String, password: String) {
         Log.d(TAG, "login: logging in user with email='$email'")
         val request = AuthLoginRequest(email, password)
-        val response = networkAuthenticator.login(request)
+        val response: AuthLoginResponse
+        try {
+            response = networkAuthenticator.login(request)
+        } catch (e: HttpException) {
+            if (e.code() == HttpStatusCode.BAD_REQUEST) {
+                throw LoginException()
+            } else {
+                Log.d(TAG, "login: HTTP error ${e.code()}", e)
+                throw e
+            }
+        }
         Log.d(TAG, "login: $response")
         dataStore.edit {
             it[ACCESS_KEY] = response.access
             it[REFRESH_KEY] = response.refresh
+            it[EMAIL_PREFERENCES_KEY] = email
         }
         val newTokens = AuthTokens(response.access, response.refresh)
         cachedTokens = newTokens
@@ -81,6 +96,7 @@ class NetworkAuthService(
         dataStore.edit {
             it[ACCESS_KEY] = response.access
             it[REFRESH_KEY] = response.refresh
+            it[EMAIL_PREFERENCES_KEY] = email
         }
         val newTokens = AuthTokens(response.access, response.refresh)
         cachedTokens = newTokens
@@ -91,6 +107,7 @@ class NetworkAuthService(
         dataStore.edit {
             it[ACCESS_KEY] = ""
             it[REFRESH_KEY] = ""
+            it[EMAIL_PREFERENCES_KEY] = ""
         }
     }
 }

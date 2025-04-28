@@ -1,9 +1,13 @@
 package cs.vsu.taskbench.data.auth
 
+import androidx.datastore.preferences.core.stringPreferencesKey
+
 data class AuthTokens(
     val access: String,
     val refresh: String,
 )
+
+val EMAIL_PREFERENCES_KEY = stringPreferencesKey("email")
 
 interface AuthService {
     suspend fun getSavedTokens(): AuthTokens

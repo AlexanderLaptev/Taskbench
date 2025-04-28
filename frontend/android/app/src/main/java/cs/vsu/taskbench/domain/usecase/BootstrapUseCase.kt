@@ -3,7 +3,7 @@ package cs.vsu.taskbench.domain.usecase
 import android.util.Log
 import cs.vsu.taskbench.data.PreloadRepository
 import cs.vsu.taskbench.data.auth.AuthService
-import cs.vsu.taskbench.data.auth.NotAuthorizedException
+import cs.vsu.taskbench.data.auth.UnauthorizedException
 import cs.vsu.taskbench.util.MockRandom
 
 class BootstrapUseCase(
@@ -23,18 +23,19 @@ class BootstrapUseCase(
         MockRandom.reset()
         Log.d(TAG, "invoke: bootstrap started")
         try {
+            authService.getSavedTokens()
             for (repo in preloadRepos) {
                 val repoName = repo::class.simpleName
                 Log.d(TAG, "invoke: preloading $repoName")
                 try {
                     repo.preload()
-                } catch (e: NotAuthorizedException) {
+                } catch (e: UnauthorizedException) {
                     Log.d(TAG, "invoke: preloading $repoName failed, attempting token refresh")
                     authService.refreshTokens()
                     repo.preload()
                 }
             }
-        } catch (e: NotAuthorizedException) {
+        } catch (e: UnauthorizedException) {
             Log.d(TAG, "invoke: bootstrap failed, authorization required")
             return Result.LoginRequired
         } catch (e: Exception) {

@@ -1,6 +1,6 @@
 package cs.vsu.taskbench.data.auth
 
-class NotAuthorizedException : RuntimeException {
+class UnauthorizedException : RuntimeException {
     constructor() : super()
     constructor(message: String?) : super(message)
     constructor(message: String?, cause: Throwable?) : super(message, cause)
