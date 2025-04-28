@@ -27,10 +27,17 @@ object FakeCategoryRepository : CategoryRepository {
         return true
     }
 
-    override suspend fun getAllCategories(): List<Category> {
-        Log.d(TAG, "requested categories")
+    override suspend fun getAllCategories(query: String): List<Category> {
         val result = mutableListOf<Category>()
-        categories.forEachValue { result += it }
+        if (query.isBlank()) {
+            Log.d(TAG, "requested categories (blank query)")
+            categories.forEachValue { result += it }
+        } else {
+            Log.d(TAG, "requested categories (non-blank query)")
+            categories.forEachValue {
+                if (query in it.name) result += it
+            }
+        }
         Log.d(TAG, "returning ${result.size} categories")
         return result
     }

@@ -71,15 +71,13 @@ class TaskCreationScreenViewModel(
     }
 
     fun updateCategories(query: String = "") {
-        if (query.isEmpty()) {
-            Log.d(TAG, "updateCategories: empty query")
-            viewModelScope.launch {
-                val categories = categoryRepository.getAllCategories()
-                Log.d(TAG, "updateCategories: returned ${categories.size} categories")
-                categorySearchResults = categories.sortedWith(
-                    compareBy<Category> { it.name }.thenBy { it.id }
-                )
-            }
+        Log.d(TAG, "updateCategories: empty query")
+        viewModelScope.launch {
+            val categories = categoryRepository.getAllCategories(query)
+            Log.d(TAG, "updateCategories: returned ${categories.size} categories")
+            categorySearchResults = categories.sortedWith(
+                compareBy<Category> { it.name }.thenBy { it.id }
+            )
         }
     }
 
