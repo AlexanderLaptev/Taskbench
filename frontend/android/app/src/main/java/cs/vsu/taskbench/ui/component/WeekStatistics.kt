@@ -42,8 +42,9 @@ fun WeekStatistics(
     require(levels.size == 7) { "Levels array must contain exactly 7 floats" }
 
     Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
         modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         for (i in DAYS_OF_WEEK_IDS.indices) {
             val resId = DAYS_OF_WEEK_IDS[i]
