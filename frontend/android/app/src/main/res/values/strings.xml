@@ -47,10 +47,11 @@
     <string name="button_cancel">Отмена</string>
     <string name="dialog_select_time">Выберите время</string>
 
-    <string name="text_stats_for_today">Полезных дел сегодня сделано:</string>
-    <string name="text_max_stats_for_all_time">Рекорд по количеству дел в день:</string>
+    <string name="label_done_today">Полезных дел сегодня сделано:</string>
+    <string name="label_done_all_time_high">Рекорд по количеству дел в день:</string>
     <string name="button_buy_premium">Купите премиум, чтобы стать продуктивнее</string>
-    <string name="text_status_premium">Статус премиум: </string>
-    <string name="text_active">Активный:</string>
+    <string name="label_premium_status">Статус премиума:</string>
+    <string name="label_premium_active">активный</string>
+    <string name="label_premium_until">Подписка истекает: %s</string>
 
 </resources>

@@ -109,11 +109,11 @@ private fun Preview() {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 TitleDailyStats(
-                    text = stringResource(R.string.text_stats_for_today),
+                    text = stringResource(R.string.label_done_today),
                     dailyStats = 21,
                 )
                 TitleDailyStats(
-                    text = stringResource(R.string.text_max_stats_for_all_time),
+                    text = stringResource(R.string.label_done_all_time_high),
                     dailyStats = 33,
                 )
             }

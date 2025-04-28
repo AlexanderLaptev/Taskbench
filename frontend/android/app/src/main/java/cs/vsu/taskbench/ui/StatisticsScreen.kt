@@ -30,10 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cs.vsu.taskbench.R
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.data.user.UserRepository
 import cs.vsu.taskbench.domain.model.Statistics
@@ -56,7 +56,7 @@ fun StatisticsScreen(
     navController: NavController,
 ) {
     Scaffold(
-        bottomBar = { NavigationBar(navController) }
+        bottomBar = { NavigationBar(navController) },
     ) { padding ->
         val statsRepository = koinInject<StatisticsRepository>()
         var statistics by remember { mutableStateOf<Statistics?>(null) }
@@ -90,12 +90,12 @@ fun StatisticsScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 TitleDailyStats(
-                    text = stringResource(R.string.text_stats_for_today),
+                    text = stringResource(R.string.label_done_today),
                     dailyStats = statistics.doneToday,
                     modifier = Modifier.weight(1f),
                 )
                 TitleDailyStats(
-                    text = stringResource(R.string.text_max_stats_for_all_time),
+                    text = stringResource(R.string.label_done_all_time_high),
                     dailyStats = statistics.doneAllTimeHigh,
                     modifier = Modifier.weight(1f),
                 )
@@ -124,22 +124,24 @@ fun StatisticsScreen(
                         ) {
                             Text(
                                 buildAnnotatedString {
-                                    append(stringResource(R.string.text_status_premium))
+                                    append(stringResource(R.string.label_premium_status))
+                                    append(" ")
                                     withStyle(
                                         style = SpanStyle(
                                             color = Active,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
                                         )
-                                    ) {
-                                        append(stringResource(R.string.text_active))
-                                    }
+                                    ) { append(stringResource(R.string.label_premium_active)) }
                                 },
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = Black,
                             )
                             Text(
-                                text = "Подписка истекает: ${user.status.activeUntil}",
+                                text = stringResource(
+                                    R.string.label_premium_until,
+                                    user.status.activeUntil
+                                ),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = Black,
@@ -159,7 +161,6 @@ fun StatisticsScreen(
                     onClick = {}
                 )
             }
-
         }
     }
 }
