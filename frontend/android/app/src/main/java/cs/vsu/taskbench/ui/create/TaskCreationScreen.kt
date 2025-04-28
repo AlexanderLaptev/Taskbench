@@ -32,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -63,6 +62,7 @@ import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.White
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +71,6 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun TaskCreationScreen(navController: NavController) {
     val viewModel = koinViewModel<TaskCreationScreenViewModel>()
-    val scope = rememberCoroutineScope()
     val imePadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
 
     val context = LocalContext.current
@@ -91,7 +90,11 @@ fun TaskCreationScreen(navController: NavController) {
                 context,
                 context.getString(messageId),
                 Toast.LENGTH_SHORT
-            ).apply { show() }
+            ).apply {
+                show()
+            }
+            delay(2200)
+            toast?.cancel()
         }
     }
 
