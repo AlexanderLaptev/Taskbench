@@ -32,11 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -67,7 +63,6 @@ import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.White
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,27 +93,30 @@ fun TaskCreationScreen(navController: NavController) {
         }
     }
 
+    val sheetState = rememberModalBottomSheetState()
+    LaunchedEffect(viewModel.isCategorySelectionDialogVisible) {
+        if (viewModel.isCategorySelectionDialogVisible) sheetState.show()
+        else sheetState.hide()
+    }
+
     Scaffold(
         bottomBar = { NavigationBar(navController) },
     ) { padding ->
-        var showCategoryDialog by remember { mutableStateOf(false) }
-        val sheetState = rememberModalBottomSheetState()
-        CategoryDialog(
-            sheetState = sheetState,
-            visible = showCategoryDialog,
-            onVisibleChange = { showCategoryDialog = it },
-            categories = viewModel.categorySearchResults,
-            onCategoryAdd = { viewModel.addCategory(it) },
-            onSearch = { viewModel.updateCategories(it) },
+        if (sheetState.isVisible || viewModel.isCategorySelectionDialogVisible) {
+            CategoryDialog(
+                sheetState = sheetState,
+                onVisibleChange = { viewModel.isCategorySelectionDialogVisible = it },
+                categories = viewModel.categorySearchResults,
+                onCategoryAdd = { viewModel.addCategory(it) },
+                query = viewModel.categorySearchQuery,
+                onQueryChange = { viewModel.categorySearchQuery = it },
 
-            onCategorySelect = {
-                scope.launch {
-                    sheetState.hide()
-                    showCategoryDialog = false
-                }
-                viewModel.selectedCategory = it
-            },
-        )
+                onCategorySelect = {
+                    viewModel.selectedCategory = it
+                    viewModel.isCategorySelectionDialogVisible = false
+                },
+            )
+        }
 
         Box(
             Modifier
@@ -227,7 +225,7 @@ fun TaskCreationScreen(navController: NavController) {
                                 ?: stringResource(R.string.label_category),
                             color = White,
                             textColor = if (viewModel.selectedCategory == null) LightGray else Black,
-                            onClick = { showCategoryDialog = true },
+                            onClick = { viewModel.isCategorySelectionDialogVisible = true },
                         )
                     }
 
@@ -249,89 +247,83 @@ fun TaskCreationScreen(navController: NavController) {
 @Composable
 fun CategoryDialog(
     sheetState: SheetState,
-    visible: Boolean,
     onVisibleChange: (Boolean) -> Unit,
     categories: List<Category>,
-    onSearch: (String) -> Unit,
+    query: String,
+    onQueryChange: (String) -> Unit,
     onCategorySelect: (Category?) -> Unit,
     onCategoryAdd: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (visible) {
-        ModalBottomSheet(
-            sheetState = sheetState,
-            onDismissRequest = { onVisibleChange(false) },
-            containerColor = White,
-            modifier = modifier,
+    ModalBottomSheet(
+        sheetState = sheetState,
+        onDismissRequest = { onVisibleChange(false) },
+        containerColor = White,
+        modifier = modifier,
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .defaultMinSize(minHeight = 80.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .defaultMinSize(minHeight = 80.dp)
-                    .fillMaxWidth()
-                    .padding(16.dp),
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.End),
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.End),
+                TextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    placeholder = "Category",
+                    modifier = Modifier.weight(1.0f),
+                )
+                Button(
+                    onClick = { onCategoryAdd(query) },
+                    color = AccentYellow,
+                    fillWidth = false,
+                    modifier = Modifier.size(52.dp),
                 ) {
-                    var categoryInput by remember { mutableStateOf("") }
-                    TextField(
-                        value = categoryInput,
-                        onValueChange = {
-                            categoryInput = it
-                            onSearch(it)
-                        },
-                        placeholder = "Category",
-                        modifier = Modifier.weight(1.0f),
+                    Icon(
+                        painter = painterResource(R.drawable.ic_add_circle_outline),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.requiredSize(24.dp),
                     )
-                    Button(
-                        onClick = { onCategoryAdd(categoryInput) },
-                        color = AccentYellow,
-                        fillWidth = false,
-                        modifier = Modifier.size(52.dp),
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_add_circle_outline),
-                            contentDescription = null,
-                            tint = Color.Unspecified,
-                            modifier = Modifier.requiredSize(24.dp),
-                        )
-                    }
+                }
+            }
+
+            LazyColumn {
+                item {
+                    Text(
+                        text = "no category",
+                        fontSize = 16.sp,
+                        color = LightGray,
+                        fontStyle = FontStyle.Italic,
+                        modifier = Modifier
+                            .animateItem()
+                            .clickable { onCategorySelect(null) }
+                            .padding(start = 16.dp)
+                            .defaultMinSize(minHeight = 48.dp)
+                            .wrapContentHeight()
+                            .fillMaxWidth(),
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 8.dp))
                 }
 
-                LazyColumn {
-                    item {
-                        Text(
-                            text = "no category",
-                            fontSize = 16.sp,
-                            color = LightGray,
-                            fontStyle = FontStyle.Italic,
-                            modifier = Modifier
-                                .animateItem()
-                                .clickable { onCategorySelect(null) }
-                                .padding(start = 16.dp)
-                                .defaultMinSize(minHeight = 48.dp)
-                                .wrapContentHeight()
-                                .fillMaxWidth(),
-                        )
-                        HorizontalDivider(Modifier.padding(horizontal = 8.dp))
-                    }
-
-                    items(categories, key = { it.id!! }) { category ->
-                        Text(
-                            text = category.name,
-                            fontSize = 16.sp,
-                            color = Black,
-                            modifier = Modifier
-                                .animateItem()
-                                .clickable { onCategorySelect(category) }
-                                .padding(start = 16.dp)
-                                .defaultMinSize(minHeight = 48.dp)
-                                .wrapContentHeight()
-                                .fillMaxWidth(),
-                        )
-                        HorizontalDivider(Modifier.padding(horizontal = 8.dp))
-                    }
+                items(categories, key = { it.id!! }) { category ->
+                    Text(
+                        text = category.name,
+                        fontSize = 16.sp,
+                        color = Black,
+                        modifier = Modifier
+                            .animateItem()
+                            .clickable { onCategorySelect(category) }
+                            .padding(start = 16.dp)
+                            .defaultMinSize(minHeight = 48.dp)
+                            .wrapContentHeight()
+                            .fillMaxWidth(),
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 8.dp))
                 }
             }
         }

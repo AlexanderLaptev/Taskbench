@@ -34,6 +34,17 @@ class TaskCreationScreenViewModel(
     private val _errorFlow = mutableEventFlow<Error>()
     val errorFlow = _errorFlow.asSharedFlow()
 
+    private var _isCategorySelectionDialogVisible by mutableStateOf(false)
+    var isCategorySelectionDialogVisible: Boolean
+        get() = _isCategorySelectionDialogVisible
+        set(value) {
+            _isCategorySelectionDialogVisible = value
+            if (value) {
+                _categorySearchQuery = ""
+                updateCategories(_categorySearchQuery)
+            }
+        }
+
     private var _contentInput by mutableStateOf("")
     var contentInput: String
         get() = _contentInput
@@ -51,6 +62,14 @@ class TaskCreationScreenViewModel(
 
     val subtasks = mutableStateListOf<Subtask>()
     var suggestedSubtasks by mutableStateOf<List<Subtask>>(emptyList())
+
+    private var _categorySearchQuery by mutableStateOf("")
+    var categorySearchQuery: String
+        get() = _categorySearchQuery
+        set(value) {
+            _categorySearchQuery = value
+            updateCategories(value)
+        }
 
     var categorySearchResults by mutableStateOf<List<Category>>(emptyList())
 
@@ -71,7 +90,6 @@ class TaskCreationScreenViewModel(
     }
 
     fun updateCategories(query: String = "") {
-        Log.d(TAG, "updateCategories: empty query")
         viewModelScope.launch {
             val categories = categoryRepository.getAllCategories(query)
             Log.d(TAG, "updateCategories: returned ${categories.size} categories")
@@ -104,7 +122,7 @@ class TaskCreationScreenViewModel(
         subtasks -= subtask
     }
 
-    fun updateSuggestions(prompt: String) {
+    private fun updateSuggestions(prompt: String) {
         Log.d(TAG, "updateSuggestions: prompt=$prompt")
         viewModelScope.launch {
             // TODO: add delay after last change before sending
@@ -123,8 +141,9 @@ class TaskCreationScreenViewModel(
         }
         viewModelScope.launch {
             val category = categoryRepository.saveCategory(Category(id = null, name = name))
-            updateCategories() // TODO: move query into the VM
             selectedCategory = category
+            _categorySearchQuery = ""
+            isCategorySelectionDialogVisible = false
         }
     }
 }
