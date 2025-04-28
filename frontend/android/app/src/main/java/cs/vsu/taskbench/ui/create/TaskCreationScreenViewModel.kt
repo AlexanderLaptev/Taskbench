@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.ui.create
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -22,6 +23,10 @@ class TaskCreationScreenViewModel(
     private val suggestionRepository: SuggestionRepository,
     private val categoryRepository: CategoryRepository,
 ) : ViewModel() {
+    companion object {
+        private val TAG = TaskCreationScreenViewModel::class.simpleName
+    }
+
     var subtaskInput by mutableStateOf("")
     var contentInput by mutableStateOf("")
 
@@ -31,6 +36,9 @@ class TaskCreationScreenViewModel(
 
     private val _category = MutableStateFlow<Category?>(null)
     val category = _category.asStateFlow()
+
+    private val _categorySearchResults = MutableStateFlow<List<Category>>(emptyList())
+    val categorySearchResults = _categorySearchResults.asStateFlow()
 
     private val _deadline = MutableStateFlow<LocalDateTime?>(null)
     val deadline = _deadline.asStateFlow()
@@ -64,6 +72,17 @@ class TaskCreationScreenViewModel(
         selectedCategoryId = category.id
         taskDeadline = deadline
         isTaskHighPriority = isHighPriority
+    }
+
+    fun updateCategories(query: String = "") {
+        if (query.isEmpty()) {
+            Log.d(TAG, "updateCategories: empty query")
+            viewModelScope.launch {
+                val categories = categoryRepository.getAllCategories()
+                Log.d(TAG, "updateCategories: returned ${categories.size} categories")
+                _categorySearchResults.update { categories }
+            }
+        }
     }
 
     private fun clearInput() {

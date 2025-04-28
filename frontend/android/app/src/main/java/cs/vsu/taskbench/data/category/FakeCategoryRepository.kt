@@ -11,9 +11,16 @@ object FakeCategoryRepository : CategoryRepository {
         this[1] = Category(1, "work")
         this[2] = Category(2, "home")
         this[3] = Category(3, "hobbies")
+        this[4] = Category(4, "lorem")
+        this[5] = Category(5, "ipsum")
+        this[6] = Category(6, "dolor")
+        this[7] = Category(7, "sit")
+        this[8] = Category(8, "amet")
+        this[9] = Category(9, "consectetur")
+        this[10] = Category(10, "adipiscing")
     }
 
-    private var id = 4
+    private var id = 11
 
     override suspend fun preload(): Boolean {
         Log.d(TAG, "preloading categories")

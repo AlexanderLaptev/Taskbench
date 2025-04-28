@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +21,29 @@ import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
+import androidx.compose.material3.Button as MaterialButton
+
+@Composable
+fun Button(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    color: Color = White,
+    fillWidth: Boolean = true,
+    content: @Composable RowScope.() -> Unit,
+) {
+    MaterialButton(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = color,
+            contentColor = Black,
+        ),
+        shape = RoundedCornerShape(10.dp),
+        modifier = modifier
+            .height(52.dp)
+            .let { if (fillWidth) it.fillMaxWidth() else it },
+        content = content,
+    )
+}
 
 @Composable
 fun Button(
@@ -30,44 +52,19 @@ fun Button(
     modifier: Modifier = Modifier,
     color: Color = White,
     textStyle: TextStyle = TextStyle(color = Black, fontSize = 20.sp),
+    fillWidth: Boolean = true,
 ) {
     Button(
         onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = color,
-            contentColor = Black,
-        ),
-        shape = RoundedCornerShape(10.dp),
-        modifier = modifier
-            .height(52.dp)
-            .fillMaxWidth(),
+        modifier = modifier,
+        color = color,
+        fillWidth = fillWidth,
     ) {
         Text(
             text = text,
             style = textStyle,
         )
     }
-}
-
-@Composable
-fun Button(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    color: Color = White,
-    content: @Composable RowScope.() -> Unit,
-) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = color,
-            contentColor = Black,
-        ),
-        shape = RoundedCornerShape(10.dp),
-        modifier = modifier
-            .height(52.dp)
-            .fillMaxWidth(),
-        content = content,
-    )
 }
 
 @Composable
