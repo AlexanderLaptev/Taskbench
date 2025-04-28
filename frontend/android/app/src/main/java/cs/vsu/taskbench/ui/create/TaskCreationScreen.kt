@@ -213,7 +213,7 @@ fun TaskCreationScreen(navController: NavController) {
                             text = stringResource(
                                 if (viewModel.isHighPriority) {
                                     R.string.priority_high
-                                } else R.string.priority_low
+                                } else R.string.priority_normal
                             ),
 
                             color = if (viewModel.isHighPriority) AccentYellow else White,
@@ -222,7 +222,7 @@ fun TaskCreationScreen(navController: NavController) {
                         )
                         Chip(
                             text = viewModel.selectedCategory?.name
-                                ?: stringResource(R.string.label_category),
+                                ?: stringResource(R.string.label_no_category),
                             color = White,
                             textColor = if (viewModel.selectedCategory == null) LightGray else Black,
                             onClick = { viewModel.isCategorySelectionDialogVisible = true },
@@ -274,7 +274,7 @@ fun CategoryDialog(
                 TextField(
                     value = query,
                     onValueChange = onQueryChange,
-                    placeholder = "Category",
+                    placeholder = stringResource(R.string.label_category),
                     modifier = Modifier.weight(1.0f),
                 )
                 Button(
@@ -295,7 +295,7 @@ fun CategoryDialog(
             LazyColumn {
                 item {
                     Text(
-                        text = "no category",
+                        text = stringResource(R.string.label_no_category),
                         fontSize = 16.sp,
                         color = LightGray,
                         fontStyle = FontStyle.Italic,

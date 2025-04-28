@@ -91,7 +91,7 @@ class TaskCreationScreenViewModel(
 
     fun updateCategories(query: String = "") {
         viewModelScope.launch {
-            val categories = categoryRepository.getAllCategories(query)
+            val categories = categoryRepository.getAllCategories(query.trim())
             Log.d(TAG, "updateCategories: returned ${categories.size} categories")
             categorySearchResults = categories.sortedWith(
                 compareBy<Category> { it.name }.thenBy { it.id }
@@ -140,9 +140,8 @@ class TaskCreationScreenViewModel(
             return
         }
         viewModelScope.launch {
-            val category = categoryRepository.saveCategory(Category(id = null, name = name))
+            val category = categoryRepository.saveCategory(Category(id = null, name = name.trim()))
             selectedCategory = category
-            _categorySearchQuery = ""
             isCategorySelectionDialogVisible = false
         }
     }

@@ -39,7 +39,7 @@
     <string name="list_suggestions">Предложения ИИ:</string>
 
     <string name="priority_high">Высокий приоритет</string>
-    <string name="priority_low">Низкий приоритет</string>
+    <string name="priority_normal">Обычный приоритет</string>
 
     <string name="button_no">Нет</string>
     <string name="button_yes">Да</string>
@@ -47,4 +47,5 @@
     <string name="button_cancel">Отмена</string>
     <string name="dialog_select_time">Выберите время</string>
     <string name="error_blank_category">Категория не может быть пустой</string>
+    <string name="label_no_category">Без категории</string>
 </resources>
