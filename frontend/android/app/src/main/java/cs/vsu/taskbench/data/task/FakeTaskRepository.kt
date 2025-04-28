@@ -134,7 +134,7 @@ class FakeTaskRepository(
 
         return result
             .asSequence()
-            .filter { it.deadline.toLocalDate() == date }
+            .filter { it.deadline?.toLocalDate() == date }  // TODO
             .let {
                 if (filterByCategory) it.filter { task ->
                     task.categoryId == categoryId

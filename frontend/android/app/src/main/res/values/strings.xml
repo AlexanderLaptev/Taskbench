@@ -39,13 +39,15 @@
     <string name="list_suggestions">Предложения ИИ:</string>
 
     <string name="priority_high">Высокий приоритет</string>
-    <string name="priority_low">Низкий приоритет</string>
+    <string name="priority_normal">Обычный приоритет</string>
 
     <string name="button_no">Нет</string>
     <string name="button_yes">Да</string>
     <string name="button_ok">ОК</string>
     <string name="button_cancel">Отмена</string>
     <string name="dialog_select_time">Выберите время</string>
+    <string name="error_blank_category">Категория не может быть пустой</string>
+    <string name="label_no_category">Без категории</string>
 
     <string name="label_done_today">Полезных дел сегодня сделано:</string>
     <string name="label_done_all_time_high">Рекорд по количеству дел в день:</string>
@@ -54,5 +56,4 @@
     <string name="label_premium_active">активный</string>
     <string name="label_premium_until">Действует до:</string>
     <string name="pattern_date">d MMMM YYYY \'г.\'</string>
-
 </resources>

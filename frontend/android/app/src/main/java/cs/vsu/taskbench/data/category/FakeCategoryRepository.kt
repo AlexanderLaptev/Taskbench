@@ -8,22 +8,37 @@ object FakeCategoryRepository : CategoryRepository {
     private val TAG = FakeCategoryRepository::class.simpleName
 
     private val categories = mutableIntObjectMapOf<Category>().apply {
-        this[1] = Category(1, "work")
-        this[2] = Category(2, "home")
-        this[3] = Category(3, "hobbies")
+        this[1] = Category(1, "Work")
+        this[2] = Category(2, "Home")
+        this[3] = Category(3, "Hobbies")
+        this[4] = Category(4, "Lorem")
+        this[5] = Category(5, "Ipsum")
+        this[6] = Category(6, "Dolor")
+        this[7] = Category(7, "Sit")
+        this[8] = Category(8, "Amet")
+        this[9] = Category(9, "Consectetur")
+        this[10] = Category(10, "Adipiscing")
     }
 
-    private var id = 4
+    private var id = 11
 
     override suspend fun preload(): Boolean {
         Log.d(TAG, "preloading categories")
         return true
     }
 
-    override suspend fun getAllCategories(): List<Category> {
-        Log.d(TAG, "requested categories")
+    override suspend fun getAllCategories(query: String): List<Category> {
         val result = mutableListOf<Category>()
-        categories.forEachValue { result += it }
+        if (query.isBlank()) {
+            Log.d(TAG, "requested categories (blank query)")
+            categories.forEachValue { result += it }
+        } else {
+            val queryLower = query.lowercase()
+            Log.d(TAG, "requested categories (non-blank query)")
+            categories.forEachValue {
+                if (queryLower in it.name.lowercase()) result += it
+            }
+        }
         Log.d(TAG, "returning ${result.size} categories")
         return result
     }
