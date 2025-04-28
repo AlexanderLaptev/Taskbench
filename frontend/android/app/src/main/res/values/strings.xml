@@ -59,4 +59,5 @@
     <string name="label_premium_active">активный</string>
     <string name="label_premium_until">Действует до:</string>
     <string name="pattern_date">d MMMM YYYY \'г.\'</string>
+    <string name="error_category_too_long">Название категории должно быть короче 50 символов</string>
 </resources>

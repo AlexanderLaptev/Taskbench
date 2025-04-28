@@ -16,6 +16,7 @@ import cs.vsu.taskbench.domain.model.Task
 import cs.vsu.taskbench.util.mutableEventFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import java.time.LocalDateTime
 
 class TaskCreationScreenViewModel(
@@ -29,6 +30,8 @@ class TaskCreationScreenViewModel(
 
     enum class Error {
         BlankCategory,
+        Unknown,
+        CategoryTooLong,
     }
 
     private val _errorFlow = mutableEventFlow<Error>()
@@ -139,10 +142,24 @@ class TaskCreationScreenViewModel(
             _errorFlow.tryEmit(Error.BlankCategory)
             return
         }
+        if (name.length > 50) {
+            _errorFlow.tryEmit(Error.CategoryTooLong)
+            return
+        }
+
         viewModelScope.launch {
-            val category = categoryRepository.saveCategory(Category(id = null, name = name.trim()))
-            selectedCategory = category
-            isCategorySelectionDialogVisible = false
+            try {
+                val category = Category(id = null, name = name.trim())
+                val saved = categoryRepository.saveCategory(category)
+                selectedCategory = saved
+                isCategorySelectionDialogVisible = false
+            } catch (e: Exception) {
+                Log.e(TAG, "addCategory: unknown error", e)
+                if (e is HttpException) {
+                    Log.e(TAG, "addCategory: error body: ${e.response()?.errorBody()?.string()}")
+                }
+                _errorFlow.tryEmit(Error.Unknown)
+            }
         }
     }
 }

@@ -39,7 +39,7 @@ class BootstrapUseCase(
             Log.d(TAG, "invoke: bootstrap failed, authorization required")
             return Result.LoginRequired
         } catch (e: Exception) {
-            Log.d(TAG, "invoke: bootstrap failed because of an unknown exception", e)
+            Log.e(TAG, "invoke: bootstrap failed because of an unknown exception", e)
             throw e
         }
         Log.d(TAG, "invoke: bootstrap success")

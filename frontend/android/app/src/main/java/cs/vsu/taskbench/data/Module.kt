@@ -8,7 +8,8 @@ import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.network.NetworkAuthService
 import cs.vsu.taskbench.data.auth.network.NetworkAuthenticator
 import cs.vsu.taskbench.data.category.CategoryRepository
-import cs.vsu.taskbench.data.category.FakeCategoryRepository
+import cs.vsu.taskbench.data.category.network.NetworkCategoryDataSource
+import cs.vsu.taskbench.data.category.network.NetworkCategoryRepository
 import cs.vsu.taskbench.data.statistics.FakeStatisticsRepository
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.data.task.FakeSuggestionRepository
@@ -19,7 +20,6 @@ import cs.vsu.taskbench.data.user.FakeUserRepository
 import cs.vsu.taskbench.data.user.UserRepository
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
-import org.koin.dsl.binds
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -40,17 +40,17 @@ val dataModule = module {
             .build()
     }
 
-    single<NetworkAuthenticator> { get<Retrofit>().create(NetworkAuthenticator::class.java) }
+    single {
+        get<Retrofit>().create(NetworkCategoryDataSource::class.java)
+    } bind NetworkCategoryDataSource::class
+    single {
+        get<Retrofit>().create(NetworkAuthenticator::class.java)
+    } bind NetworkAuthenticator::class
+
     singleOf(::NetworkAuthService) bind AuthService::class
-    singleOf(::FakeUserRepository) binds arrayOf(UserRepository::class, PreloadRepository::class)
-    single { FakeCategoryRepository } binds arrayOf(
-        CategoryRepository::class,
-        PreloadRepository::class
-    )
-    single { FakeStatisticsRepository } binds arrayOf(
-        StatisticsRepository::class,
-        PreloadRepository::class
-    )
+    singleOf(::FakeUserRepository) bind UserRepository::class
+    singleOf(::NetworkCategoryRepository) bind CategoryRepository::class
+    single { FakeStatisticsRepository } bind StatisticsRepository::class
     single { FakeSuggestionRepository } bind SuggestionRepository::class
-    singleOf(::FakeTaskRepository) binds arrayOf(TaskRepository::class, PreloadRepository::class)
+    singleOf(::FakeTaskRepository) bind TaskRepository::class
 }

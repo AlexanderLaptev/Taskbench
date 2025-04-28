@@ -82,6 +82,8 @@ fun TaskCreationScreen(navController: NavController) {
         viewModel.errorFlow.collect { error ->
             val messageId = when (error) {
                 Error.BlankCategory -> R.string.error_blank_category
+                Error.Unknown -> R.string.error_unknown
+                Error.CategoryTooLong -> R.string.error_category_too_long
             }
 
             toast?.cancel()

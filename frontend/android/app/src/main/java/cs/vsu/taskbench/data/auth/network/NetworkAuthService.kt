@@ -10,7 +10,7 @@ import cs.vsu.taskbench.data.auth.AuthTokens
 import cs.vsu.taskbench.data.auth.EMAIL_PREFERENCES_KEY
 import cs.vsu.taskbench.data.auth.LoginException
 import cs.vsu.taskbench.data.auth.UnauthorizedException
-import cs.vsu.taskbench.util.HttpStatusCode
+import cs.vsu.taskbench.util.HttpStatusCodes
 import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 
@@ -71,7 +71,7 @@ class NetworkAuthService(
         try {
             response = networkAuthenticator.login(request)
         } catch (e: HttpException) {
-            if (e.code() == HttpStatusCode.BAD_REQUEST) {
+            if (e.code() == HttpStatusCodes.BAD_REQUEST) {
                 throw LoginException()
             } else {
                 Log.d(TAG, "login: HTTP error ${e.code()}", e)
