@@ -32,6 +32,7 @@ class TaskCreationScreenViewModel(
         BlankCategory,
         Unknown,
         CategoryTooLong,
+        CategoryAlreadyExists,
     }
 
     private val _errorFlow = mutableEventFlow<Error>()
@@ -153,11 +154,18 @@ class TaskCreationScreenViewModel(
                 val saved = categoryRepository.saveCategory(category)
                 selectedCategory = saved
                 isCategorySelectionDialogVisible = false
+            } catch (e: HttpException) {
+                when (e.code()) {
+                    409 -> _errorFlow.tryEmit(Error.CategoryAlreadyExists)
+                    else -> {
+                        val errorBody = e.response()?.errorBody()?.string()
+                        Log.e(TAG, "addCategory: HTTP error", e)
+                        Log.e(TAG, "addCategory: error body: $errorBody")
+                        throw e
+                    }
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "addCategory: unknown error", e)
-                if (e is HttpException) {
-                    Log.e(TAG, "addCategory: error body: ${e.response()?.errorBody()?.string()}")
-                }
                 _errorFlow.tryEmit(Error.Unknown)
             }
         }

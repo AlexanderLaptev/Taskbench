@@ -83,6 +83,7 @@ fun TaskCreationScreen(navController: NavController) {
                 Error.BlankCategory -> R.string.error_blank_category
                 Error.Unknown -> R.string.error_unknown
                 Error.CategoryTooLong -> R.string.error_category_too_long
+                Error.CategoryAlreadyExists -> R.string.error_category_already_exists
             }
 
             toast?.cancel()
