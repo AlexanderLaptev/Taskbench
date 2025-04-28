@@ -46,4 +46,5 @@
     <string name="button_ok">ОК</string>
     <string name="button_cancel">Отмена</string>
     <string name="dialog_select_time">Выберите время</string>
+    <string name="error_blank_category">Категория не может быть пустой</string>
 </resources>

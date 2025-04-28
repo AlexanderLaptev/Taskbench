@@ -116,7 +116,7 @@ fun AddedSubtask(
 
 @Composable
 @NonRestartableComposable
-fun Suggestion(
+fun SuggestedSubtask(
     text: String,
     onAdd: () -> Unit,
     modifier: Modifier = Modifier,
@@ -242,7 +242,7 @@ private fun Preview() {
                 onRemove = { text2 = "" },
             )
 
-            Suggestion(
+            SuggestedSubtask(
                 text = "Lorem ipsum dolor sit amet",
                 onAdd = {},
             )
