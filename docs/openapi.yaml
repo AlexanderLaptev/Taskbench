@@ -372,26 +372,6 @@ paths:
         '401':
           description: Invalid or expired refresh token
 
-  /bootstrap:
-    get:
-      summary: Get bootstrap data
-      responses:
-        '200':
-          description: Bootstrap data retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  categories:
-                    type: array
-                    items:
-                      type: string
-                  premium_status:
-                    type: boolean
-                  jwt:
-                    type: string
-
   /statistics:
     get:
       summary: Get user statistics
@@ -414,6 +394,43 @@ paths:
                       format: float
                     maxItems: 7
                     minItems: 7
+                    
+  /categories:
+    get:
+      summary: Get user's categories
+      responses:
+        '200':
+          description: List of user's categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+                  
+    post:
+      summary: Create new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 50
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid input
+        '409':
+          description: Category already exists
 
 components:
 
@@ -481,3 +498,14 @@ components:
           type: string
         is_done:
           type: boolean
+          
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 50
+      required:
+        - name
