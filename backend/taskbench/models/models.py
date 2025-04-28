@@ -28,6 +28,7 @@ class Task(models.Model):
     priority = models.IntegerField(null=False, default=0)
     is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
+    completed_at = models.DateTimeField(null=True)
     ai_processed = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False, related_name='tasks') #многие к одному к юзеру
 

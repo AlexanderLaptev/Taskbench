@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+
+from taskbench.views.statisctics_views import StatisticsView
 from taskbench.views.suggestion_views import SuggestionView
 from taskbench.views.user_views import (
     RegisterView, 
@@ -47,7 +49,7 @@ urlpatterns = [
     path('user/delete', DeleteUserView.as_view(), name='delete_user'), # POST - валидация пользователя, возвращение jwt
     path('user/password', ChangePasswordView.as_view(), name='change_password'),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-
+    path('statistics', StatisticsView.as_view(), name='statistics'),
     path("ai/suggestions", SuggestionView.as_view(), name="ai_suggestions"),
 ]
 
