@@ -1,11 +1,12 @@
-from tokenize import TokenError
+from datetime import datetime
 
-from pydantic import ValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import UntypedToken
 
 from backend import settings
 from ..models.models import User
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -52,9 +53,11 @@ class JwtSerializer(serializers.Serializer):
 
         try:
             decoded = UntypedToken(token)
+            if datetime.fromtimestamp(decoded.payload.get('exp')) < datetime.now():
+                raise ValidationError('Token has expired.')
             user_id = decoded.payload.get(settings.SIMPLE_JWT['USER_ID_CLAIM'])
             user = User.objects.get(user_id=user_id)
-        except (TokenError, User.DoesNotExist):
+        except:
             raise ValidationError('Invalid token or user.')
         data['user'] = user
         return data
