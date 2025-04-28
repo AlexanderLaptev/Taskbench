@@ -38,7 +38,7 @@ class FakeTaskRepository(
         subtaskId = 1
     }
 
-    override suspend fun preload(): Boolean {
+    override suspend fun preload() {
         Log.d(TAG, "preloading fake tasks")
         categories = categoryRepository.getAllCategories()
         Log.d(TAG, "loaded ${categories.size} categories")
@@ -59,8 +59,6 @@ class FakeTaskRepository(
             }
         }
         Log.d(TAG, "generated $generatedCount fake tasks")
-
-        return true
     }
 
     private fun generateTask(today: LocalDate): Task {

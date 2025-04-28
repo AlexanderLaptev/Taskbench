@@ -107,10 +107,9 @@ fun LoginScreen(
                         Error.LoginFailure -> R.string.error_login_failure
                         Error.EmptyPassword -> R.string.error_empty_password
                         Error.PasswordsDoNotMatch -> R.string.error_passwords_do_not_match
-                        Error.UserDoesNotExist -> R.string.error_user_does_not_exist
-                        Error.UserAlreadyExists -> R.string.error_user_already_exists
                         Error.NoInternet -> R.string.error_no_internet
                         Error.Unknown -> R.string.error_unknown
+                        Error.SignUpFailure -> TODO()
                     }
                     with(snackbarHostState) {
                         currentSnackbarData?.dismiss()

@@ -3,10 +3,11 @@ package cs.vsu.taskbench.domain.usecase
 import android.util.Log
 import cs.vsu.taskbench.data.PreloadRepository
 import cs.vsu.taskbench.data.auth.AuthService
+import cs.vsu.taskbench.data.auth.NotAuthorizedException
 import cs.vsu.taskbench.util.MockRandom
 
 class BootstrapUseCase(
-    private val authTokenRepo: AuthService,
+    private val authService: AuthService,
     private val preloadRepos: List<PreloadRepository>,
 ) {
     companion object {
@@ -20,34 +21,27 @@ class BootstrapUseCase(
 
     suspend operator fun invoke(): Result {
         MockRandom.reset()
-        if (authTokenRepo.getSavedTokens() == null) return Result.LoginRequired
-
-        return if (tryPreload()) {
-            Log.d(TAG, "bootstrap success!")
-            Result.Success
-        } else {
-            Log.d(TAG, "preload failed")
-            Result.LoginRequired
-        }
-    }
-
-    private suspend fun tryPreload(): Boolean {
-        for (repo in preloadRepos) {
-            Log.d(TAG, "bootstrapping repository $repo")
-            val result = repo.preload()
-            if (!result) {
-                Log.d(TAG, "bootstrap failed, attempting token refresh")
-                authTokenRepo.refreshTokens() ?: let {
-                    Log.d(TAG, "bootstrap failed: refresh tokens failed")
-                    return false
-                }
-                if (!repo.preload()) {
-                    Log.d(TAG, "bootstrap failed: preload after refresh failed")
-                    return false
+        Log.d(TAG, "invoke: bootstrap started")
+        try {
+            for (repo in preloadRepos) {
+                val repoName = repo::class.simpleName
+                Log.d(TAG, "invoke: preloading $repoName")
+                try {
+                    repo.preload()
+                } catch (e: NotAuthorizedException) {
+                    Log.d(TAG, "invoke: preloading $repoName failed, attempting token refresh")
+                    authService.refreshTokens()
+                    repo.preload()
                 }
             }
-            Log.d(TAG, "preloaded $repo successfully")
+        } catch (e: NotAuthorizedException) {
+            Log.d(TAG, "invoke: bootstrap failed, authorization required")
+            return Result.LoginRequired
+        } catch (e: Exception) {
+            Log.d(TAG, "invoke: bootstrap failed because of an unknown exception", e)
+            throw e
         }
-        return true
+        Log.d(TAG, "invoke: bootstrap success")
+        return Result.Success
     }
 }

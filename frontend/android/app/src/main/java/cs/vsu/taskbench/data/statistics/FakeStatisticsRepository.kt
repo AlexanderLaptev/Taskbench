@@ -11,10 +11,9 @@ object FakeStatisticsRepository : StatisticsRepository {
 
     private var cached: Statistics? = null
 
-    override suspend fun preload(): Boolean {
+    override suspend fun preload() {
         Log.d(TAG, "preloading statistics")
         generate()
-        return true
     }
 
     override suspend fun getStatistics(date: LocalDate): Statistics {

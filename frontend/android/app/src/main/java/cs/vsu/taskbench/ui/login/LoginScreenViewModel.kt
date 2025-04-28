@@ -8,13 +8,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cs.vsu.taskbench.data.auth.AuthService
-import cs.vsu.taskbench.data.auth.AuthService.LoginResult
-import cs.vsu.taskbench.data.auth.AuthService.SignUpResult
+import cs.vsu.taskbench.data.auth.LoginException
 import cs.vsu.taskbench.domain.usecase.BootstrapUseCase
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import cs.vsu.taskbench.util.mutableEventFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import java.net.ConnectException
 
 class LoginScreenViewModel(
     private val authService: AuthService,
@@ -35,9 +34,8 @@ class LoginScreenViewModel(
             EmptyPassword,
             InvalidEmail,
             LoginFailure,
+            SignUpFailure,
             PasswordsDoNotMatch,
-            UserDoesNotExist,
-            UserAlreadyExists,
             NoInternet,
             Unknown,
         }
@@ -50,30 +48,12 @@ class LoginScreenViewModel(
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
 
-    private val _events = MutableSharedFlow<Event>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
-    )
+    private val _events = mutableEventFlow<Event>()
     val events = _events.asSharedFlow()
 
     fun login() {
         if (!validateLogin()) return
-        viewModelScope.launch { handleLogin() }
-    }
-
-    private suspend fun handleLogin() {
-        val result = authService.login(email, password)
-        when (result) {
-            LoginResult.Success -> {
-                // Ignore the result since at this point we should
-                // be authorized anyway.
-                bootstrapUseCase()
-                _events.tryEmit(Event.LoggedIn)
-            }
-
-            LoginResult.Failure -> _events.tryEmit(Event.Error.LoginFailure)
-            LoginResult.UnknownError -> _events.tryEmit(Event.Error.Unknown)
-        }
+        viewModelScope.launch { handleLogin(isSignUp = false) }
     }
 
     // TODO: password requirements
@@ -98,7 +78,7 @@ class LoginScreenViewModel(
 
     fun signUp() {
         if (!validateSignUp()) return
-        viewModelScope.launch { handleSignUp() }
+        viewModelScope.launch { handleLogin(isSignUp = true) }
     }
 
     private fun validateSignUp(): Boolean {
@@ -110,19 +90,30 @@ class LoginScreenViewModel(
         return true
     }
 
-    private suspend inline fun handleSignUp() {
-        val result = authService.signUp(email, password)
-        when (result) {
-            SignUpResult.Success -> {
-                // Ignore the result since at this point we should
-                // be authorized anyway.
-                bootstrapUseCase()
-                _events.tryEmit(Event.LoggedIn)
-            }
-
-            SignUpResult.UserAlreadyExists -> _events.tryEmit(Event.Error.UserAlreadyExists)
-            SignUpResult.UnknownError -> _events.tryEmit(Event.Error.Unknown)
+    private suspend inline fun handleLogin(isSignUp: Boolean) {
+        try {
+            if (isSignUp) authService.signUp(email, password)
+            else authService.login(email, password)
+        } catch (e: ConnectException) {
+            Log.e(TAG, "connection error", e)
+            _events.tryEmit(Event.Error.NoInternet)
+            return
+        } catch (e: LoginException) {
+            Log.e(TAG, "login error", e)
+            _events.tryEmit(
+                if (isSignUp) {
+                    Event.Error.SignUpFailure
+                } else Event.Error.LoginFailure
+            )
+            return
+        } catch (e: Exception) {
+            Log.e(TAG, "unknown error", e)
+            _events.tryEmit(Event.Error.Unknown)
+            return
         }
+
+        bootstrapUseCase()
+        _events.tryEmit(Event.LoggedIn)
     }
 
     fun switchToSignUp() {

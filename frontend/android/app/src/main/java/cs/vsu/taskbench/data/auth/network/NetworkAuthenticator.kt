@@ -1,6 +1,6 @@
 @file:Suppress("PropertyName")
 
-package cs.vsu.taskbench.data.auth
+package cs.vsu.taskbench.data.auth.network
 
 import com.squareup.moshi.JsonClass
 import retrofit2.http.Body

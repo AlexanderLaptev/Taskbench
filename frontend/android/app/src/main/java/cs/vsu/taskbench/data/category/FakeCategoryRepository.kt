@@ -22,9 +22,8 @@ object FakeCategoryRepository : CategoryRepository {
 
     private var id = 11
 
-    override suspend fun preload(): Boolean {
+    override suspend fun preload() {
         Log.d(TAG, "preloading categories")
-        return true
     }
 
     override suspend fun getAllCategories(query: String): List<Category> {
