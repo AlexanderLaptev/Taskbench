@@ -79,7 +79,31 @@ class TaskAPITests(TestCase):
         response = self.client.get(url, **self.get_auth_headers())
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data[0]['id'], self.task1.task_id)
+
+        # Проверяем общее количество
+        self.assertEqual(len(data), 2)
+
+        # Проверяем порядок задач
+        self.assertEqual(data[0]['id'], self.task2.task_id)
+        self.assertEqual(data[1]['id'], self.task1.task_id)
+
+        # Проверяем правильность сортировки по приоритету
+        priorities = [task['dpc']['priority'] for task in data]
+        self.assertEqual(priorities, [2, 1])
+
+        # Проверяем наличие третичной сортировки по ID при одинаковом приоритете
+        task3 = Task.objects.create(
+            title='Task 3',
+            deadline=make_aware(datetime.now() + timedelta(days=3)),
+            priority=2,  # Тот же приоритет что у task2
+            user=self.user,
+            is_completed=False
+        )
+
+        response = self.client.get(url, **self.get_auth_headers())
+        data = response.json()
+        self.assertEqual(data[0]['id'], min(self.task2.task_id, task3.task_id))
+
 
     def test_get_tasks_sort_by_deadline(self):
         url = f"{reverse('task_list')}?sort_by=deadline"
