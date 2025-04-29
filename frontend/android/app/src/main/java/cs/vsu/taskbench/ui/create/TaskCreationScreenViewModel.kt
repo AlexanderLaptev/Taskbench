@@ -8,8 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cs.vsu.taskbench.data.category.CategoryRepository
-import cs.vsu.taskbench.data.task.SuggestionRepository
 import cs.vsu.taskbench.data.task.TaskRepository
+import cs.vsu.taskbench.data.task.suggestions.SuggestionRepository
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task

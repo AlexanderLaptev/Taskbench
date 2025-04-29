@@ -1,4 +1,4 @@
-package cs.vsu.taskbench.data.task
+package cs.vsu.taskbench.data.task.suggestions
 
 import android.util.Log
 import cs.vsu.taskbench.domain.model.AiSuggestions

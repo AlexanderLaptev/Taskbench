@@ -12,10 +12,10 @@ import cs.vsu.taskbench.data.category.network.NetworkCategoryDataSource
 import cs.vsu.taskbench.data.category.network.NetworkCategoryRepository
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsRepository
-import cs.vsu.taskbench.data.task.FakeSuggestionRepository
 import cs.vsu.taskbench.data.task.FakeTaskRepository
-import cs.vsu.taskbench.data.task.SuggestionRepository
 import cs.vsu.taskbench.data.task.TaskRepository
+import cs.vsu.taskbench.data.task.suggestions.FakeSuggestionRepository
+import cs.vsu.taskbench.data.task.suggestions.SuggestionRepository
 import cs.vsu.taskbench.data.user.FakeUserRepository
 import cs.vsu.taskbench.data.user.UserRepository
 import org.koin.core.module.dsl.singleOf
