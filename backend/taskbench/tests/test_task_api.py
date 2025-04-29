@@ -66,9 +66,14 @@ class TaskAPITests(TestCase):
         self.assertEqual(len(response.json()), 2)
 
     def test_get_tasks_filter_by_date(self):
-        date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        # Явно задаем дату дедлайна для task1
+        self.task1.deadline = make_aware(datetime(2024, 5, 20, 12, 0))
+        self.task1.save()
+
+        date = "2024-05-20"
         url = f"{reverse('task_list')}?date={date}"
         response = self.client.get(url, **self.get_auth_headers())
+
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data), 1)
@@ -104,13 +109,18 @@ class TaskAPITests(TestCase):
         data = response.json()
         self.assertEqual(data[0]['id'], min(self.task2.task_id, task3.task_id))
 
-
     def test_get_tasks_sort_by_deadline(self):
         url = f"{reverse('task_list')}?sort_by=deadline"
         response = self.client.get(url, **self.get_auth_headers())
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data[0]['id'], self.task1.task_id)
+
+        # Проверяем порядок дедлайнов
+        deadlines = [datetime.fromisoformat(t['dpc']['deadline']) for t in data]
+        self.assertTrue(
+            deadlines[0] <= deadlines[1],
+            "Задачи должны быть отсортированы по возрастанию дедлайна"
+        )
 
     def test_create_task(self):
         url = reverse('task_list')
@@ -227,6 +237,100 @@ class TaskAPITests(TestCase):
             **self.get_auth_headers()
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_filter_by_datetime_range(self):
+        # Создаем задачу с конкретным дедлайном
+        exact_time = make_aware(datetime(2024, 5, 20, 14, 0))
+        task = Task.objects.create(
+            title='Time specific task',
+            deadline=exact_time,
+            priority=1,
+            user=self.user
+        )
+
+        # Тест after
+        url = f"{reverse('task_list')}?after=2024-05-20T13:00:00Z"
+        response = self.client.get(url, **self.get_auth_headers())
+        self.assertIn(task.task_id, [t['id'] for t in response.json()])
+
+        # Тест before
+        url = f"{reverse('task_list')}?before=2024-05-20T15:00:00Z"
+        response = self.client.get(url, **self.get_auth_headers())
+        self.assertIn(task.task_id, [t['id'] for t in response.json()])
+
+    def test_conflicting_filters(self):
+        url = f"{reverse('task_list')}?date=2024-05-20&after=2024-05-20T00:00:00Z"
+        response = self.client.get(url, **self.get_auth_headers())
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('error', response.json())
+
+    def test_invalid_datetime_filters(self):
+        # Невалидный after
+        url = f"{reverse('task_list')}?after=invalid-datetime"
+        response = self.client.get(url, **self.get_auth_headers())
+        self.assertEqual(response.status_code, 400)
+
+        # Невалидный before
+        url = f"{reverse('task_list')}?before=invalid-datetime"
+        response = self.client.get(url, **self.get_auth_headers())
+        self.assertEqual(response.status_code, 400)
+
+    def test_exclude_tasks_without_deadline(self):
+        # Создаем задачу без дедлайна
+        Task.objects.create(
+            title='No deadline task',
+            deadline=None,
+            priority=1,
+            user=self.user,
+            is_completed=False
+        )
+
+        # Получаем все задачи (должны быть 3: 2 с дедлайнами из setUp и 1 без)
+        all_tasks = Task.objects.filter(user=self.user, is_completed=False)
+        self.assertEqual(all_tasks.count(), 3)
+
+        # Фильтруем по времени - должны получить только задачи с дедлайнами
+        url = f"{reverse('task_list')}?after=2024-01-01T00:00:00Z"
+        response = self.client.get(url, **self.get_auth_headers())
+        tasks = response.json()
+
+        # Должны быть только задачи с дедлайнами (2 из setUp)
+        self.assertEqual(len(tasks), 2)
+
+        # Проверяем, что задача без дедлайна не попала в результат
+        task_ids = [t['id'] for t in tasks]
+        no_deadline_task = Task.objects.get(title='No deadline task')
+        self.assertNotIn(no_deadline_task.task_id, task_ids)
+
+    def test_combined_after_before_filter(self):
+        # Создаем задачу в промежутке
+        task_in_range = Task.objects.create(
+            title='In range task',
+            deadline=make_aware(datetime(2024, 5, 20, 14, 0)),
+            priority=1,
+            user=self.user
+        )
+
+        # Задачи вне промежутка
+        Task.objects.create(
+            title='Before range task',
+            deadline=make_aware(datetime(2024, 5, 19, 14, 0)),
+            priority=1,
+            user=self.user
+        )
+        Task.objects.create(
+            title='After range task',
+            deadline=make_aware(datetime(2024, 5, 21, 14, 0)),
+            priority=1,
+            user=self.user
+        )
+
+        url = f"{reverse('task_list')}?after=2024-05-20T00:00:00Z&before=2024-05-20T23:59:59Z"
+        response = self.client.get(url, **self.get_auth_headers())
+        tasks = response.json()
+        self.assertEqual(len(tasks), 1)
+        self.assertEqual(tasks[0]['id'], task_in_range.task_id)
+
 
 
 class CategoryAPITests(TestCase):
