@@ -10,8 +10,8 @@ import cs.vsu.taskbench.data.auth.network.NetworkAuthenticator
 import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.data.category.network.NetworkCategoryDataSource
 import cs.vsu.taskbench.data.category.network.NetworkCategoryRepository
-import cs.vsu.taskbench.data.statistics.FakeStatisticsRepository
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
+import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsRepository
 import cs.vsu.taskbench.data.task.FakeSuggestionRepository
 import cs.vsu.taskbench.data.task.FakeTaskRepository
 import cs.vsu.taskbench.data.task.SuggestionRepository
@@ -50,7 +50,7 @@ val dataModule = module {
     singleOf(::NetworkAuthService) bind AuthService::class
     singleOf(::FakeUserRepository) bind UserRepository::class
     singleOf(::NetworkCategoryRepository) bind CategoryRepository::class
-    single { FakeStatisticsRepository } bind StatisticsRepository::class
+    singleOf(::NetworkStatisticsRepository) bind StatisticsRepository::class
     single { FakeSuggestionRepository } bind SuggestionRepository::class
     singleOf(::FakeTaskRepository) bind TaskRepository::class
 }
