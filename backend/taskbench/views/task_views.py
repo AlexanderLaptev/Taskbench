@@ -60,14 +60,13 @@ class TaskListView(APIView):
             if date:
                 tasks = tasks.filter(deadline__date=date)
 
-            # Apply sorting - primary by requested field, secondary by the other field
+            # Apply sorting
             if sort_by == 'priority':
-                tasks = tasks.order_by('priority', 'deadline')  # Сначала по приоритету, потом по дедлайну
+                tasks = tasks.order_by('-priority', 'deadline', 'task_id')  # Вариант 2
             elif sort_by == 'deadline':
-                tasks = tasks.order_by('deadline', 'priority')  # Сначала по дедлайну, потом по приоритету
+                tasks = tasks.order_by('deadline', '-priority', 'task_id')  # Вариант 1
             else:
-                # Default sorting if none specified
-                tasks = tasks.order_by('priority', 'deadline')
+                tasks = tasks.order_by('-priority', 'deadline', 'task_id')  # Дефолтный вариант
 
             # Pagination
             tasks = tasks[offset:offset + limit]
