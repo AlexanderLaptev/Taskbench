@@ -80,6 +80,19 @@ paths:
           schema:
             type: string
             format: date
+          description: Filter by exact date (cannot be used with after/before)
+        - in: query
+          name: after
+          schema:
+            type: string
+            format: date-time
+          description: Filter tasks with deadline after this datetime (UTC)
+        - in: query
+          name: before
+          schema:
+            type: string
+            format: date-time
+          description: Filter tasks with deadline before this datetime (UTC)
         - in: query
           name: offset
           schema:
@@ -99,6 +112,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    
 
   /tasks/{task_id}:
     delete:
