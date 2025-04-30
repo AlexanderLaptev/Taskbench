@@ -79,18 +79,23 @@ class TaskCreationScreenViewModel(
 
     fun saveTask() {
         viewModelScope.launch {
-            taskRepository.saveTask(
-                Task(
-                    id = null,
-                    content = contentInput,
-                    deadline = deadline,
-                    isHighPriority = isHighPriority,
-                    subtasks = subtasks,
-                    categoryId = selectedCategory?.id,
+            try {
+                taskRepository.saveTask(
+                    Task(
+                        id = null,
+                        content = contentInput,
+                        deadline = deadline,
+                        isHighPriority = isHighPriority,
+                        subtasks = subtasks,
+                        categoryId = selectedCategory?.id,
+                    )
                 )
-            )
+                clearInput()
+            } catch (e: HttpException) {
+                Log.e(TAG, "saveTask: HTTP error", e)
+                _errorFlow.tryEmit(Error.Unknown)
+            }
         }
-        clearInput()
     }
 
     fun updateCategories(query: String = "") {

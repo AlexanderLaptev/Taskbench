@@ -1,6 +1,5 @@
 package cs.vsu.taskbench.data.auth
 
-import android.util.Log
 import androidx.datastore.preferences.core.stringPreferencesKey
 import cs.vsu.taskbench.util.HttpStatusCodes
 import retrofit2.HttpException
@@ -12,6 +11,8 @@ data class AuthTokens(
 
 val EMAIL_PREFERENCES_KEY = stringPreferencesKey("email")
 
+const val TAG = "AuthService.withAuth"
+
 suspend inline fun AuthService.withAuth(block: (AuthTokens) -> Unit) {
     try {
         try {
@@ -19,11 +20,12 @@ suspend inline fun AuthService.withAuth(block: (AuthTokens) -> Unit) {
         } catch (e: HttpException) {
             when (e.code()) {
                 HttpStatusCodes.UNAUTHORIZED -> throw UnauthorizedException()
-                else -> {
-                    Log.d(null, "withAuth: ${e.response()?.errorBody()?.string()}")
-                    Log.d(null, "withAuth: ${e.response()?.raw()?.request()}")
-                    throw e
-                }
+//                else -> {
+//                    Log.e(TAG, "HTTP error: ${e.code()}", e)
+//                    Log.e(TAG, "error: '${e.response()?.errorBody()?.string()}'")
+//                    Log.e(TAG, "body: ${e.response()?.raw()?.request()?.body()}")
+//                }
+                else -> throw e
             }
         }
     } catch (e: UnauthorizedException) {

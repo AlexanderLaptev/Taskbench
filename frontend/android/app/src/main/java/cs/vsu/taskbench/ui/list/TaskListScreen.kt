@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.ui.list
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
@@ -27,6 +29,7 @@ import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.TaskCard
 import org.koin.compose.koinInject
+import retrofit2.HttpException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -44,8 +47,14 @@ fun TaskListScreen(
         var tasks by remember { mutableStateOf(listOf<Task>()) }
         val taskRepository = koinInject<TaskRepository>()
 
+        val context = LocalContext.current
         LaunchedEffect(Unit) {
-            tasks = taskRepository.getTasks(LocalDate.now(), TaskRepository.SortByMode.Priority)
+            try {
+                tasks = taskRepository.getTasks(LocalDate.now(), TaskRepository.SortByMode.Priority)
+            } catch (e: HttpException) {
+                Log.e(TAG, "HTTP error", e)
+                Toast.makeText(context, "HTTP error ${e.code()}", Toast.LENGTH_SHORT).show()
+            }
         }
 
         LazyColumn(
