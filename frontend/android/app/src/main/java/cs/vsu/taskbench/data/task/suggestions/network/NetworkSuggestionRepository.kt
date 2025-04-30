@@ -7,7 +7,6 @@ import cs.vsu.taskbench.data.task.network.TaskDpc
 import cs.vsu.taskbench.data.task.suggestions.SuggestionRepository
 import cs.vsu.taskbench.domain.model.AiSuggestions
 import cs.vsu.taskbench.domain.model.Category
-import cs.vsu.taskbench.util.toAuthHeader
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -31,7 +30,7 @@ class NetworkSuggestionRepository(
         Log.d(TAG, "getSuggestions: priority='$isHighPriority'")
         Log.d(TAG, "getSuggestions: category='$category'")
 
-        authService.withAuth { tokens ->
+        authService.withAuth { access ->
             val request = SuggestionsRequest(
                 title = prompt,
                 timestamp = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()),
@@ -43,7 +42,7 @@ class NetworkSuggestionRepository(
                 ),
             )
 
-            val response = dataSource.getSuggestions(tokens.access.toAuthHeader(), request)
+            val response = dataSource.getSuggestions(access, request)
             val suggestedPriority = response.suggested_dpc.priority?.let { it == 1 }
             val suggestedDeadline = response.suggested_dpc.deadline?.let {
                 DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(it) as LocalDateTime

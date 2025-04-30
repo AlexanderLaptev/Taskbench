@@ -43,9 +43,9 @@ class NetworkTaskRepository(
         Log.d(TAG, "updateCache: date='$date'")
         Log.d(TAG, "updateCache: categoryId='$categoryId'")
         Log.d(TAG, "updateCache: sortBy='$sortBy'")
-        authService.withAuth { tokens ->
+        authService.withAuth { access ->
             val response = dataSource.getAllTasks(
-                tokens.access.toAuthHeader(),
+                access,
                 offset = 0,
                 limit = 1000,
                 date = date?.format(DateTimeFormatter.ISO_LOCAL_DATE),
@@ -88,9 +88,9 @@ class NetworkTaskRepository(
 
     override suspend fun saveTask(task: Task): Task? {
         Log.d(TAG, "saveTask: task='$task'")
-        authService.withAuth { tokens ->
+        authService.withAuth { access ->
             val response = dataSource.createTask(
-                tokens.access.toAuthHeader(),
+                access,
                 AddTaskRequest(
                     content = task.content,
                     dpc = task.toDpc(),
@@ -108,8 +108,8 @@ class NetworkTaskRepository(
 
     override suspend fun deleteTask(task: Task) {
         Log.d(TAG, "deleteTask: task='$task'")
-        authService.withAuth { tokens ->
-            dataSource.deleteTask(tokens.access.toAuthHeader(), task.id!!)
+        authService.withAuth { access ->
+            dataSource.deleteTask(access.toAuthHeader(), task.id!!)
         }
         updateCache()
     }

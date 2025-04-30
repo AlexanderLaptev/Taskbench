@@ -6,7 +6,6 @@ import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.withAuth
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.domain.model.Statistics
-import cs.vsu.taskbench.util.toAuthHeader
 import java.time.LocalDate
 
 class NetworkStatisticsRepository(
@@ -21,7 +20,7 @@ class NetworkStatisticsRepository(
 
     override suspend fun preload() {
         authService.withAuth {
-            val response = dataSource.getStatistics(it.access.toAuthHeader())
+            val response = dataSource.getStatistics(it)
             val graphData = buildFloatList(7) {
                 for (i in response.weekly.indices) this += response.weekly[i]
             }

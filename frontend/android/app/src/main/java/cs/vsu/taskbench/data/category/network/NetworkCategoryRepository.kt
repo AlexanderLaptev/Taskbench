@@ -5,7 +5,6 @@ import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.withAuth
 import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.domain.model.Category
-import cs.vsu.taskbench.util.toAuthHeader
 
 class NetworkCategoryRepository(
     private val authService: AuthService,
@@ -20,7 +19,7 @@ class NetworkCategoryRepository(
     override suspend fun preload() {
         authService.withAuth {
             cache.clear()
-            cache.addAll(dataSource.getAllCategories(it.access.toAuthHeader()))
+            cache.addAll(dataSource.getAllCategories(it))
         }
         Log.d(TAG, "preload: cache size: ${cache.size}")
     }
@@ -38,10 +37,7 @@ class NetworkCategoryRepository(
         Log.d(TAG, "saveCategory: saving category $category")
         var saved: Category? = null
         authService.withAuth {
-            saved = dataSource.createCategory(
-                it.access.toAuthHeader(),
-                CategoryCreateRequest(category.name),
-            )
+            saved = dataSource.createCategory(it, CategoryCreateRequest(category.name))
         }
         preload()
         return saved!!
