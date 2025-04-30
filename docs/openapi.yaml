@@ -22,12 +22,12 @@ paths:
             schema:
               type: object
               properties:
-                text:
+                title:
                   type: string
                   description: Task description text
                 timestamp:
-                  type: integer
-                  format: int64
+                  type: string
+                  format: date-time
                   description: Unix timestamp
                 dpc:
                   $ref: '#/components/schemas/DPC'
