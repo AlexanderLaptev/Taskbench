@@ -1,17 +1,26 @@
 package cs.vsu.taskbench.data.task.suggestions
 
 import android.util.Log
+import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.domain.model.AiSuggestions
+import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.util.Lipsum
 import java.time.LocalDateTime
 import kotlin.random.Random
 
-object FakeSuggestionRepository : SuggestionRepository {
-    private val TAG = FakeSuggestionRepository::class.simpleName
+class FakeSuggestionRepository(
+    private val categoryRepository: CategoryRepository,
+) : SuggestionRepository {
+    companion object {
+        private val TAG = FakeSuggestionRepository::class.simpleName
+    }
 
-    private val CATEGORIES = listOf("work", "home", "hobby", "school", "lorem", "ipsum", "dolor")
-
-    override suspend fun getSuggestions(prompt: String): AiSuggestions {
+    override suspend fun getSuggestions(
+        prompt: String,
+        deadline: LocalDateTime?,
+        isHighPriority: Boolean,
+        category: Category?,
+    ): AiSuggestions {
         Log.d(TAG, "requested suggestions")
 
         if (prompt.isBlank()) {
@@ -25,15 +34,19 @@ object FakeSuggestionRepository : SuggestionRepository {
             result += "${it + 1}. ${Lipsum.get(4, 11, random)}"
         }
 
-        val deadline = if (random.nextBoolean()) {
+        val suggestedDeadline = if (random.nextBoolean()) {
             LocalDateTime.now().plusDays(random.nextLong(0, 6))
         } else null
-        val isHighPriority = if (random.nextBoolean()) random.nextBoolean() else null
+        val suggestedPriority = if (random.nextBoolean()) random.nextBoolean() else null
+        val suggestedCategory = if (random.nextBoolean()) null else {
+            val categories = categoryRepository.getAllCategories()
+            categories.random(random)
+        }
         val suggestions = AiSuggestions(
             subtasks = result,
-            deadline = deadline,
-            isHighPriority = isHighPriority,
-            categoryName = if (random.nextBoolean()) null else CATEGORIES.random(random),
+            deadline = suggestedDeadline,
+            isHighPriority = suggestedPriority,
+            category = suggestedCategory,
         )
 
         Log.d(TAG, "returned ${result.size} suggestions")

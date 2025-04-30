@@ -3,7 +3,6 @@ package cs.vsu.taskbench.data
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.network.NetworkAuthService
 import cs.vsu.taskbench.data.auth.network.NetworkAuthenticator
@@ -11,6 +10,7 @@ import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.data.category.network.NetworkCategoryDataSource
 import cs.vsu.taskbench.data.category.network.NetworkCategoryRepository
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
+import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsDataSource
 import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsRepository
 import cs.vsu.taskbench.data.task.FakeTaskRepository
 import cs.vsu.taskbench.data.task.TaskRepository
@@ -30,7 +30,6 @@ val dataModule = module {
     single { get<Context>().dataStore }
     single {
         Moshi.Builder()
-            .addLast(KotlinJsonAdapterFactory())
             .build()
     }
     single {
@@ -46,11 +45,18 @@ val dataModule = module {
     single {
         get<Retrofit>().create(NetworkAuthenticator::class.java)
     } bind NetworkAuthenticator::class
+    single {
+        get<Retrofit>().create(NetworkStatisticsDataSource::class.java)
+    } bind NetworkStatisticsDataSource::class
+//    single {
+//        get<Retrofit>().create(NetworkSuggestionDataSource::class.java)
+//    } bind NetworkSuggestionDataSource::class
 
     singleOf(::NetworkAuthService) bind AuthService::class
     singleOf(::FakeUserRepository) bind UserRepository::class
     singleOf(::NetworkCategoryRepository) bind CategoryRepository::class
     singleOf(::NetworkStatisticsRepository) bind StatisticsRepository::class
-    single { FakeSuggestionRepository } bind SuggestionRepository::class
+//    singleOf(::NetworkSuggestionRepository) bind SuggestionRepository::class
+    singleOf(::FakeSuggestionRepository) bind SuggestionRepository::class
     singleOf(::FakeTaskRepository) bind TaskRepository::class
 }

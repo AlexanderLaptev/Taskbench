@@ -8,5 +8,5 @@ data class AiSuggestions(
     val subtasks: List<String> = listOf(),
     val deadline: LocalDateTime? = null,
     val isHighPriority: Boolean? = null,
-    val categoryName: String? = null,
+    val category: Category? = null,
 )

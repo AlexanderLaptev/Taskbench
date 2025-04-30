@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.data.auth
 
+import android.util.Log
 import androidx.datastore.preferences.core.stringPreferencesKey
 import cs.vsu.taskbench.util.HttpStatusCodes
 import retrofit2.HttpException
@@ -18,7 +19,11 @@ suspend inline fun AuthService.withAuth(block: (AuthTokens) -> Unit) {
         } catch (e: HttpException) {
             when (e.code()) {
                 HttpStatusCodes.UNAUTHORIZED -> throw UnauthorizedException()
-                else -> throw e
+                else -> {
+                    Log.d(null, "withAuth: ${e.response()?.errorBody()?.string()}")
+                    Log.d(null, "withAuth: ${e.response()?.raw()?.request()}")
+                    throw e
+                }
             }
         }
     } catch (e: UnauthorizedException) {

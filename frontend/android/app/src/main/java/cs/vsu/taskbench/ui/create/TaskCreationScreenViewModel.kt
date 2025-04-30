@@ -131,7 +131,12 @@ class TaskCreationScreenViewModel(
         viewModelScope.launch {
             // TODO: add delay after last change before sending
             suggestedSubtasks = emptyList()
-            val newSuggestions = suggestionRepository.getSuggestions(prompt)
+            val newSuggestions = suggestionRepository.getSuggestions(
+                prompt = prompt,
+                deadline = deadline,
+                isHighPriority = isHighPriority,
+                category = selectedCategory,
+            )
             suggestedSubtasks = newSuggestions.subtasks.map { content ->
                 Subtask(id = null, content = content, isDone = false)
             }

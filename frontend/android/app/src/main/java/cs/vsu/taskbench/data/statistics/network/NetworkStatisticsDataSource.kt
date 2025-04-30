@@ -15,6 +15,6 @@ class StatisticsResponse(
 )
 
 interface NetworkStatisticsDataSource {
-    @GET("statistics/")
+    @GET("statistics")
     suspend fun getStatistics(@Header(HttpHeaders.AUTHORIZATION) auth: String): StatisticsResponse
 }
