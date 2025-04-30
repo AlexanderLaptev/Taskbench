@@ -55,6 +55,7 @@ fun TextField(
     modifier: Modifier = Modifier,
     color: Color = LightYellow,
     placeholder: String = "",
+    placeholderStyle: TextStyle = placeholderTextStyle,
     readOnly: Boolean = false,
     password: Boolean = false,
     keyboardOptions: KeyboardOptions? = null,
@@ -100,7 +101,7 @@ fun TextField(
                 if (value.isEmpty()) {
                     BasicText(
                         text = placeholder,
-                        style = placeholderTextStyle,
+                        style = placeholderStyle,
                     )
                 }
             }

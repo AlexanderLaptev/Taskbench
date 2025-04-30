@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,9 +62,11 @@ import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
+import cs.vsu.taskbench.ui.theme.ExtraLightGray
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+//import java.time.format.TextStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ShowToast")
@@ -282,6 +285,8 @@ private fun CategoryDialog(
                     onValueChange = onQueryChange,
                     placeholder = stringResource(R.string.label_category),
                     modifier = Modifier.weight(1.0f),
+                    color = ExtraLightGray,
+                    placeholderStyle = TextStyle(color = DarkGray, fontSize = 16.sp),
                 )
                 Button(
                     onClick = { onCategoryAdd(query) },
