@@ -40,6 +40,7 @@ class BootstrapUseCase(
             Log.d(TAG, "invoke: bootstrap failed, HTTP error")
             Log.d(TAG, "invoke: code=${e.code()}")
             Log.d(TAG, "invoke: errorBody=${e.response()?.errorBody()?.string()}")
+            throw e
         } catch (e: UnauthorizedException) {
             Log.d(TAG, "invoke: bootstrap failed, authorization required")
             return Result.LoginRequired
