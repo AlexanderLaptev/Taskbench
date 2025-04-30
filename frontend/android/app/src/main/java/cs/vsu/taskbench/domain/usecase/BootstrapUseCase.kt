@@ -5,6 +5,7 @@ import cs.vsu.taskbench.data.PreloadRepository
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.UnauthorizedException
 import cs.vsu.taskbench.util.MockRandom
+import retrofit2.HttpException
 
 class BootstrapUseCase(
     private val authService: AuthService,
@@ -35,6 +36,10 @@ class BootstrapUseCase(
                     repo.preload()
                 }
             }
+        } catch (e: HttpException) {
+            Log.d(TAG, "invoke: bootstrap failed, HTTP error")
+            Log.d(TAG, "invoke: code=${e.code()}")
+            Log.d(TAG, "invoke: errorBody=${e.response()?.errorBody()?.string()}")
         } catch (e: UnauthorizedException) {
             Log.d(TAG, "invoke: bootstrap failed, authorization required")
             return Result.LoginRequired
