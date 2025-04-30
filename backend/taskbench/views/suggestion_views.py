@@ -20,10 +20,10 @@ class SuggestionView(APIView):
         data = json.loads(request.body)
         serializer = TaskDPCtoFlatSerializer(data=data)
         if not serializer.is_valid():
-            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(serializer.errors, status=400)
         user_serializer = JwtSerializer(data=get_token_from_request(request))
         if not user_serializer.is_valid():
-            return JsonResponse(user_serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse("Invalid token", status=401)
         user_id = user_serializer.validated_data['user'].user_id
 
         input_data = serializer.validated_data

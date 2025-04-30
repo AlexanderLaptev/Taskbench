@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        body {
+            background-color: #fef1dc;
+            font-family: sans-serif;
+            text-align: center;
+            padding-top: 100px;
+        }
+        .card {
+            display: inline-block;
+            margin: 10px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            min-width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Добро пожаловать, {{ request.user.username }}</h1>
+    <div>
+        <div class="card">Пользователей: 280</div>
+        <div class="card">Подписчиков: 28</div>
+        <div class="card">Новых за неделю: 40</div>
+    </div>
+</body>
+</html>

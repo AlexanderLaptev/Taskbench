@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from taskbench.views.statisctics_views import StatisticsView
 from taskbench.views.suggestion_views import SuggestionView
@@ -35,7 +35,8 @@ from taskbench.views.user_views import (
 )
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("", include("dashboard.urls")),
+    path("admin/", admin.site.urls),
     path('tasks/', TaskListView.as_view(), name='task_list'),
     path('tasks/<int:task_id>/', TaskDetailView.as_view(), name='task_detail'),
     path('subtasks/', SubtaskCreateView.as_view(), name='subtask_create'),

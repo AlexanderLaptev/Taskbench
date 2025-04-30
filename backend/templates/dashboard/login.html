@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход в админку</title>
+    <style>
+        body {
+            background-color: #fef1dc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            margin: 0.5rem 0;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            background: #ffeecf;
+        }
+        button {
+            background: #ffd84d;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-top: 1rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <form method="post" class="login-box">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Логин" required>
+        <input type="password" name="password" placeholder="Пароль" required>
+        <button type="submit">✔️</button>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+    </form>
+</body>
+</html>
