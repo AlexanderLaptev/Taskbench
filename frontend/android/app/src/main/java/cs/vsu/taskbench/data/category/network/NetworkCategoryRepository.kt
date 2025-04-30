@@ -18,9 +18,10 @@ class NetworkCategoryRepository(
     private var cache: MutableList<Category> = mutableListOf()
 
     override suspend fun preload() {
-        val tokens = authService.getSavedTokens()
-        cache.clear()
-        cache.addAll(dataSource.getAllCategories(tokens.access.toAuthHeader()))
+        authService.withAuth {
+            cache.clear()
+            cache.addAll(dataSource.getAllCategories(it.access.toAuthHeader()))
+        }
         Log.d(TAG, "preload: cache size: ${cache.size}")
     }
 
