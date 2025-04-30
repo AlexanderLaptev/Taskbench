@@ -16,6 +16,10 @@ from ..services.jwt_service import get_token_from_request
 #GET http://127.0.0.1:8000/tasks/?sort_by=priority
 #GET http://127.0.0.1:8000/tasks/?sort_by=deadline
 #GET http://127.0.0.1:8000/tasks/?date=2026-05-25  - с фильтром по дате
+# GET http://127.0.0.1:8000/tasks/?after=2025-01-01T00:00:00Z
+# GET http://127.0.0.1:8000/tasks/?before=2025-12-31T23:59:59Z
+# GET http://127.0.0.1:8000/tasks/?after=2025-01-01T00:00:00Z&before=2025-12-31T23:59:59Z
+# GET http://127.0.0.1:8000/tasks/?date=2025-05-01
 #POST http://127.0.0.1:8000/tasks/
 # {
 #     "content": "Подготовить презентацию",
@@ -46,6 +50,8 @@ class TaskListView(APIView):
             # Get request parameters
             category_id = request.GET.get('category_id')
             sort_by = request.GET.get('sort_by')
+            after = request.GET.get('after')
+            before = request.GET.get('before')
             date = request.GET.get('date')
             offset = int(request.GET.get('offset', 0))
             limit = int(request.GET.get('limit', 10))
@@ -54,11 +60,36 @@ class TaskListView(APIView):
             tasks = Task.objects.filter(user=user, is_completed=False) \
                 .prefetch_related('subtasks', 'task_categories__category')
 
+            # Validate filters
+            if date and (after or before):
+                return JsonResponse(
+                    {'error': 'Use either date or after/before, not together'},
+                    status=400
+                )
+
             # Apply filters
             if category_id:
                 tasks = tasks.filter(task_categories__category_id=category_id)
+
             if date:
                 tasks = tasks.filter(deadline__date=date)
+
+            # Фильтрация по времени
+            if after or before:
+                # Исключаем задачи без дедлайна
+                tasks = tasks.exclude(deadline__isnull=True)
+
+                if after:
+                    after_dt = parse_datetime(after)
+                    if not after_dt:
+                        return JsonResponse({'error': 'Invalid after datetime'}, status=400)
+                    tasks = tasks.filter(deadline__gte=after_dt)
+
+                if before:
+                    before_dt = parse_datetime(before)
+                    if not before_dt:
+                        return JsonResponse({'error': 'Invalid before datetime'}, status=400)
+                    tasks = tasks.filter(deadline__lte=before_dt)
 
             # Apply sorting
             if sort_by == 'priority':
