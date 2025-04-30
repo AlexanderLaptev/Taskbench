@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход в админку</title>
+    <style>
+        body {
+            background-color: #FFF3DC;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            background: white;
+            width: 360px;
+            box-sizing: border-box;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0.5rem 0 0.5rem 0;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            background: #FFF3DC;
+        }
+
+        .login-button {
+            width: 40px;
+            height: 40px;
+            background-color: #FFE375; /* жёлтая */
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 0 auto; /* по центру */
+            transition: background-color 0.2s;
+        }
+    </style>
+</head>
+<body>
+<form method="post" class="login-box">
+    {% csrf_token %}
+    <input type="text" name="username" placeholder="Логин" required>
+    <input type="password" name="password" placeholder="Пароль" required>
+    <button type="submit" class="login-button">
+          {% include 'dashboard/res/check-mark.svg' %}
+    </button>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+</form>
+</body>
+</html>
