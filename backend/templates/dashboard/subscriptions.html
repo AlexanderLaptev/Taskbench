@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Список подписок</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 40px;
+      background-color: #FFF3DC;
+      margin: 0;
+    }
+
+    .table-wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      padding: 20px;
+    }
+
+    h2 {
+      margin-top: 0;
+      text-align: center;
+      color: #444444;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background-color: #FFF3DC;
+      color: #444444;
+    }
+
+    td {
+      color: #444444;
+    }
+
+    .pagination {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .pagination button {
+      background-color: #FFE375;
+      border: none;
+      padding: 10px 15px;
+      margin: 0 5px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+
+    .pagination button:hover:not(:disabled) {
+      background-color: #FFE375;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="table-wrapper">
+    <h2>Список подписок</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Пользователь</th>
+          <th>Начало</th>
+          <th>Окончание</th>
+          <th>Активна</th>
+          <th>Транзакция</th>
+        </tr>
+      </thead>
+      <tbody id="subscription-table">
+        <!-- JS вставит строки -->
+      </tbody>
+    </table>
+    <div class="pagination">
+      <button id="prev-btn">Назад</button>
+      <span id="page-info">Страница 1</span>
+      <button id="next-btn">Вперёд</button>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-bottom: 30px;">
+  <a href="/admin/dashboard/" style="
+    display: inline-block;
+    background-color: #FFE375;
+    color: #000;
+    text-decoration: none;
+    margin-top: 2rem;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.2s;
+  " onmouseover="this.style.backgroundColor='#fae48e'" onmouseout="this.style.backgroundColor='#FFE375'">
+    Статистика
+  </a>
+</div>
+
+  <script>
+    let currentPage = 1;
+
+    function loadPage(page) {
+      fetch(`/admin/api/subscriptions/?page=${page}`)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById('subscription-table');
+          tbody.innerHTML = "";
+
+          data.subscriptions.forEach(sub => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${sub.id}</td>
+              <td>${sub.username}</td>
+              <td>${sub.start_date}</td>
+              <td>${sub.end_date}</td>
+              <td>${sub.is_active ? "Да" : "Нет"}</td>
+              <td>${sub.transaction_id}</td>
+            `;
+            tbody.appendChild(row);
+          });
+
+          currentPage = data.page;
+          document.getElementById("page-info").textContent = `Страница ${data.page}`;
+          document.getElementById("prev-btn").disabled = !data.has_previous;
+          document.getElementById("next-btn").disabled = !data.has_next;
+        });
+    }
+
+    document.getElementById("prev-btn").addEventListener("click", () => loadPage(currentPage - 1));
+    document.getElementById("next-btn").addEventListener("click", () => loadPage(currentPage + 1));
+
+    loadPage(currentPage);
+  </script>
+</body>
+</html>
