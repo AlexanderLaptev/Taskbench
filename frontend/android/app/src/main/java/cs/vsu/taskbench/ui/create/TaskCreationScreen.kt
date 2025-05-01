@@ -2,6 +2,7 @@ package cs.vsu.taskbench.ui.create
 
 import android.annotation.SuppressLint
 import android.widget.Toast
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -22,15 +23,22 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerColors
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDefaults
@@ -38,8 +46,10 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -75,6 +85,7 @@ import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.ExtraLightGray
+import cs.vsu.taskbench.ui.theme.Red
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
@@ -103,9 +114,7 @@ fun TaskCreationScreen(navController: NavController) {
 
             toast?.cancel()
             toast = Toast.makeText(
-                context,
-                context.getString(messageId),
-                Toast.LENGTH_SHORT
+                context, context.getString(messageId), Toast.LENGTH_SHORT
             ).apply {
                 show()
             }
@@ -384,7 +393,7 @@ fun DeadlineDialog(
         is24Hour = true,
     )
     var isInputMode by remember { mutableStateOf(true) }
-    var painter by remember { mutableStateOf(R.drawable.ic_clock) }
+    var painter by remember { mutableIntStateOf(R.drawable.ic_clock) }
 
     ModalBottomSheet(
         sheetState = sheetState,
@@ -400,44 +409,162 @@ fun DeadlineDialog(
                 .fillMaxWidth()
                 .padding(16.dp),
         ) {
-            Button(
-                onClick = { isInputMode = !isInputMode },
-                fillWidth = false,
-                modifier = Modifier.size(52.dp),
+            Box(
+                modifier = modifier.fillMaxWidth()
             ) {
-                Icon(
-                    painter = painterResource(painter),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.requiredSize(24.dp),
-                )
-            }
-            if (isInputMode) {
-                painter = R.drawable.ic_clock
-                TimeInput(
-                    state = timePickerState,
-                    colors = TimePickerDefaults.colors(
-                        timeSelectorSelectedContainerColor= AccentYellow,
-                        timeSelectorUnselectedContainerColor= Beige,
-                        timeSelectorSelectedContentColor= Black,
-                        timeSelectorUnselectedContentColor= Black,)
+                if (isInputMode) {
+                    painter = R.drawable.ic_clock
+                    TimeInput(
+                        modifier = modifier.align(Alignment.Center),
+                        state = timePickerState, colors = TimePickerDefaults.colors(
+                            timeSelectorSelectedContainerColor = AccentYellow,
+                            timeSelectorUnselectedContainerColor = Beige,
+                            timeSelectorSelectedContentColor = Black,
+                            timeSelectorUnselectedContentColor = Black,
+                        )
                     )
-            } else {
-                painter = R.drawable.ic_edit
-                TimePicker(state = timePickerState,
-                    colors =TimePickerDefaults.colors(
-                        clockDialColor = Beige,
-                        clockDialSelectedContentColor = Black,
-                        selectorColor = AccentYellow,
-                        periodSelectorBorderColor= AccentYellow,
-                        clockDialUnselectedContentColor= Black,
-                        timeSelectorSelectedContainerColor= AccentYellow,
-                        timeSelectorUnselectedContainerColor= Beige,
-                        timeSelectorSelectedContentColor= Black,
-                        timeSelectorUnselectedContentColor= Black,))
+                } else {
+                    painter = R.drawable.ic_edit
+                    TimePicker(
+                        modifier = modifier.align(Alignment.Center),
+                        state = timePickerState, colors = TimePickerDefaults.colors(
+                            clockDialColor = Beige,
+                            clockDialSelectedContentColor = Black,
+                            selectorColor = AccentYellow,
+                            periodSelectorBorderColor = AccentYellow,
+                            clockDialUnselectedContentColor = Black,
+                            timeSelectorSelectedContainerColor = AccentYellow,
+                            timeSelectorUnselectedContainerColor = Beige,
+                            timeSelectorSelectedContentColor = Black,
+                            timeSelectorUnselectedContentColor = Black,
+                        )
+                    )
+                }
+
+                Button(
+                    onClick = {
+                        isInputMode = !isInputMode
+                        datePickerState.displayMode =
+                            if (!isInputMode) DisplayMode.Input else datePickerState.displayMode
+                    },
+                    fillWidth = false,
+                    modifier = Modifier
+                        .size(52.dp)
+                        .align(Alignment.TopEnd)
+                        .padding(top = 24.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(painter),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.requiredSize(24.dp),
+                    )
+                }
             }
 
-            DatePicker(state = datePickerState)
+            Box(
+            ) {
+                DatePicker(
+                    state = datePickerState,
+                    title = null,
+                    showModeToggle = false,
+                    modifier = modifier.padding(top = 8.dp),
+                    colors = DatePickerDefaults.colors(
+                        containerColor = White,
+                        headlineContentColor = DarkGray,
+                        weekdayContentColor = Black,
+                        subheadContentColor = AccentYellow,
+                        navigationContentColor = DarkGray,
+                        yearContentColor = Black,
+                        disabledYearContentColor = LightGray,
+                        currentYearContentColor = Black,
+                        selectedYearContentColor = Black,
+                        selectedYearContainerColor = AccentYellow,
+                        dayContentColor = Black,
+                        selectedDayContentColor = Black,
+                        selectedDayContainerColor = AccentYellow,
+                        todayContentColor = Black,
+                        todayDateBorderColor = LightGray,
+                        dividerColor = ExtraLightGray,
+                        dateTextFieldColors = TextFieldColors(
+                            focusedTextColor = Black,
+                            unfocusedTextColor = Black,
+                            disabledTextColor = Black,
+                            errorTextColor = Black,
+                            focusedContainerColor = White,
+                            unfocusedContainerColor = White,
+                            disabledContainerColor = White,
+                            errorContainerColor = White,
+                            cursorColor = Black,
+                            errorCursorColor = Black,
+                            textSelectionColors = TextSelectionColors(
+                                handleColor = LightGray,
+                                backgroundColor = White
+                            ),
+                            focusedIndicatorColor = AccentYellow,
+                            unfocusedIndicatorColor = Beige,
+                            disabledIndicatorColor = Beige,
+                            errorIndicatorColor = Red,
+                            focusedLeadingIconColor = Color.Transparent,
+                            unfocusedLeadingIconColor = Color.Transparent,
+                            disabledLeadingIconColor = Color.Transparent,
+                            errorLeadingIconColor = Color.Transparent,
+                            focusedTrailingIconColor = Color.Transparent,
+                            unfocusedTrailingIconColor = Color.Transparent,
+                            disabledTrailingIconColor = Color.Transparent,
+                            errorTrailingIconColor = Color.Transparent,
+                            focusedLabelColor = Black,
+                            unfocusedLabelColor = Black,
+                            disabledLabelColor = Black,
+                            errorLabelColor = Red,
+                            focusedPlaceholderColor = LightGray,
+                            unfocusedPlaceholderColor = Black,
+                            disabledPlaceholderColor = Black,
+                            errorPlaceholderColor = Red,
+                            focusedSupportingTextColor = LightGray,
+                            unfocusedSupportingTextColor = LightGray,
+                            disabledSupportingTextColor = LightGray,
+                            errorSupportingTextColor = Red,
+                            focusedPrefixColor = White,
+                            unfocusedPrefixColor = White,
+                            disabledPrefixColor = White,
+                            errorPrefixColor = Red,
+                            focusedSuffixColor = White,
+                            unfocusedSuffixColor = White,
+                            disabledSuffixColor = White,
+                            errorSuffixColor = Red,
+                        ),
+                    )
+                )
+
+                if (datePickerState.displayMode == DisplayMode.Picker) {
+                    IconButton(
+                        onClick = {
+                            datePickerState.displayMode = DisplayMode.Input
+                        },
+                        modifier = modifier.align(Alignment.TopEnd)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_edit),
+                            contentDescription = null
+                        )
+                    }
+                } else {
+                    IconButton(
+                        onClick = {
+                            isInputMode = true
+                            datePickerState.displayMode = DisplayMode.Picker
+                        },
+                        modifier = modifier.align(Alignment.TopEnd)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_calendar),
+                            contentDescription = null
+                        )
+                    }
+                }
+
+            }
 
             Button(
                 onClick = {
@@ -455,7 +582,7 @@ fun DeadlineDialog(
                     painter = painterResource(R.drawable.ic_ok_circle_outline),
                     contentDescription = null,
                     tint = Color.Unspecified,
-                    modifier = Modifier.requiredSize(24.dp),
+                    modifier = Modifier.requiredSize(28.dp),
                 )
             }
         }
