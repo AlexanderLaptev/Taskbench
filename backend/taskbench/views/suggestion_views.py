@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.views import APIView
 
+from backend import settings
+from backend.settings import DEBUG
 from taskbench.models.models import Category
 from taskbench.serializers.task_serializers import TaskDPCtoFlatSerializer
 from taskbench.serializers.user_serializers import JwtSerializer
@@ -27,20 +29,21 @@ class SuggestionView(APIView):
         user_id = user_serializer.validated_data['user'].user_id
 
         input_data = serializer.validated_data
-        deadline    = input_data['deadline']
-        title       = input_data['title']
-        priority    = input_data['priority']
-        category_id = input_data['category_id']
-        timestamp   = input_data['timestamp']
+        deadline = input_data.get('deadline')
+        title = input_data.get('title')
+        priority = input_data.get('priority')
+        category_id = input_data.get('category_id')
+        timestamp = input_data.get('timestamp')
+        service = SuggestionService(debug=settings.DEBUG)
 
         if deadline is None:
-            deadline = SuggestionService(debug=True).suggest_deadline(title, now=timestamp)
-        priority = SuggestionService().suggest_priority(title)
+            deadline = service.suggest_deadline(title, now=timestamp)
+        priority = service.suggest_priority(title)
 
         if category_id is None:
             categories = Category.objects.filter(user_id = user_id)
             category_names = [c.name for c in categories]
-            category_index = SuggestionService().suggest_category(title, category_names)
+            category_index = service.suggest_category(title, category_names)
             category_name = ''
             if category_index < 0 or category_index >= len(categories):
                 category_id = None
@@ -50,7 +53,7 @@ class SuggestionView(APIView):
         else:
             category_name = Category.objects.get(category_id=category_id).name
 
-        subtasks = SuggestionService().suggest_subtasks(title)
+        subtasks = service.suggest_subtasks(title)
 
         return JsonResponse({
             "suggested_dpc": {
