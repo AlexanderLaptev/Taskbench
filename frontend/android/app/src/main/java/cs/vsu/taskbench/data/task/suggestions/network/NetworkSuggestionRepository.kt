@@ -45,7 +45,9 @@ class NetworkSuggestionRepository(
             val response = dataSource.getSuggestions(access, request)
             val suggestedPriority = response.suggested_dpc.priority?.let { it == 1 }
             val suggestedDeadline = response.suggested_dpc.deadline?.let {
-                DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(it) as LocalDateTime
+                if (it.isNotBlank()) {
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(it) as LocalDateTime
+                } else null
             }
             val suggestedCategory = with(response.suggested_dpc) {
                 if (category_id != null && category_name != null) {

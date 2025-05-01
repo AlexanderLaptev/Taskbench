@@ -132,6 +132,7 @@ class TaskCreationScreenViewModel(
     }
 
     private fun updateSuggestions(prompt: String) {
+        if (prompt.isBlank()) return
         Log.d(TAG, "updateSuggestions: prompt=$prompt")
         viewModelScope.launch {
             // TODO: add delay after last change before sending

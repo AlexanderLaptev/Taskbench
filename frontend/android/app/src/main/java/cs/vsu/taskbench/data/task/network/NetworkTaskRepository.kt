@@ -6,7 +6,6 @@ import cs.vsu.taskbench.data.auth.withAuth
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
-import cs.vsu.taskbench.util.toAuthHeader
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -80,7 +79,7 @@ class NetworkTaskRepository(
         }
     }
 
-    override suspend fun getTasks(date: LocalDate, sortBy: TaskRepository.SortByMode): List<Task> {
+    override suspend fun getTasks(date: LocalDate?, sortBy: TaskRepository.SortByMode): List<Task> {
         Log.d(TAG, "getTasks: enter")
         updateCache(date, sortBy, null)
         return cache
@@ -109,8 +108,9 @@ class NetworkTaskRepository(
     override suspend fun deleteTask(task: Task) {
         Log.d(TAG, "deleteTask: task='$task'")
         authService.withAuth { access ->
-            dataSource.deleteTask(access.toAuthHeader(), task.id!!)
+            dataSource.deleteTask(access, task.id!!)
         }
+        Log.d(TAG, "deleteTask: delete complete, updating cache")
         updateCache()
     }
 

@@ -105,7 +105,7 @@ class FakeTaskRepository(
         categoryId = categoryId
     )
 
-    override suspend fun getTasks(date: LocalDate, sortBy: TaskRepository.SortByMode): List<Task> =
+    override suspend fun getTasks(date: LocalDate?, sortBy: TaskRepository.SortByMode): List<Task> =
         getTasks(
             date = date,
             sortBy = sortBy,

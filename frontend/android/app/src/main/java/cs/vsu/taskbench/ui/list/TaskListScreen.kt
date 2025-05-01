@@ -30,7 +30,6 @@ import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.TaskCard
 import org.koin.compose.koinInject
 import retrofit2.HttpException
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private const val TAG = "TaskListScreen"
@@ -50,7 +49,7 @@ fun TaskListScreen(
         val context = LocalContext.current
         LaunchedEffect(Unit) {
             try {
-                tasks = taskRepository.getTasks(LocalDate.now(), TaskRepository.SortByMode.Priority)
+                tasks = taskRepository.getTasks(null, TaskRepository.SortByMode.Priority)
             } catch (e: HttpException) {
                 Log.e(TAG, "HTTP error", e)
                 Toast.makeText(context, "HTTP error ${e.code()}", Toast.LENGTH_SHORT).show()
@@ -74,10 +73,12 @@ fun TaskListScreen(
                     LaunchedEffect(isIdle) {
                         if (isIdle && !currentState) {
                             taskRepository.deleteTask(task)
+                            Log.d(TAG, "TaskListScreen: delete complete")
                             tasks = taskRepository.getTasks(
-                                LocalDate.now(),
+                                null,
                                 TaskRepository.SortByMode.Priority
                             )
+                            Log.d(TAG, "TaskListScreen: refresh after delete complete")
                         }
                     }
                 }
@@ -86,7 +87,9 @@ fun TaskListScreen(
                     Column {
                         if (it != 0) Spacer(Modifier.height(8.dp))
                         TaskCard(
-                            deadlineText = DateTimeFormatter.ISO_DATE_TIME.format(task.deadline),
+                            deadlineText = task.deadline?.let {
+                                DateTimeFormatter.ISO_DATE_TIME.format(task.deadline)
+                            } ?: "N/A",
                             bodyText = "[$debug] ${task.content}",
                             subtasks = task.subtasks,
                             onClick = { Log.d(TAG, "clicked task with id=${task.id}") },
