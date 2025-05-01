@@ -68,4 +68,7 @@
     <string name="label_sort_by_priority">По приоритету</string>
     <string name="label_sort_by_deadline">По сроку</string>
     <string name="label_filter_category_all">Все категории</string>
+
+    <string name="error_blank_deadline">Дата не может быть пустой</string>
+
 </resources>

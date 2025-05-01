@@ -35,6 +35,7 @@ class TaskCreationScreenViewModel(
         Unknown,
         CategoryTooLong,
         CategoryAlreadyExists,
+        BlankDeadline
     }
 
     private val _errorFlow = mutableEventFlow<Error>()
@@ -192,10 +193,11 @@ class TaskCreationScreenViewModel(
 
     fun saveDeadline(dateMillis: Long?, hour: Int, minute: Int) {
         if (dateMillis == null) {
+            _errorFlow.tryEmit(Error.BlankDeadline)
             return
         }
         viewModelScope.launch {
-            deadline = dateMillis?.let { millis ->
+            deadline = dateMillis.let { millis ->
                 Instant.ofEpochMilli(millis)
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime()

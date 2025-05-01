@@ -2,7 +2,11 @@ package cs.vsu.taskbench.ui.create
 
 import android.annotation.SuppressLint
 import android.widget.Toast
-import androidx.compose.foundation.border
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -23,17 +27,14 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
@@ -46,10 +47,8 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -83,8 +82,8 @@ import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
-import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.ExtraLightGray
+import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.Red
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.delay
@@ -110,6 +109,7 @@ fun TaskCreationScreen(navController: NavController) {
                 Error.Unknown -> R.string.error_unknown
                 Error.CategoryTooLong -> R.string.error_category_too_long
                 Error.CategoryAlreadyExists -> R.string.error_category_already_exists
+                Error.BlankDeadline -> R.string.error_blank_deadline
             }
 
             toast?.cancel()
@@ -129,6 +129,7 @@ fun TaskCreationScreen(navController: NavController) {
         else sheetStateCategory.hide()
     }
     val sheetStateDeadline = rememberModalBottomSheetState()
+
     LaunchedEffect(viewModel.isDeadlineDialogVisible) {
         if (viewModel.isDeadlineDialogVisible) sheetStateDeadline.show()
         else sheetStateDeadline.hide()
@@ -393,7 +394,6 @@ fun DeadlineDialog(
         is24Hour = true,
     )
     var isInputMode by remember { mutableStateOf(true) }
-    var painter by remember { mutableIntStateOf(R.drawable.ic_clock) }
 
     ModalBottomSheet(
         sheetState = sheetState,
@@ -410,13 +410,17 @@ fun DeadlineDialog(
                 .padding(16.dp),
         ) {
             Box(
-                modifier = modifier.fillMaxWidth()
+                modifier = modifier.fillMaxWidth().animateContentSize( animationSpec = tween(
+                    durationMillis = 500,
+                    easing = LinearEasing
+                ))
             ) {
                 if (isInputMode) {
-                    painter = R.drawable.ic_clock
                     TimeInput(
-                        modifier = modifier.align(Alignment.Center),
-                        state = timePickerState, colors = TimePickerDefaults.colors(
+                        modifier = modifier
+                            .align(Alignment.Center),
+                        state = timePickerState,
+                        colors = TimePickerDefaults.colors(
                             timeSelectorSelectedContainerColor = AccentYellow,
                             timeSelectorUnselectedContainerColor = Beige,
                             timeSelectorSelectedContentColor = Black,
@@ -424,9 +428,9 @@ fun DeadlineDialog(
                         )
                     )
                 } else {
-                    painter = R.drawable.ic_edit
                     TimePicker(
-                        modifier = modifier.align(Alignment.Center),
+                        modifier = modifier
+                            .align(Alignment.Center),
                         state = timePickerState, colors = TimePickerDefaults.colors(
                             clockDialColor = Beige,
                             clockDialSelectedContentColor = Black,
@@ -454,7 +458,9 @@ fun DeadlineDialog(
                         .padding(top = 24.dp),
                 ) {
                     Icon(
-                        painter = painterResource(painter),
+                        painter = painterResource(
+                            if (isInputMode) R.drawable.ic_clock else R.drawable.ic_edit
+                        ),
                         contentDescription = null,
                         tint = Color.Unspecified,
                         modifier = Modifier.requiredSize(24.dp),
@@ -468,7 +474,14 @@ fun DeadlineDialog(
                     state = datePickerState,
                     title = null,
                     showModeToggle = false,
-                    modifier = modifier.padding(top = 8.dp),
+                    modifier = modifier
+                        .padding(top = 8.dp)
+                        .animateContentSize(
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessVeryLow
+                            )
+                        ),
                     colors = DatePickerDefaults.colors(
                         containerColor = White,
                         headlineContentColor = DarkGray,
@@ -537,33 +550,26 @@ fun DeadlineDialog(
                     )
                 )
 
-                if (datePickerState.displayMode == DisplayMode.Picker) {
-                    IconButton(
-                        onClick = {
-                            datePickerState.displayMode = DisplayMode.Input
-                        },
-                        modifier = modifier.align(Alignment.TopEnd)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_edit),
-                            contentDescription = null
-                        )
-                    }
-                } else {
-                    IconButton(
-                        onClick = {
-                            isInputMode = true
-                            datePickerState.displayMode = DisplayMode.Picker
-                        },
-                        modifier = modifier.align(Alignment.TopEnd)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_calendar),
-                            contentDescription = null
-                        )
-                    }
+                IconButton(
+                    onClick = {
+                        datePickerState.displayMode = when (datePickerState.displayMode) {
+                            DisplayMode.Picker -> DisplayMode.Input
+                            DisplayMode.Input -> DisplayMode.Picker
+                            else -> DisplayMode.Input
+                        }
+                        isInputMode = datePickerState.displayMode == DisplayMode.Picker || isInputMode
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            if (datePickerState.displayMode == DisplayMode.Picker)
+                                R.drawable.ic_edit else R.drawable.ic_calendar
+                        ),
+                        contentDescription = null
+                    )
                 }
-
             }
 
             Button(
