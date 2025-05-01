@@ -61,31 +61,31 @@ class TaskListView(APIView):
                 .prefetch_related('subtasks', 'task_categories__category')
 
             # Validate filters
-            if date and (after or before):
+            if date is not None and (after is not None or before is not None ):
                 return JsonResponse(
                     {'error': 'Use either date or after/before, not together'},
                     status=400
                 )
 
             # Apply filters
-            if category_id:
+            if category_id is not None :
                 tasks = tasks.filter(task_categories__category_id=category_id)
 
-            if date:
+            if date is not None :
                 tasks = tasks.filter(deadline__date=date)
 
             # Фильтрация по времени
-            if after or before:
+            if after is not None or before is not None :
                 # Исключаем задачи без дедлайна
                 tasks = tasks.exclude(deadline__isnull=True)
 
-                if after:
+                if after is not None :
                     after_dt = parse_datetime(after)
                     if not after_dt:
                         return JsonResponse({'error': 'Invalid after datetime'}, status=400)
                     tasks = tasks.filter(deadline__gte=after_dt)
 
-                if before:
+                if before is not None :
                     before_dt = parse_datetime(before)
                     if not before_dt:
                         return JsonResponse({'error': 'Invalid before datetime'}, status=400)
@@ -112,7 +112,7 @@ class TaskListView(APIView):
                     "content": task.title,
                     "is_done": False,
                     "dpc": {
-                        "deadline": task.deadline.isoformat(),
+                        "deadline": task.deadline.isoformat() if task.deadline is not None else None,
                         "priority": task.priority,
                         "category_id": category.category_id if category else 0,
                         "category_name": category.name if category else ""
