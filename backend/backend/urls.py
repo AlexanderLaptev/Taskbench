@@ -31,7 +31,9 @@ from taskbench.views.user_views import (
     LoginView,
     DeleteUserView,
     TokenRefreshView,
-    ChangePasswordView
+    ChangePasswordView,
+    SubscriptionStatusView,
+    CreateSubscriptionView
 )
 
 urlpatterns = [
@@ -48,5 +50,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name="token_refresh"),
     path('statistics/', StatisticsView.as_view(), name='statistics'),
     path('ai/suggestions/', SuggestionView.as_view(), name="ai_suggestions"),
+    path('user/subscription/status/', SubscriptionStatusView.as_view()),
+    path('user/subscription/', CreateSubscriptionView.as_view()),
 ]
 
