@@ -16,8 +16,10 @@ import cs.vsu.taskbench.domain.model.Task
 import cs.vsu.taskbench.util.mutableEventFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import java.time.Instant
 import retrofit2.HttpException
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 class TaskCreationScreenViewModel(
     private val taskRepository: TaskRepository,
@@ -60,6 +62,8 @@ class TaskCreationScreenViewModel(
     var subtaskInput by mutableStateOf("")
 
     var deadline by mutableStateOf<LocalDateTime?>(null)
+    var isDeadlineDialogVisible by mutableStateOf(false)
+
 
     var selectedCategory by mutableStateOf<Category?>(null)
     var isHighPriority by mutableStateOf(false)
@@ -179,6 +183,28 @@ class TaskCreationScreenViewModel(
                 Log.e(TAG, "addCategory: unknown error", e)
                 _errorFlow.tryEmit(Error.Unknown)
             }
+        }
+    }
+
+    fun deadlineToString(): String {
+        return deadline.toString()
+    }
+
+    fun saveDeadline(dateMillis: Long?, hour: Int, minute: Int) {
+        if (dateMillis == null) {
+            return
+        }
+        viewModelScope.launch {
+            deadline = dateMillis?.let { millis ->
+                Instant.ofEpochMilli(millis)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                    .withHour(hour)
+                    .withMinute(minute)
+                    .withSecond(0)
+                    .withNano(0)
+            }
+            isDeadlineDialogVisible = false
         }
     }
 }

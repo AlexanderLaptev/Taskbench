@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -29,9 +31,18 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,6 +70,7 @@ import cs.vsu.taskbench.ui.component.SuggestedSubtask
 import cs.vsu.taskbench.ui.component.TextField
 import cs.vsu.taskbench.ui.create.TaskCreationScreenViewModel.Error
 import cs.vsu.taskbench.ui.theme.AccentYellow
+import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
@@ -66,7 +78,7 @@ import cs.vsu.taskbench.ui.theme.ExtraLightGray
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
-//import java.time.format.TextStyle
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ShowToast")
@@ -102,18 +114,23 @@ fun TaskCreationScreen(navController: NavController) {
         }
     }
 
-    val sheetState = rememberModalBottomSheetState()
+    val sheetStateCategory = rememberModalBottomSheetState()
     LaunchedEffect(viewModel.isCategorySelectionDialogVisible) {
-        if (viewModel.isCategorySelectionDialogVisible) sheetState.show()
-        else sheetState.hide()
+        if (viewModel.isCategorySelectionDialogVisible) sheetStateCategory.show()
+        else sheetStateCategory.hide()
+    }
+    val sheetStateDeadline = rememberModalBottomSheetState()
+    LaunchedEffect(viewModel.isDeadlineDialogVisible) {
+        if (viewModel.isDeadlineDialogVisible) sheetStateDeadline.show()
+        else sheetStateDeadline.hide()
     }
 
     Scaffold(
         bottomBar = { NavigationBar(navController) },
     ) { padding ->
-        if (sheetState.isVisible || viewModel.isCategorySelectionDialogVisible) {
+        if (sheetStateCategory.isVisible || viewModel.isCategorySelectionDialogVisible) {
             CategoryDialog(
-                sheetState = sheetState,
+                sheetState = sheetStateCategory,
                 onVisibleChange = { viewModel.isCategorySelectionDialogVisible = it },
                 categories = viewModel.categorySearchResults,
                 onCategoryAdd = { viewModel.addCategory(it) },
@@ -124,6 +141,15 @@ fun TaskCreationScreen(navController: NavController) {
                     viewModel.selectedCategory = it
                     viewModel.isCategorySelectionDialogVisible = false
                 },
+            )
+        }
+        if (viewModel.isDeadlineDialogVisible || sheetStateDeadline.isVisible) {
+            DeadlineDialog(
+                onDeadlineSelect = { dateMillis, hour, minute ->
+                    viewModel.saveDeadline(dateMillis, hour, minute)
+                },
+                sheetState = sheetStateDeadline,
+                onVisibleChange = { viewModel.isDeadlineDialogVisible = it },
             )
         }
 
@@ -210,13 +236,13 @@ fun TaskCreationScreen(navController: NavController) {
                     ) {
                         Chip(
                             text = if (viewModel.deadline != null) {
-                                ""
+                                viewModel.deadlineToString()
                             } else stringResource(R.string.label_deadline), // TODO: format date
 
                             icon = painterResource(R.drawable.ic_clock),
                             textColor = if (viewModel.deadline != null) Black else LightGray,
                             color = White,
-                            onClick = {},
+                            onClick = { viewModel.isDeadlineDialogVisible = true },
                         )
                         Chip(
                             text = stringResource(
@@ -338,5 +364,101 @@ private fun CategoryDialog(
                 }
             }
         }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DeadlineDialog(
+    sheetState: SheetState,
+    onDeadlineSelect: (Long?, Int, Int) -> Unit,
+    onVisibleChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Input)
+    val currentTime = Calendar.getInstance()
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(Calendar.MINUTE),
+        is24Hour = true,
+    )
+    var isInputMode by remember { mutableStateOf(true) }
+    var painter by remember { mutableStateOf(R.drawable.ic_clock) }
+
+    ModalBottomSheet(
+        sheetState = sheetState,
+        onDismissRequest = { onVisibleChange(false) },
+        containerColor = White,
+        modifier = modifier,
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .defaultMinSize(minHeight = 80.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
+        ) {
+            Button(
+                onClick = { isInputMode = !isInputMode },
+                fillWidth = false,
+                modifier = Modifier.size(52.dp),
+            ) {
+                Icon(
+                    painter = painterResource(painter),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.requiredSize(24.dp),
+                )
+            }
+            if (isInputMode) {
+                painter = R.drawable.ic_clock
+                TimeInput(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        timeSelectorSelectedContainerColor= AccentYellow,
+                        timeSelectorUnselectedContainerColor= Beige,
+                        timeSelectorSelectedContentColor= Black,
+                        timeSelectorUnselectedContentColor= Black,)
+                    )
+            } else {
+                painter = R.drawable.ic_edit
+                TimePicker(state = timePickerState,
+                    colors =TimePickerDefaults.colors(
+                        clockDialColor = Beige,
+                        clockDialSelectedContentColor = Black,
+                        selectorColor = AccentYellow,
+                        periodSelectorBorderColor= AccentYellow,
+                        clockDialUnselectedContentColor= Black,
+                        timeSelectorSelectedContainerColor= AccentYellow,
+                        timeSelectorUnselectedContainerColor= Beige,
+                        timeSelectorSelectedContentColor= Black,
+                        timeSelectorUnselectedContentColor= Black,))
+            }
+
+            DatePicker(state = datePickerState)
+
+            Button(
+                onClick = {
+                    onDeadlineSelect(
+                        datePickerState.selectedDateMillis,
+                        timePickerState.hour,
+                        timePickerState.minute
+                    )
+                },
+                color = AccentYellow,
+                fillWidth = false,
+                modifier = Modifier.size(52.dp),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_ok_circle_outline),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.requiredSize(24.dp),
+                )
+            }
+        }
+
     }
 }
