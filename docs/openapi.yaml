@@ -454,6 +454,71 @@ paths:
           description: Invalid input
         '409':
           description: Category already exists
+  
+  /user/subscription/status/:
+    get:
+      summary: Get user's subscription status
+      description: Check if user has active subscription
+      responses:
+        '200':
+          description: Subscription status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  has_subscription:
+                    type: boolean
+                    description: Subscription active status
+                  start_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  end_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  transaction_id:
+                    type: string
+                    nullable: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
+
+  /user/subscription/:
+    post:
+      summary: Create test subscription
+      description: Create a test subscription for 1 month
+      responses:
+        '201':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User already has active subscription"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
 
 components:
 
@@ -532,3 +597,31 @@ components:
           maxLength: 50
       required:
         - name
+    
+    Subscription:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        subscription_id:
+          type: integer
+          example: 1
+        start_date:
+          type: string
+          format: date-time
+          example: "2023-05-20T10:00:00Z"
+        end_date:
+          type: string
+          format: date-time
+          example: "2023-06-20T10:00:00Z"
+        transaction_id:
+          type: string
+          example: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid token"
