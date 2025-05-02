@@ -36,8 +36,8 @@
     <string name="label_deadline">Выбрать срок</string>
     <string name="label_category">Категория</string>
     <string name="label_priority">Приоритет</string>
-    <string name="label_task">Введите задачу</string>
-    <string name="label_subtask">Введите подзадачу</string>
+    <string name="placeholder_enter_task">Введите задачу</string>
+    <string name="placeholder_enter_subtask">Введите подзадачу</string>
     <string name="list_subtasks">Подзадачи:</string>
     <string name="list_suggestions">Предложения ИИ:</string>
 

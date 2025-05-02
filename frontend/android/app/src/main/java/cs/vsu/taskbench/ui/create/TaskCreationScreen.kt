@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
@@ -120,7 +119,6 @@ private fun TaskCreationScreenContent(
                 painter = painterResource(R.drawable.logo_full_dark),
                 contentDescription = null,
                 modifier = Modifier
-                    .offset(y = (-24).dp)
                     .align(Alignment.Center),
             )
         }
@@ -156,7 +154,7 @@ fun SubtaskArea(modifier: Modifier = Modifier) {
         SubtaskCreationField(
             text = text,
             onTextChange = { text = it },
-            placeholder = "enter task",
+            placeholder = stringResource(R.string.placeholder_enter_subtask),
             onAddButtonClick = {},
         )
     }
@@ -171,6 +169,7 @@ private fun EditArea(modifier: Modifier = Modifier) {
             onValueChange = { value = it },
             buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
             inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
+            placeholder = stringResource(R.string.placeholder_enter_task),
             onClick = {},
         )
     }
@@ -275,7 +274,7 @@ private fun _TaskCreationScreen(navController: NavController) {
                 SubtaskCreationField(
                     text = viewModel.subtaskInput,
                     onTextChange = { viewModel.subtaskInput = it },
-                    placeholder = stringResource(R.string.label_subtask),
+                    placeholder = stringResource(R.string.placeholder_enter_subtask),
                     onAddButtonClick = viewModel::addSubtask,
                 )
 
@@ -366,7 +365,7 @@ private fun _TaskCreationScreen(navController: NavController) {
                         onValueChange = { viewModel.contentInput = it },
                         buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
                         inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
-                        placeholder = stringResource(R.string.label_task),
+                        placeholder = stringResource(R.string.placeholder_enter_task),
                         onClick = viewModel::saveTask,
                     )
                 }
