@@ -33,7 +33,7 @@
     <!-- TODO: remove -->
     <string name="placeholder">Lorem ipsum dolor sit amet</string>
 
-    <string name="label_deadline">Выбрать срок</string>
+    <string name="chip_deadline">Выбрать срок</string>
     <string name="label_category">Категория</string>
     <string name="label_priority">Приоритет</string>
     <string name="placeholder_enter_task">Введите задачу</string>

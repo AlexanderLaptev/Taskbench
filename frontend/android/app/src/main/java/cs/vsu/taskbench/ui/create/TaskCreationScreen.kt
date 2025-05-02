@@ -91,6 +91,7 @@ import cs.vsu.taskbench.ui.theme.Red
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
@@ -163,7 +164,19 @@ fun SubtaskArea(modifier: Modifier = Modifier) {
 @Composable
 private fun EditArea(modifier: Modifier = Modifier) {
     var value by remember { mutableStateOf("") }
-    Column(modifier = modifier) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier,
+    ) {
+        EditAreaChips(
+            deadline = null,
+            onDeadlineClick = {},
+            highPriority = false,
+            onPriorityClick = {},
+            category = null,
+            onCategoryClick = {},
+        )
+
         BoxEdit(
             value = value,
             onValueChange = { value = it },
@@ -171,6 +184,55 @@ private fun EditArea(modifier: Modifier = Modifier) {
             inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
             placeholder = stringResource(R.string.placeholder_enter_task),
             onClick = {},
+        )
+    }
+}
+
+@Composable
+private fun EditAreaChips(
+    deadline: LocalDate?,
+    onDeadlineClick: () -> Unit,
+    highPriority: Boolean,
+    onPriorityClick: () -> Unit,
+    category: Category?,
+    onCategoryClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier.horizontalScroll(rememberScrollState()),
+    ) {
+        // Deadline chip
+        val deadlineContentColor = if (deadline == null) LightGray else Black
+        Chip(
+            text = stringResource(R.string.chip_deadline),
+            icon = painterResource(R.drawable.ic_clock),
+            textColor = deadlineContentColor,
+            iconTint = deadlineContentColor,
+            color = White,
+            onClick = onDeadlineClick,
+        )
+
+        // Priority chip
+        val priorityColor = if (highPriority) AccentYellow else White
+        val priorityResId = if (highPriority) {
+            R.string.priority_high
+        } else R.string.priority_normal
+        Chip(
+            text = stringResource(priorityResId),
+            color = priorityColor,
+            textColor = Black,
+            onClick = onPriorityClick,
+        )
+
+        // Category chip
+        val categoryTextColor = if (category == null) LightGray else Black
+        val categoryText = category?.name ?: stringResource(R.string.label_no_category)
+        Chip(
+            text = categoryText,
+            color = White,
+            textColor = categoryTextColor,
+            onClick = onCategoryClick,
         )
     }
 }
@@ -333,7 +395,7 @@ private fun _TaskCreationScreen(navController: NavController) {
                         Chip(
                             text = if (viewModel.deadline != null) {
                                 formatter.format(viewModel.deadline)
-                            } else stringResource(R.string.label_deadline),
+                            } else stringResource(R.string.chip_deadline),
 
                             icon = painterResource(R.drawable.ic_clock),
                             textColor = if (viewModel.deadline != null) Black else LightGray,
