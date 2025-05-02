@@ -3,6 +3,7 @@ package cs.vsu.taskbench.data.task.network
 import android.util.Log
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.withAuth
+import cs.vsu.taskbench.data.task.CategoryFilterState
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
@@ -20,43 +21,28 @@ class NetworkTaskRepository(
         private val TAG = NetworkTaskRepository::class.simpleName
     }
 
-    private var cache = emptyList<Task>()
-
-    override suspend fun preload() {
-        getTasksInCategory()
-    }
-
-    override suspend fun getTasksInCategory(
-        date: LocalDate?,
-        categoryId: Int?,
-        sortBy: TaskRepository.SortByMode,
+    override suspend fun getTasks(
+        categoryFilter: CategoryFilterState,
+        sortByMode: TaskRepository.SortByMode,
+        deadline: LocalDate?,
     ): List<Task> {
-        Log.d(TAG, "getTasksInCategory: enter")
-        updateCache(date, sortBy, categoryId)
-        return cache
-    }
-
-    private suspend fun updateCache(
-        date: LocalDate? = null,
-        sortBy: TaskRepository.SortByMode = TaskRepository.SortByMode.Priority,
-        categoryId: Int? = null,
-    ) {
-        Log.d(TAG, "updateCache: date='$date'")
-        Log.d(TAG, "updateCache: categoryId='$categoryId'")
-        Log.d(TAG, "updateCache: sortBy='$sortBy'")
+        Log.d(TAG, "getTasks: enter")
         authService.withAuth { access ->
             val response = dataSource.getAllTasks(
                 access,
                 offset = 0,
                 limit = 1000,
-                date = date?.format(DateTimeFormatter.ISO_LOCAL_DATE),
-                categoryId = categoryId,
-                sortBy = when (sortBy) {
+                date = deadline?.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                categoryId = when (categoryFilter) {
+                    CategoryFilterState.Disabled -> null
+                    is CategoryFilterState.Enabled -> categoryFilter.category?.id
+                },
+                sortBy = when (sortByMode) {
                     TaskRepository.SortByMode.Priority -> "priority"
                     TaskRepository.SortByMode.Deadline -> "deadline"
                 },
             )
-            cache = response.map { task ->
+            return response.map { task ->
                 Task(
                     id = task.id,
                     content = task.content,
@@ -79,12 +65,7 @@ class NetworkTaskRepository(
                 )
             }
         }
-    }
-
-    override suspend fun getTasks(date: LocalDate?, sortBy: TaskRepository.SortByMode): List<Task> {
-        Log.d(TAG, "getTasks: enter")
-        updateCache(date, sortBy, null)
-        return cache
+        error("Could not get tasks from the server")
     }
 
     override suspend fun saveTask(task: Task): Task {
@@ -104,7 +85,6 @@ class NetworkTaskRepository(
                 )
             )
             val result = response.toModel()
-            updateCache()
             return result
         }
         Log.e(TAG, "createTask: failed to create task")
@@ -125,7 +105,6 @@ class NetworkTaskRepository(
             dataSource.deleteTask(access, task.id!!)
         }
         Log.d(TAG, "deleteTask: delete complete, updating cache")
-        updateCache()
     }
 
     private fun TaskResponse.toModel(): Task = Task(

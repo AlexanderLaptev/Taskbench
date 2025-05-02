@@ -3,6 +3,7 @@ package cs.vsu.taskbench.data.task
 import android.util.Log
 import androidx.collection.MutableIntObjectMap
 import androidx.collection.mutableIntObjectMapOf
+import cs.vsu.taskbench.data.PreloadRepository
 import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
@@ -10,10 +11,12 @@ import cs.vsu.taskbench.domain.model.Task
 import cs.vsu.taskbench.util.Lipsum
 import cs.vsu.taskbench.util.MockRandom
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 class FakeTaskRepository(
     private val categoryRepository: CategoryRepository,
-) : TaskRepository {
+) : TaskRepository, PreloadRepository {
     companion object {
         private val TAG = FakeTaskRepository::class.simpleName
     }
@@ -44,7 +47,7 @@ class FakeTaskRepository(
         dropIndex()
         Log.d(TAG, "random: ${random.nextInt()}")
         val first = LocalDate.now().minusDays(7)
-        val totalDays = 1
+        val totalDays = 2 * 7
 
         var generatedCount = 0
         for (day in 0..<totalDays) {
@@ -60,14 +63,13 @@ class FakeTaskRepository(
     }
 
     private fun generateTask(today: LocalDate): Task {
-//        val deadline = LocalDateTime.of(
-//            today,
-//            LocalTime.of(
-//                random.nextInt(0, 24),
-//                random.nextInt(0, 60),
-//            )
-//        )
-        val deadline = null
+        val deadline = if (random.nextBoolean()) null else LocalDateTime.of(
+            today,
+            LocalTime.of(
+                random.nextInt(0, 24),
+                random.nextInt(0, 60),
+            )
+        )
 
         val subtasks = mutableListOf<Subtask>()
         repeat(random.nextInt(0, 5)) {
@@ -93,23 +95,39 @@ class FakeTaskRepository(
         )
     }
 
-    override suspend fun getTasksInCategory(
-        date: LocalDate?,
-        categoryId: Int?,
-        sortBy: TaskRepository.SortByMode,
-    ): List<Task> = getTasks(
-        date = date,
-        sortBy = sortBy,
-        filterByCategory = true,
-        categoryId = categoryId
-    )
+    override suspend fun getTasks(
+        categoryFilter: CategoryFilterState,
+        sortByMode: TaskRepository.SortByMode,
+        deadline: LocalDate?,
+    ): List<Task> {
+        Log.d(TAG, "getTasks: enter")
+        val result = mutableListOf<Task>()
+        index.forEachValue { result += it }
 
-    override suspend fun getTasks(date: LocalDate?, sortBy: TaskRepository.SortByMode): List<Task> =
-        getTasks(
-            date = date,
-            sortBy = sortBy,
-            filterByCategory = false
-        )
+        val comparator: Comparator<Task> = when (sortByMode) {
+            TaskRepository.SortByMode.Priority -> compareByDescending { it.isHighPriority }
+            TaskRepository.SortByMode.Deadline -> compareByDescending { it.deadline }
+        }
+
+        return result
+            .asSequence()
+            .let { sequence ->
+                if (deadline != null) sequence.filter { it.deadline?.toLocalDate() == deadline }
+                else sequence
+            }
+            .let { sequence ->
+                when (categoryFilter) {
+                    CategoryFilterState.Disabled -> sequence
+                    is CategoryFilterState.Enabled -> sequence.filter {
+                        it.categoryId == categoryFilter.category?.id
+                    }
+                }
+            }
+            .sortedWith(comparator.thenBy { it.id })
+            .toList().also {
+                Log.d(TAG, "returning ${it.size} tasks")
+            }
+    }
 
     private fun getTasks(
         date: LocalDate?,

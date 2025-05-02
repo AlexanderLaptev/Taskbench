@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cs.vsu.taskbench.data.category.CategoryRepository
+import cs.vsu.taskbench.data.task.CategoryFilterState
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.data.task.TaskRepository.SortByMode
 import cs.vsu.taskbench.domain.model.Category
@@ -17,11 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-
-sealed interface CategoryFilterState {
-    data object Disabled : CategoryFilterState
-    data class Enabled(val category: Category?) : CategoryFilterState
-}
 
 class TaskListScreenViewModel(
     private val taskRepository: TaskRepository,
@@ -89,7 +85,13 @@ class TaskListScreenViewModel(
     private fun refreshTasks() {
         Log.d(TAG, "refreshTasks: enter")
         viewModelScope.launch {
-            _tasks.update { taskRepository.getTasks(_selectedDate, SortByMode.Priority) }
+            _tasks.update {
+                taskRepository.getTasks(
+                    categoryFilterState,
+                    sortByMode,
+                    selectedDate,
+                )
+            }
         }
     }
 
