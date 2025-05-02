@@ -31,10 +31,10 @@ class SuggestionServiceTestCase(SimpleTestCase):
         self.assertTrue(len(result) > 0)
 
     def test_category_suggestion(self):
-        text = 'Завтра созвон'
-        category_names = ['работа', 'учеба', 'семья']
+        text = 'Завтра контрольная работа'
+        category_names = ['семья', 'учеба', 'работа']
         result = SuggestionService().suggest_category(text, category_names)
-        print(category_names[result])
+        print("результат категории: ", category_names[result])
         self.assertTrue(-2 < result < len(category_names))
 
     def test_priority_suggestion(self):
@@ -48,6 +48,13 @@ class SuggestionApiTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
 
+        another_user = User.objects.create(
+            user_id=1003,
+            email='testuser1003@mail.com'
+        )
+        another_user.set_password('password')
+        another_user.save()
+
         self.user = User.objects.create(
             user_id=1002,
             email='testuser1002@mail.com'
@@ -55,23 +62,19 @@ class SuggestionApiTestCase(TestCase):
 
         self.access_token = RefreshToken.for_user(self.user).access_token
 
-        self.user = User.objects.create(
-            user_id=1003,
-            email='testuser1003@mail.com'
-        )
         self.user.set_password('test_password')
         self.user.save()
 
         category1 = Category.objects.create(
             category_id=1001,
             user_id=1002,
-            name='работа'
+            name='учеба'
         )
 
         category2 = Category.objects.create(
             category_id=1002,
             user_id=1002,
-            name='учеба'
+            name='работа'
         )
 
         category3 = Category.objects.create(
@@ -86,7 +89,7 @@ class SuggestionApiTestCase(TestCase):
         url = reverse('login')
         response = self.client.post(url,
                                     data={
-                                        "email": "testuser1003@mail.com",
+                                        "email": "testuser1002@mail.com",
                                         "password": "test_password"
                                     }, format='json')
         token = response.json().get('access')
