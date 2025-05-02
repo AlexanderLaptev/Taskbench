@@ -65,10 +65,14 @@ class SuggestionService:
         if self.debug:
             return ["1. Начать делать задачу", "2. Продолжить делать задачу", "3. Закончить делать задачу"]
         self.update_token()
-        payload = "Предложи короткие подзадачи. Каждую подзадачу начинай с новой строки. " + text
+        payload = 'Разбей данную задачу на список максимально коротких подзадач. Каждый элемент начинай с новой строки без иных символов и нумерации. ' + text
 
         result = self.giga.chat(payload)
-        subtasks = result.choices[0].message.content.split('\n')
+        subtasks = [
+            match.group(1).strip().lower()
+            for line in result.choices[0].message.content.split('\n')
+            if (match := re.match(r'^(?:\d+\.\s*|-\s*)?([^.]+)(?:\.?)$', line.strip()))]
+
         return subtasks
 
     def suggest_category(self, text: str, category_names: list) -> int | None:
@@ -86,9 +90,9 @@ class SuggestionService:
             return 0
         # names = [c.name for c in categories]
         self.update_token()
-        payload = "Из категорий: " + ', '.join(category_names) + " - выбери ту что больше подходит тексту:" + text + "Напиши только название категории."
+        payload = "Выбери из списка категорию, которая больше всего подходит тексту. Напиши только выбранное. Список:" +', '.join(category_names) + " Текст:" + text
         result = self.giga.chat(payload).choices[0].message.content
-        print(result)
+        print("Название выбранной категории", result)
 
         for i in range(len(category_names)):
             if self._equal_ignore_space_case(category_names[i], result):

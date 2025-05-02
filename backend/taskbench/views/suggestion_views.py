@@ -2,6 +2,7 @@ import json
 
 from django.http import JsonResponse
 from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend import settings
@@ -25,7 +26,7 @@ class SuggestionView(APIView):
             return JsonResponse(serializer.errors, status=400)
         user_serializer = JwtSerializer(data=get_token_from_request(request))
         if not user_serializer.is_valid():
-            return JsonResponse("Invalid token", status=401)
+            return Response("Invalid token", status=401)
         user_id = user_serializer.validated_data['user'].user_id
 
         input_data = serializer.validated_data
