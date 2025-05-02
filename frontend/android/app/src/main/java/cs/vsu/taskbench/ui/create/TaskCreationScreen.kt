@@ -212,7 +212,7 @@ fun TaskCreationScreen(navController: NavController) {
                 ) {
                     // TODO: add keys and animations with Modifier.animateItem()
                     if (viewModel.subtasks.isNotEmpty()) {
-                        item {
+                        item(key = 0) {
                             Text(
                                 text = stringResource(R.string.list_subtasks),
                                 fontSize = 14.sp,
@@ -220,17 +220,18 @@ fun TaskCreationScreen(navController: NavController) {
                                 color = DarkGray,
                             )
                         }
-                        items(viewModel.subtasks) { subtask ->
+                        items(viewModel.subtasks, key = { it.content }) { subtask ->
                             AddedSubtask(
                                 text = subtask.content,
                                 onTextChange = { /* TODO */ },
                                 onRemove = { viewModel.removeSubtask(subtask) },
+                                modifier = Modifier.animateItem(),
                             )
                         }
                     }
 
                     if (viewModel.suggestedSubtasks.isNotEmpty()) {
-                        item {
+                        item(key = 1) {
                             Text(
                                 text = stringResource(R.string.list_suggestions),
                                 fontWeight = FontWeight.Bold,
@@ -238,10 +239,11 @@ fun TaskCreationScreen(navController: NavController) {
                                 color = DarkGray,
                             )
                         }
-                        items(viewModel.suggestedSubtasks) { suggestion ->
+                        items(viewModel.suggestedSubtasks, key = { it.content }) { suggestion ->
                             SuggestedSubtask(
                                 text = suggestion.content,
                                 onAdd = { viewModel.addSuggestion(suggestion) },
+                                modifier = Modifier.animateItem(),
                             )
                         }
                     }
