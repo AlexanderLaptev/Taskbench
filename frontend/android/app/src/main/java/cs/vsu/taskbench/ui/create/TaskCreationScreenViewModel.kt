@@ -141,22 +141,16 @@ class TaskCreationScreenViewModel(
     }
 
     private fun updateSuggestions(prompt: String) {
-        Log.d(TAG, "updateSuggestions: enter")
-        if (prompt.isBlank()) {
-            Log.d(TAG, "updateSuggestions: empty prompt, returning early")
+        if (prompt.isBlank() || prompt.length < 8) {
+            Log.d(TAG, "updateSuggestions: returning early")
             suggestedSubtasks = emptyList()
             pendingSuggestionsUpdateJob?.cancel()
             return
         }
 
-        pendingSuggestionsUpdateJob?.let {
-            // If there's already a pending request, cancel it.
-            Log.d(TAG, "updateSuggestions: cancelling pending request")
-            it.cancel()
-        }
-
+        pendingSuggestionsUpdateJob?.cancel()
         pendingSuggestionsUpdateJob = viewModelScope.launch {
-            delay(1000) // short delay so that we don't spam the server with requests
+            delay(1200) // short delay so that we don't spam the server with requests
             suggestedSubtasks = emptyList()
             Log.d(TAG, "updateSuggestions: sending request")
             val newSuggestions = suggestionRepository.getSuggestions(

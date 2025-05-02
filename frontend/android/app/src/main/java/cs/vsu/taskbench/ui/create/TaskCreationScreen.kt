@@ -1,6 +1,5 @@
 package cs.vsu.taskbench.ui.create
 
-import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
@@ -16,10 +15,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
@@ -92,12 +93,10 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ShowToast")
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
 fun TaskCreationScreen(navController: NavController) {
     val viewModel = koinViewModel<TaskCreationScreenViewModel>()
-    val imePadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
 
     val context = LocalContext.current
     LaunchedEffect(Unit) {
@@ -138,7 +137,10 @@ fun TaskCreationScreen(navController: NavController) {
 
     Scaffold(
         bottomBar = { NavigationBar(navController) },
-    ) { padding ->
+        contentWindowInsets = WindowInsets(
+            top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
+        ),
+    ) { scaffoldPadding ->
         if (categorySheetState.isVisible || viewModel.isCategorySelectionDialogVisible) {
             CategoryDialog(
                 sheetState = categorySheetState,
@@ -164,28 +166,35 @@ fun TaskCreationScreen(navController: NavController) {
             )
         }
 
-        val bottomScaffoldPadding = padding.calculateBottomPadding()
         Box(
             Modifier
+                .padding(scaffoldPadding)
+                .consumeWindowInsets(scaffoldPadding)
                 .fillMaxSize()
-                .padding(
-                    top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding(),
-                    bottom = if (imePadding > bottomScaffoldPadding) {
-                        imePadding
-                    } else bottomScaffoldPadding
-                )
         ) {
             if (viewModel.subtasks.isEmpty() && viewModel.suggestedSubtasks.isEmpty()) {
                 Image(
                     painter = painterResource(R.drawable.logo_full_dark),
                     contentDescription = "",
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier
+                        .offset(y = (-48).dp)
+                        .align(Alignment.Center)
+                        .let {
+                            if (!viewModel.isDeadlineDialogVisible
+                                && !viewModel.isCategorySelectionDialogVisible
+                            ) it.imePadding() else it
+                        },
                 )
             }
 
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(
+                        start = 16.dp,
+                        top = 8.dp,
+                        end = 16.dp,
+                        bottom = 16.dp,
+                    )
                     .fillMaxSize(),
             ) {
                 CreateSubtaskField(
@@ -240,6 +249,11 @@ fun TaskCreationScreen(navController: NavController) {
 
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.let {
+                        if (!viewModel.isDeadlineDialogVisible
+                            && !viewModel.isCategorySelectionDialogVisible
+                        ) it.imePadding() else it
+                    },
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
