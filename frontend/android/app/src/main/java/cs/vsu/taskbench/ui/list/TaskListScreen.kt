@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
@@ -37,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +48,7 @@ import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.task.TaskRepository.SortByMode
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.DropdownOptions
@@ -132,21 +136,20 @@ private fun SortModeRow(
     modifier: Modifier = Modifier,
 ) {
     val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var categoriesExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(categoriesExpanded) {
+        scope.launch {
+            if (categoriesExpanded) sheetState.show() else sheetState.hide()
+        }
+    }
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier.fillMaxWidth(),
     ) {
-        val sheetState = rememberModalBottomSheetState()
-        val scope = rememberCoroutineScope()
-
-        var categoriesExpanded by remember { mutableStateOf(false) }
-        LaunchedEffect(categoriesExpanded) {
-            scope.launch {
-                if (categoriesExpanded) sheetState.show() else sheetState.hide()
-            }
-        }
-
         DropdownOptions(
             title = when (val state = viewModel.categoryFilterState) {
                 CategoryFilterState.Disabled -> stringResource(R.string.label_filter_category_all)
@@ -157,26 +160,72 @@ private fun SortModeRow(
 
             titleColor = Black,
             onClick = { categoriesExpanded = true },
+            modifier = Modifier.weight(1.0f),
         )
-        if (sheetState.isVisible || categoriesExpanded) {
-            CategoryDialog(
-                sheetState = sheetState,
-                onVisibleChange = { categoriesExpanded = it },
-                categories = categories,
-                query = viewModel.categorySearchQuery,
-                onQueryChange = { viewModel.categorySearchQuery = it },
 
-                onDisableFilter = {
-                    viewModel.categoryFilterState = CategoryFilterState.Disabled
-                    categoriesExpanded = false
+        Column(
+            modifier = Modifier.weight(1.0f),
+        ) {
+            var sortModesExpanded by remember { mutableStateOf(false) }
+            DropdownOptions(
+                title = when (viewModel.sortByMode) {
+                    SortByMode.Priority -> stringResource(R.string.label_sort_by_priority)
+                    SortByMode.Deadline -> stringResource(R.string.label_sort_by_deadline)
                 },
-
-                onCategorySelect = {
-                    viewModel.categoryFilterState = CategoryFilterState.Enabled(it)
-                    categoriesExpanded = false
-                },
+                onClick = { sortModesExpanded = true },
             )
+
+            DropdownMenu(
+                expanded = sortModesExpanded,
+                onDismissRequest = { sortModesExpanded = false },
+                containerColor = White,
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(R.string.label_sort_by_priority),
+                            style = TextStyle(fontStyle = FontStyle.Normal),
+                        )
+                    },
+                    onClick = {
+                        viewModel.sortByMode = SortByMode.Priority
+                        sortModesExpanded = false
+                    },
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(R.string.label_sort_by_deadline),
+                            style = TextStyle(fontStyle = FontStyle.Normal),
+                        )
+                    },
+                    onClick = {
+                        viewModel.sortByMode = SortByMode.Deadline
+                        sortModesExpanded = false
+                    },
+                )
+            }
         }
+    }
+
+    if (sheetState.isVisible || categoriesExpanded) {
+        CategoryDialog(
+            sheetState = sheetState,
+            onVisibleChange = { categoriesExpanded = it },
+            categories = categories,
+            query = viewModel.categorySearchQuery,
+            onQueryChange = { viewModel.categorySearchQuery = it },
+
+            onDisableFilter = {
+                viewModel.categoryFilterState = CategoryFilterState.Disabled
+                categoriesExpanded = false
+            },
+
+            onCategorySelect = {
+                viewModel.categoryFilterState = CategoryFilterState.Enabled(it)
+                categoriesExpanded = false
+            },
+        )
     }
 }
 
