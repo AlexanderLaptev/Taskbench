@@ -45,9 +45,8 @@ class FakeTaskRepository(
         Log.d(TAG, "loaded ${categories.size} categories")
 
         dropIndex()
-        Log.d(TAG, "random: ${random.nextInt()}")
         val first = LocalDate.now().minusDays(7)
-        val totalDays = 2 * 7
+        val totalDays = 0
 
         var generatedCount = 0
         for (day in 0..<totalDays) {

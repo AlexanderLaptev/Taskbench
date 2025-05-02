@@ -4,9 +4,9 @@ import android.util.Log
 import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.domain.model.AiSuggestions
 import cs.vsu.taskbench.domain.model.Category
-import cs.vsu.taskbench.util.Lipsum
+import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.random.Random
+import java.time.LocalTime
 
 class FakeSuggestionRepository(
     private val categoryRepository: CategoryRepository,
@@ -15,6 +15,27 @@ class FakeSuggestionRepository(
         private val TAG = FakeSuggestionRepository::class.simpleName
     }
 
+    private val suggestions = AiSuggestions(
+        subtasks = listOf(
+            "Выбрать тему праздника",
+            "Составить список гостей",
+            "Заказать торт",
+            "Приготовить подарки",
+            "Организовать развлечения или ведущего",
+            "Украсить помещение",
+            "Подготовить меню и блюда",
+            "Проверить наличие необходимой посуды и декора",
+            "Составить расписание мероприятий на день рождения",
+        ),
+        deadline = run {
+            val date = LocalDate.now().plusDays(7)
+            val time = LocalTime.of(12, 0)
+            LocalDateTime.of(date, time)
+        },
+        isHighPriority = null,
+        category = Category(4, "Дети")
+    )
+
     override suspend fun getSuggestions(
         prompt: String,
         deadline: LocalDateTime?,
@@ -22,34 +43,10 @@ class FakeSuggestionRepository(
         category: Category?,
     ): AiSuggestions {
         Log.d(TAG, "requested suggestions")
-
         if (prompt.isBlank()) {
             Log.d(TAG, "empty prompt, returning nothing")
             return AiSuggestions()
         }
-
-        val random = Random(prompt.hashCode())
-        val result = mutableListOf<String>()
-        repeat(random.nextInt(1, 7)) {
-            result += "${it + 1}. ${Lipsum.get(4, 11, random)}"
-        }
-
-        val suggestedDeadline = if (random.nextBoolean()) {
-            LocalDateTime.now().plusDays(random.nextLong(0, 6))
-        } else null
-        val suggestedPriority = if (random.nextBoolean()) random.nextBoolean() else null
-        val suggestedCategory = if (random.nextBoolean()) null else {
-            val categories = categoryRepository.getAllCategories()
-            categories.random(random)
-        }
-        val suggestions = AiSuggestions(
-            subtasks = result,
-            deadline = suggestedDeadline,
-            isHighPriority = suggestedPriority,
-            category = suggestedCategory,
-        )
-
-        Log.d(TAG, "returned ${result.size} suggestions")
         return suggestions
     }
 }
