@@ -61,6 +61,7 @@ import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -93,7 +94,13 @@ fun TaskListScreen(
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
 
-            DateRow(Modifier.padding(horizontal = 16.dp))
+            DateRow(
+                selectedDate = viewModel.selectedDate,
+                onDateSelected = {
+                    viewModel.selectedDate = if (viewModel.selectedDate == it) null else it
+                },
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
 
             val listState = rememberLazyListState()
             LazyColumn(
@@ -230,24 +237,39 @@ private fun SortModeRow(
 }
 
 @Composable
-private fun DateRow(modifier: Modifier = Modifier) {
-    val listState = rememberLazyListState(Int.MAX_VALUE / 2)
+private fun DateRow(
+    selectedDate: LocalDate?,
+    onDateSelected: (LocalDate) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val todayIndex = Int.MAX_VALUE / 2
+    val listState = rememberLazyListState(todayIndex)
+    val today = LocalDate.now()
+
+    val monthFormatter = remember { DateTimeFormatter.ofPattern("MMM") }
+    val dayFormatter = remember { DateTimeFormatter.ofPattern("d") }
+    val weekdayFormatter = remember { DateTimeFormatter.ofPattern("EE") }
+
     LazyRow(
         state = listState,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier,
     ) {
         items(Int.MAX_VALUE) {
+            val offset = it - todayIndex
+            val date = today.plusDays(offset.toLong())
             DateTile(
-                topLabel = "ab",
-                middleLabel = (it % 100).toString(),
-                bottomLabel = "cd",
-                selected = false,
-                onClick = {},
+                topLabel = monthFormatter.format(date),
+                middleLabel = dayFormatter.format(date),
+                bottomLabel = weekdayFormatter.format(date),
+                selected = date == selectedDate,
+                onClick = { onDateSelected(date) },
             )
         }
     }
 }
+
+private val DATE_TILE_SHAPE = RoundedCornerShape(10.dp)
 
 @Composable
 private fun CategoryDialog(
@@ -336,8 +358,6 @@ private fun CategoryDialog(
         }
     }
 }
-
-private val DATE_TILE_SHAPE = RoundedCornerShape(10.dp)
 
 @Composable
 private fun DateTile(
