@@ -73,11 +73,9 @@ fun TaskListScreen(
             modifier = Modifier.padding(padding),
         ) {
             SortModeRow(Modifier.padding(horizontal = 16.dp))
-            DateRow()
-
+            DateRow(Modifier.padding(horizontal = 16.dp))
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(padding),
             ) {
                 items(tasks, key = { it.id!! }) { task ->
                     val deadline = formatDeadline(task.deadline)
@@ -160,19 +158,19 @@ private fun RowScope.SortButton(
 }
 
 @Composable
-private fun DateRow() {
+private fun DateRow(modifier: Modifier = Modifier) {
     val listState = rememberLazyListState(Int.MAX_VALUE / 2)
     LazyRow(
         state = listState,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-//        modifier = Modifier.height(80.dp),
+        modifier = modifier,
     ) {
         items(Int.MAX_VALUE) {
             DateTile(
                 topLabel = "ab",
                 middleLabel = (it % 100).toString(),
                 bottomLabel = "cd",
-                selected = it % 2 == 0,
+                selected = false,
                 onClick = {},
             )
         }

@@ -10,8 +10,6 @@ import cs.vsu.taskbench.domain.model.Task
 import cs.vsu.taskbench.util.Lipsum
 import cs.vsu.taskbench.util.MockRandom
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
 
 class FakeTaskRepository(
     private val categoryRepository: CategoryRepository,
@@ -46,7 +44,7 @@ class FakeTaskRepository(
         dropIndex()
         Log.d(TAG, "random: ${random.nextInt()}")
         val first = LocalDate.now().minusDays(7)
-        val totalDays = 2 * 7
+        val totalDays = 1
 
         var generatedCount = 0
         for (day in 0..<totalDays) {
@@ -62,13 +60,14 @@ class FakeTaskRepository(
     }
 
     private fun generateTask(today: LocalDate): Task {
-        val deadline = LocalDateTime.of(
-            today,
-            LocalTime.of(
-                random.nextInt(0, 24),
-                random.nextInt(0, 60),
-            )
-        )
+//        val deadline = LocalDateTime.of(
+//            today,
+//            LocalTime.of(
+//                random.nextInt(0, 24),
+//                random.nextInt(0, 60),
+//            )
+//        )
+        val deadline = null
 
         val subtasks = mutableListOf<Subtask>()
         repeat(random.nextInt(0, 5)) {
