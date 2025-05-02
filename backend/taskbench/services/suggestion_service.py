@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
+from logging import Logger, INFO
+
 import dateparser.search
 from datetime import datetime, timezone
 from gigachat import GigaChat
 from typing import Union
 
 GIGACHAT_API_SAFETY_GAP = 60
+
+logger = logging.getLogger(__name__)
 
 def singleton(cls):
     _instance = None
@@ -46,6 +51,8 @@ class SuggestionService:
 
             if response is None:
                 raise RuntimeError("Не удалось получить токен от GigaChat")
+
+            logger.info('updating GIGACHAT token')
 
             self.access_token = response.access_token
             self.expires_at = datetime.fromtimestamp(response.expires_at / 1000, tz=timezone.utc)
