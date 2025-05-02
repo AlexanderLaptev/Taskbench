@@ -163,6 +163,8 @@ class TaskCreationScreenViewModel(
             suggestedSubtasks = newSuggestions.subtasks.map { content ->
                 Subtask(id = null, content = content, isDone = false)
             }
+            if (deadline == null) deadline = newSuggestions.deadline
+            if (selectedCategory == null) selectedCategory = newSuggestions.category
         }
     }
 
