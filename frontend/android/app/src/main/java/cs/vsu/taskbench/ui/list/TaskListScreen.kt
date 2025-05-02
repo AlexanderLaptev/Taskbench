@@ -74,18 +74,21 @@ fun TaskListScreen(
         ) {
             SortModeRow(Modifier.padding(horizontal = 16.dp))
             DateRow(Modifier.padding(horizontal = 16.dp))
+
+            val listState = rememberLazyListState()
             LazyColumn(
+                state = listState,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(tasks, key = { it.id!! }) { task ->
                     val deadline = formatDeadline(task.deadline)
-
                     TaskCard(
                         deadlineText = deadline,
                         bodyText = task.content,
                         subtasks = task.subtasks,
                         onClick = {},
                         onDismiss = { viewModel.deleteTask(task) },
+                        swipeEnabled = !listState.isScrollInProgress,
 
                         modifier = Modifier
                             .animateItem()

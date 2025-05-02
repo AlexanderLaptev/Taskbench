@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -23,19 +24,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightGray
-import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
 
 @Composable
-fun TaskCard(
+fun LazyItemScope.TaskCard(
     deadlineText: String,
     bodyText: String,
     subtasks: List<Subtask>,
@@ -43,6 +41,7 @@ fun TaskCard(
     onDismiss: () -> Unit,
     onSubtaskCheckedChange: (Subtask, Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    swipeEnabled: Boolean = true,
 ) {
     val state = rememberSwipeToDismissBoxState()
     LaunchedEffect(state.currentValue) {
@@ -53,6 +52,8 @@ fun TaskCard(
         state = state,
         backgroundContent = {},
         enableDismissFromStartToEnd = false,
+        gesturesEnabled = swipeEnabled,
+        modifier = Modifier.animateItem()
     ) {
         Card(
             colors = CardDefaults.cardColors(
@@ -61,7 +62,7 @@ fun TaskCard(
             ),
             shape = RoundedCornerShape(10.dp),
             onClick = onClick,
-            modifier = modifier
+            modifier = modifier,
         ) {
             Column(
                 horizontalAlignment = Alignment.Start,
@@ -132,45 +133,6 @@ private fun SubtaskComposable(
             text = content,
             fontSize = 16.sp,
             color = Black,
-        )
-    }
-}
-
-@Composable
-@Preview
-private fun Preview() {
-    val lipsum = LoremIpsum(8).values.first()
-    val subtasks = listOf(
-        Subtask(
-            id = 1,
-            content = lipsum,
-            isDone = true,
-        ),
-        Subtask(
-            id = 2,
-            content = lipsum,
-            isDone = true,
-        ),
-        Subtask(
-            id = 3,
-            content = lipsum,
-            isDone = false,
-        ),
-        Subtask(
-            id = 4,
-            content = lipsum,
-            isDone = false,
-        ),
-    )
-
-    TaskbenchTheme {
-        TaskCard(
-            deadlineText = "tomorrow, 15:00",
-            bodyText = LoremIpsum(25).values.first(),
-            subtasks = subtasks,
-            onClick = {},
-            onDismiss = {},
-            onSubtaskCheckedChange = { _, _ -> },
         )
     }
 }
