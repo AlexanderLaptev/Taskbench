@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.generated.NavGraphs
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = style,
             navigationBarStyle = style,
         )
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             KoinApplication(

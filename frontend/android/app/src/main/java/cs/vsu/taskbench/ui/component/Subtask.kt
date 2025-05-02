@@ -43,7 +43,7 @@ import cs.vsu.taskbench.ui.theme.White
 
 @Composable
 @NonRestartableComposable
-fun CreateSubtaskField(
+fun SubtaskCreationField(
     text: String,
     onTextChange: (String) -> Unit,
     placeholder: String,
@@ -229,7 +229,7 @@ private fun Preview() {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            CreateSubtaskField(
+            SubtaskCreationField(
                 text = text1,
                 onTextChange = { text1 = it },
                 placeholder = "Enter subtask",

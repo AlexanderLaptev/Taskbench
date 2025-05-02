@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.ui.create
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -65,6 +67,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
@@ -74,8 +77,8 @@ import cs.vsu.taskbench.ui.component.AddedSubtask
 import cs.vsu.taskbench.ui.component.BoxEdit
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.Chip
-import cs.vsu.taskbench.ui.component.CreateSubtaskField
 import cs.vsu.taskbench.ui.component.NavigationBar
+import cs.vsu.taskbench.ui.component.SubtaskCreationField
 import cs.vsu.taskbench.ui.component.SuggestedSubtask
 import cs.vsu.taskbench.ui.component.TextField
 import cs.vsu.taskbench.ui.create.TaskCreationScreenViewModel.Error
@@ -92,11 +95,93 @@ import org.koin.androidx.compose.koinViewModel
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
+@Destination<RootGraph>(style = ScreenTransitions::class)
 fun TaskCreationScreen(navController: NavController) {
+    TaskCreationScreenContent(
+        navController = navController,
+    )
+}
+
+@Composable
+private fun TaskCreationScreenContent(
+    navController: NavController = rememberNavController(),
+) {
+    Scaffold(
+        bottomBar = { NavigationBar(navController) },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+    ) { scaffoldPadding ->
+        Box(
+            modifier = Modifier
+                .imePadding()
+                .fillMaxSize()
+        ) {
+            Image(
+                painter = painterResource(R.drawable.logo_full_dark),
+                contentDescription = null,
+                modifier = Modifier
+                    .offset(y = (-24).dp)
+                    .align(Alignment.Center),
+            )
+        }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(32.dp),
+            modifier = Modifier
+                .padding(
+                    top = 8.dp,
+                    bottom = scaffoldPadding.calculateBottomPadding(),
+                )
+                .consumeWindowInsets(scaffoldPadding)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp,
+                )
+        ) {
+            SubtaskArea(
+                Modifier
+                    .padding(top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding())
+                    .weight(1.0f),
+            )
+            EditArea(Modifier.imePadding())
+        }
+    }
+}
+
+@Composable
+fun SubtaskArea(modifier: Modifier = Modifier) {
+    var text by remember { mutableStateOf("") }
+    Column(modifier = modifier) {
+        SubtaskCreationField(
+            text = text,
+            onTextChange = { text = it },
+            placeholder = "enter task",
+            onAddButtonClick = {},
+        )
+    }
+}
+
+@Composable
+private fun EditArea(modifier: Modifier = Modifier) {
+    var value by remember { mutableStateOf("") }
+    Column(modifier = modifier) {
+        BoxEdit(
+            value = value,
+            onValueChange = { value = it },
+            buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
+            inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
+            onClick = {},
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ShowToast")
+@Composable
+private fun _TaskCreationScreen(navController: NavController) {
     val viewModel = koinViewModel<TaskCreationScreenViewModel>()
+    val imePadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
 
     val context = LocalContext.current
     LaunchedEffect(Unit) {
@@ -137,10 +222,7 @@ fun TaskCreationScreen(navController: NavController) {
 
     Scaffold(
         bottomBar = { NavigationBar(navController) },
-        contentWindowInsets = WindowInsets(
-            top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
-        ),
-    ) { scaffoldPadding ->
+    ) { padding ->
         if (categorySheetState.isVisible || viewModel.isCategorySelectionDialogVisible) {
             CategoryDialog(
                 sheetState = categorySheetState,
@@ -166,38 +248,31 @@ fun TaskCreationScreen(navController: NavController) {
             )
         }
 
+        val bottomScaffoldPadding = padding.calculateBottomPadding()
         Box(
             Modifier
-                .padding(scaffoldPadding)
-                .consumeWindowInsets(scaffoldPadding)
                 .fillMaxSize()
+                .padding(
+                    top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding(),
+                    bottom = if (imePadding > bottomScaffoldPadding) {
+                        imePadding
+                    } else bottomScaffoldPadding
+                )
         ) {
             if (viewModel.subtasks.isEmpty() && viewModel.suggestedSubtasks.isEmpty()) {
                 Image(
                     painter = painterResource(R.drawable.logo_full_dark),
                     contentDescription = "",
-                    modifier = Modifier
-                        .offset(y = (-48).dp)
-                        .align(Alignment.Center)
-                        .let {
-                            if (!viewModel.isDeadlineDialogVisible
-                                && !viewModel.isCategorySelectionDialogVisible
-                            ) it.imePadding() else it
-                        },
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
 
             Column(
                 modifier = Modifier
-                    .padding(
-                        start = 16.dp,
-                        top = 8.dp,
-                        end = 16.dp,
-                        bottom = 16.dp,
-                    )
+                    .padding(16.dp)
                     .fillMaxSize(),
             ) {
-                CreateSubtaskField(
+                SubtaskCreationField(
                     text = viewModel.subtaskInput,
                     onTextChange = { viewModel.subtaskInput = it },
                     placeholder = stringResource(R.string.label_subtask),
@@ -249,11 +324,6 @@ fun TaskCreationScreen(navController: NavController) {
 
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.let {
-                        if (!viewModel.isDeadlineDialogVisible
-                            && !viewModel.isCategorySelectionDialogVisible
-                        ) it.imePadding() else it
-                    },
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
