@@ -14,10 +14,12 @@ import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
 import cs.vsu.taskbench.util.mutableEventFlow
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import java.time.Instant
 import retrofit2.HttpException
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -82,6 +84,8 @@ class TaskCreationScreenViewModel(
 
     var categorySearchResults by mutableStateOf<List<Category>>(emptyList())
 
+    private var pendingSuggestionsUpdateJob: Job? = null
+
     fun saveTask() {
         viewModelScope.launch {
             try {
@@ -137,17 +141,31 @@ class TaskCreationScreenViewModel(
     }
 
     private fun updateSuggestions(prompt: String) {
-        if (prompt.isBlank()) return
-        Log.d(TAG, "updateSuggestions: prompt=$prompt")
-        viewModelScope.launch {
-            // TODO: add delay after last change before sending
+        Log.d(TAG, "updateSuggestions: enter")
+        if (prompt.isBlank()) {
+            Log.d(TAG, "updateSuggestions: empty prompt, returning early")
             suggestedSubtasks = emptyList()
+            pendingSuggestionsUpdateJob?.cancel()
+            return
+        }
+
+        pendingSuggestionsUpdateJob?.let {
+            // If there's already a pending request, cancel it.
+            Log.d(TAG, "updateSuggestions: cancelling pending request")
+            it.cancel()
+        }
+
+        pendingSuggestionsUpdateJob = viewModelScope.launch {
+            delay(1000) // short delay so that we don't spam the server with requests
+            suggestedSubtasks = emptyList()
+            Log.d(TAG, "updateSuggestions: sending request")
             val newSuggestions = suggestionRepository.getSuggestions(
                 prompt = prompt,
                 deadline = deadline,
                 isHighPriority = isHighPriority,
                 category = selectedCategory,
             )
+            Log.d(TAG, "updateSuggestions: response received")
             suggestedSubtasks = newSuggestions.subtasks.map { content ->
                 Subtask(id = null, content = content, isDone = false)
             }

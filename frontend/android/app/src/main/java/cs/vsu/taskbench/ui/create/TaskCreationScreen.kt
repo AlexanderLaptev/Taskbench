@@ -198,9 +198,9 @@ fun TaskCreationScreen(navController: NavController) {
                         .weight(1.0f)
                         .padding(top = 8.dp, bottom = 48.dp)
                 ) {
-                    // TODO: make keys unique
+                    // TODO: add keys and animations with Modifier.animateItem()
                     if (viewModel.subtasks.isNotEmpty()) {
-                        item(key = 0) {
+                        item {
                             Text(
                                 text = stringResource(R.string.list_subtasks),
                                 fontSize = 14.sp,
@@ -208,18 +208,17 @@ fun TaskCreationScreen(navController: NavController) {
                                 color = DarkGray,
                             )
                         }
-                        items(viewModel.subtasks, key = { it.content }) { subtask ->
+                        items(viewModel.subtasks) { subtask ->
                             AddedSubtask(
                                 text = subtask.content,
                                 onTextChange = { /* TODO */ },
                                 onRemove = { viewModel.removeSubtask(subtask) },
-                                modifier = Modifier.animateItem(),
                             )
                         }
                     }
 
                     if (viewModel.suggestedSubtasks.isNotEmpty()) {
-                        item(key = 1) {
+                        item {
                             Text(
                                 text = stringResource(R.string.list_suggestions),
                                 fontWeight = FontWeight.Bold,
@@ -227,11 +226,10 @@ fun TaskCreationScreen(navController: NavController) {
                                 color = DarkGray,
                             )
                         }
-                        items(viewModel.suggestedSubtasks, key = { it.content }) { suggestion ->
+                        items(viewModel.suggestedSubtasks) { suggestion ->
                             SuggestedSubtask(
                                 text = suggestion.content,
                                 onAdd = { viewModel.addSuggestion(suggestion) },
-                                modifier = Modifier.animateItem(),
                             )
                         }
                     }
@@ -410,10 +408,14 @@ fun DeadlineDialog(
                 .padding(16.dp),
         ) {
             Box(
-                modifier = modifier.fillMaxWidth().animateContentSize( animationSpec = tween(
-                    durationMillis = 500,
-                    easing = LinearEasing
-                ))
+                modifier = modifier
+                    .fillMaxWidth()
+                    .animateContentSize(
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = LinearEasing
+                        )
+                    )
             ) {
                 if (isInputMode) {
                     TimeInput(
