@@ -33,7 +33,7 @@ class TaskListScreenViewModel(
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories = _categories.asStateFlow()
 
-    private var _selectedDate by mutableStateOf<LocalDate?>(null)
+    private var _selectedDate by mutableStateOf<LocalDate?>(LocalDate.now())
     var selectedDate: LocalDate?
         get() = _selectedDate
         set(value) {

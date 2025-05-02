@@ -64,7 +64,7 @@
     <string name="error_bootstrap_failed">Приложению не удалось запуститься.\n\nДетали:\n%s</string>
     <string name="dialog_title_error">Ошибка</string>
     <string name="label_deadline_missing">Без дедлайна</string>
-    <string name="pattern_deadline">D MMMM YYYY \'г.,\' HH:mm</string>
+    <string name="pattern_deadline">d MMMM YYYY \'г.,\' HH:mm</string>
     <string name="label_sort_by_priority">По приоритету</string>
     <string name="label_sort_by_deadline">По сроку</string>
     <string name="label_filter_category_all">Все категории</string>
