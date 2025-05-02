@@ -123,24 +123,24 @@ fun TaskCreationScreen(navController: NavController) {
         }
     }
 
-    val sheetStateCategory = rememberModalBottomSheetState()
+    val categorySheetState = rememberModalBottomSheetState()
     LaunchedEffect(viewModel.isCategorySelectionDialogVisible) {
-        if (viewModel.isCategorySelectionDialogVisible) sheetStateCategory.show()
-        else sheetStateCategory.hide()
+        if (viewModel.isCategorySelectionDialogVisible) categorySheetState.show()
+        else categorySheetState.hide()
     }
-    val sheetStateDeadline = rememberModalBottomSheetState()
 
+    val deadlineSheetState = rememberModalBottomSheetState()
     LaunchedEffect(viewModel.isDeadlineDialogVisible) {
-        if (viewModel.isDeadlineDialogVisible) sheetStateDeadline.show()
-        else sheetStateDeadline.hide()
+        if (viewModel.isDeadlineDialogVisible) deadlineSheetState.show()
+        else deadlineSheetState.hide()
     }
 
     Scaffold(
         bottomBar = { NavigationBar(navController) },
     ) { padding ->
-        if (sheetStateCategory.isVisible || viewModel.isCategorySelectionDialogVisible) {
+        if (categorySheetState.isVisible || viewModel.isCategorySelectionDialogVisible) {
             CategoryDialog(
-                sheetState = sheetStateCategory,
+                sheetState = categorySheetState,
                 onVisibleChange = { viewModel.isCategorySelectionDialogVisible = it },
                 categories = viewModel.categorySearchResults,
                 onCategoryAdd = { viewModel.addCategory(it) },
@@ -153,12 +153,12 @@ fun TaskCreationScreen(navController: NavController) {
                 },
             )
         }
-        if (viewModel.isDeadlineDialogVisible || sheetStateDeadline.isVisible) {
+        if (viewModel.isDeadlineDialogVisible || deadlineSheetState.isVisible) {
             DeadlineDialog(
                 onDeadlineSelect = { dateMillis, hour, minute ->
                     viewModel.saveDeadline(dateMillis, hour, minute)
                 },
-                sheetState = sheetStateDeadline,
+                sheetState = deadlineSheetState,
                 onVisibleChange = { viewModel.isDeadlineDialogVisible = it },
             )
         }
@@ -559,7 +559,8 @@ fun DeadlineDialog(
                             DisplayMode.Input -> DisplayMode.Picker
                             else -> DisplayMode.Input
                         }
-                        isInputMode = datePickerState.displayMode == DisplayMode.Picker || isInputMode
+                        isInputMode =
+                            datePickerState.displayMode == DisplayMode.Picker || isInputMode
                     },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
