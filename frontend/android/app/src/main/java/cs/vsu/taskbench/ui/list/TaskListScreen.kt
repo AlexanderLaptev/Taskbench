@@ -38,11 +38,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
@@ -92,21 +94,27 @@ fun TaskListScreen(
 
             SortModeRow(
                 viewModel = viewModel,
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier
+                    .zIndex(2.0f)
+                    .padding(horizontal = 16.dp),
             )
 
+            val listState = rememberLazyListState()
             DateRow(
                 selectedDate = viewModel.selectedDate,
                 onDateSelected = {
                     viewModel.selectedDate = if (viewModel.selectedDate == it) null else it
+                    listState.requestScrollToItem(0)
                 },
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier
+                    .zIndex(2.0f)
+                    .padding(horizontal = 16.dp),
             )
 
-            val listState = rememberLazyListState()
             LazyColumn(
                 state = listState,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.clipToBounds(),
             ) {
                 items(tasks, key = { it.id!! }) { task ->
                     val deadline = formatDeadline(task.deadline)
