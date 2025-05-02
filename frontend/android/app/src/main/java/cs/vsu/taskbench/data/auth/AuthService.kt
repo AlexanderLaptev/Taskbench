@@ -12,7 +12,7 @@ data class AuthTokens(
 
 val EMAIL_PREFERENCES_KEY = stringPreferencesKey("email")
 
-const val TAG = "AuthService.withAuth"
+private const val TAG = "AuthService.withAuth"
 
 suspend inline fun AuthService.withAuth(block: (String) -> Unit) {
     try {
