@@ -10,6 +10,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+// TODO: reduce the number of updates
+
 class NetworkTaskRepository(
     private val authService: AuthService,
     private val dataSource: NetworkTaskDataSource,
@@ -85,8 +87,13 @@ class NetworkTaskRepository(
         return cache
     }
 
-    override suspend fun saveTask(task: Task): Task? {
-        Log.d(TAG, "saveTask: task='$task'")
+    override suspend fun saveTask(task: Task): Task {
+        Log.d(TAG, "saveTask: saving task $task")
+        return if (task.id == null) createTask(task) else updateTask(task)
+    }
+
+    private suspend fun createTask(task: Task): Task {
+        Log.d(TAG, "createTask: enter")
         authService.withAuth { access ->
             val response = dataSource.createTask(
                 access,
@@ -98,11 +105,18 @@ class NetworkTaskRepository(
             )
             val result = response.toModel()
             updateCache()
-            Log.d(TAG, "saveTask: success: '$task'")
             return result
         }
-        Log.d(TAG, "saveTask: failure")
-        return null
+        Log.e(TAG, "createTask: failed to create task")
+        error("Could not create task")
+    }
+
+    private suspend fun updateTask(task: Task): Task {
+        TODO()
+        Log.d(TAG, "updateTask: enter")
+        authService.withAuth { access ->
+        }
+        return task
     }
 
     override suspend fun deleteTask(task: Task) {

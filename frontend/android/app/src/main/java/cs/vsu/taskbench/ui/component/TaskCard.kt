@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
@@ -38,10 +39,10 @@ fun TaskCard(
     deadlineText: String,
     bodyText: String,
     subtasks: List<Subtask>,
-    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onDismiss: () -> Unit,
     onSubtaskCheckedChange: (Subtask, Boolean) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val state = rememberSwipeToDismissBoxState()
     LaunchedEffect(state.currentValue) {
@@ -76,9 +77,11 @@ fun TaskCard(
                         contentDescription = null,
                     )
                     Text(
-                        text = deadlineText,
+                        text = deadlineText.ifBlank {
+                            stringResource(R.string.label_deadline_missing)
+                        },
                         fontSize = 16.sp,
-                        color = Black,
+                        color = if (deadlineText.isBlank()) LightGray else Black,
                     )
                 }
 
@@ -90,8 +93,8 @@ fun TaskCard(
                 if (subtasks.isNotEmpty()) {
                     HorizontalDivider(
                         color = LightGray,
-                        thickness = 2.dp,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     )
                 }
 
