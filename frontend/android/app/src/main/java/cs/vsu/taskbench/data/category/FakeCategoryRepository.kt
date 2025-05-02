@@ -16,7 +16,7 @@ object FakeCategoryRepository : CategoryRepository {
 
     private fun resetCategories() {
         categories.clear()
-        val names = listOf("Работа", "Дом", "Машина", "Дети")
+        val names = listOf("Работа", "Хобби", "Машина", "Дети")
         for (name in names) {
             categories[id] = Category(id, name)
             id++

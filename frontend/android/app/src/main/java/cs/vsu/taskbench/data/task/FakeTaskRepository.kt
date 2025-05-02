@@ -8,7 +8,6 @@ import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
-import cs.vsu.taskbench.util.Lipsum
 import cs.vsu.taskbench.util.MockRandom
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -45,53 +44,36 @@ class FakeTaskRepository(
         Log.d(TAG, "loaded ${categories.size} categories")
 
         dropIndex()
-        val first = LocalDate.now().minusDays(7)
-        val totalDays = 0
-
-        var generatedCount = 0
-        for (day in 0..<totalDays) {
-            val today = first.plusDays(day.toLong())
-            val taskCount = random.nextInt(10, 20)
-            repeat(taskCount) {
-                val task = generateTask(today)
-                saveTaskInternal(task)
-                generatedCount++
-            }
-        }
-        Log.d(TAG, "generated $generatedCount fake tasks")
-    }
-
-    private fun generateTask(today: LocalDate): Task {
-        val deadline = if (random.nextBoolean()) null else LocalDateTime.of(
-            today,
-            LocalTime.of(
-                random.nextInt(0, 24),
-                random.nextInt(0, 60),
-            )
+        index[taskId] = Task(
+            id = taskId,
+            content = "Помыть машину",
+            deadline = LocalDateTime.of(LocalDate.now(), LocalTime.of(15, 0)),
+            isHighPriority = false,
+            subtasks = listOf(
+                Subtask(subtaskId++, "Закупить моющие средства", true),
+                Subtask(subtaskId++, "Купить новую губку", false),
+            ),
+            categoryId = 3,
         )
+        taskId++
 
-        val subtasks = mutableListOf<Subtask>()
-        repeat(random.nextInt(0, 5)) {
-            subtasks += Subtask(
-                id = subtaskId,
-                content = "[$subtaskId] ${Lipsum.get()}",
-                isDone = random.nextBoolean(),
-            )
-            subtaskId++
-        }
-
-        val category = if (random.nextBoolean()) {
-            categories.randomOrNull(random)
-        } else null
-
-        return Task(
-            id = null,
-            content = Lipsum.get(8, 30),
-            deadline = deadline,
-            isHighPriority = random.nextBoolean(),
-            subtasks = subtasks,
-            categoryId = category?.id,
+        index[taskId] = Task(
+            id = taskId,
+            content = "Научиться рисовать к концу года",
+            deadline = LocalDateTime.of(
+                LocalDate.now().plusDays(-5).plusYears(1),
+                LocalTime.of(12, 0)
+            ),
+            isHighPriority = false,
+            subtasks = listOf(
+                Subtask(subtaskId++, "Найти материалы для обучения", false),
+                Subtask(subtaskId++, "Купить необходимые инструменты", false),
+                Subtask(subtaskId++, "Создать рабочее место", false),
+                Subtask(subtaskId++, "Начать выполнять упражнения", false),
+            ),
+            categoryId = 2,
         )
+        taskId++
     }
 
     override suspend fun getTasks(
@@ -161,17 +143,19 @@ class FakeTaskRepository(
     }
 
     override suspend fun saveTask(task: Task): Task {
-        Log.d(TAG, "saving task $task")
         return saveTaskInternal(task)
     }
 
     private fun saveTaskInternal(task: Task): Task {
         if (task.id == null) { // create
-            val saved = task.copy(id = taskId)
+            Log.d(TAG, "saveTaskInternal: creating task $task")
+            val savedSub = task.subtasks.map { it.copy(id = subtaskId++) }
+            val saved = task.copy(id = taskId, subtasks = savedSub)
             index[taskId] = saved
             taskId++
             return saved
         } else { // update
+            Log.d(TAG, "saveTaskInternal: updating task $task")
             check(index[task.id] != null) { "Attempted to update a non-existent task" }
             index[task.id] = task
             return task
