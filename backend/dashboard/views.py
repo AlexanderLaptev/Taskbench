@@ -64,7 +64,7 @@ def subscription_list_api(request):
         "subscriptions": [
             {
                 "id": sub.subscription_id,
-                "username": sub.user.username,
+                "email": sub.user.email,
                 "start_date": sub.start_date.strftime("%Y-%m-%d"),
                 "end_date": sub.end_date.strftime("%Y-%m-%d"),
                 "is_active": sub.is_active,
