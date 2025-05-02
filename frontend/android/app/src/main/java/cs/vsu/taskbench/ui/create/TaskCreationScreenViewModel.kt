@@ -205,10 +205,6 @@ class TaskCreationScreenViewModel(
         }
     }
 
-    fun deadlineToString(): String {
-        return deadline.toString()
-    }
-
     fun saveDeadline(dateMillis: Long?, hour: Int, minute: Int) {
         if (dateMillis == null) {
             _errorFlow.tryEmit(Error.BlankDeadline)

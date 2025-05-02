@@ -87,6 +87,7 @@ import cs.vsu.taskbench.ui.theme.Red
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -241,10 +242,12 @@ fun TaskCreationScreen(navController: NavController) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                     ) {
+                        val pattern = stringResource(R.string.pattern_deadline)
+                        val formatter = remember { DateTimeFormatter.ofPattern(pattern) }
                         Chip(
                             text = if (viewModel.deadline != null) {
-                                viewModel.deadlineToString()
-                            } else stringResource(R.string.label_deadline), // TODO: format date
+                                formatter.format(viewModel.deadline)
+                            } else stringResource(R.string.label_deadline),
 
                             icon = painterResource(R.drawable.ic_clock),
                             textColor = if (viewModel.deadline != null) Black else LightGray,
