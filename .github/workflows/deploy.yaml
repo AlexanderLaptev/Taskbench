@@ -138,10 +138,10 @@ jobs:
     - name: Check if app is responding on port
       run: |
         echo "Waiting for server to be reachable..."
-        for i in {1..10}; do
+        for i in {1..30}; do
           nc -zv ${{ secrets.SERVER_HOST }} 8000 && echo "OK: Port is open!" && exit 0
           echo "Attempt $i: Server not ready yet..."
-          sleep 5
+          sleep 10
         done
         echo "ERROR: Server is not responding on port 8000"
         exit 1
