@@ -13,9 +13,8 @@ import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsDataSource
 import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsRepository
 import cs.vsu.taskbench.data.task.FakeTaskRepository
 import cs.vsu.taskbench.data.task.TaskRepository
+import cs.vsu.taskbench.data.task.suggestions.FakeSuggestionRepository
 import cs.vsu.taskbench.data.task.suggestions.SuggestionRepository
-import cs.vsu.taskbench.data.task.suggestions.network.NetworkSuggestionDataSource
-import cs.vsu.taskbench.data.task.suggestions.network.NetworkSuggestionRepository
 import cs.vsu.taskbench.data.user.FakeUserRepository
 import cs.vsu.taskbench.data.user.UserRepository
 import org.koin.core.module.dsl.singleOf
@@ -42,7 +41,7 @@ val dataModule = module {
 //    single { get<Retrofit>().create(NetworkCategoryDataSource::class.java) }
     single { get<Retrofit>().create(NetworkAuthenticator::class.java) }
     single { get<Retrofit>().create(NetworkStatisticsDataSource::class.java) }
-    single { get<Retrofit>().create(NetworkSuggestionDataSource::class.java) }
+//    single { get<Retrofit>().create(NetworkSuggestionDataSource::class.java) }
 //    single { get<Retrofit>().create(NetworkTaskDataSource::class.java) }
 
     singleOf(::NetworkAuthService) bind AuthService::class
@@ -50,8 +49,8 @@ val dataModule = module {
 //    singleOf(::NetworkCategoryRepository) bind CategoryRepository::class
     single { FakeCategoryRepository } bind CategoryRepository::class
     singleOf(::NetworkStatisticsRepository) bind StatisticsRepository::class
-    singleOf(::NetworkSuggestionRepository) bind SuggestionRepository::class
-//    singleOf(::FakeSuggestionRepository) bind SuggestionRepository::class
+//    singleOf(::NetworkSuggestionRepository) bind SuggestionRepository::class
+    singleOf(::FakeSuggestionRepository) bind SuggestionRepository::class
     singleOf(::FakeTaskRepository) bind TaskRepository::class
 //    singleOf(::NetworkTaskRepository) bind TaskRepository::class
 }
