@@ -9,6 +9,7 @@ import cs.vsu.taskbench.domain.model.AiSuggestions
 import cs.vsu.taskbench.domain.model.Category
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 class NetworkSuggestionRepository(
     private val authService: AuthService,
@@ -46,7 +47,12 @@ class NetworkSuggestionRepository(
             val suggestedPriority = response.suggested_dpc.priority?.let { it == 1 }
             val suggestedDeadline = response.suggested_dpc.deadline?.let {
                 if (it.isNotBlank()) {
-                    DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(it) as LocalDateTime
+                    try {
+                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(it) as LocalDateTime
+                    } catch (e: DateTimeParseException) {
+                        Log.e(TAG, "getSuggestions: date time parse error", e)
+                        null
+                    }
                 } else null
             }
             val suggestedCategory = with(response.suggested_dpc) {
