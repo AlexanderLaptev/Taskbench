@@ -52,7 +52,7 @@ fun LazyItemScope.TaskCard(
         state = state,
         backgroundContent = {},
         enableDismissFromStartToEnd = false,
-        gesturesEnabled = swipeEnabled,
+        gesturesEnabled = swipeEnabled || state.targetValue == SwipeToDismissBoxValue.EndToStart,
         modifier = Modifier.animateItem()
     ) {
         Card(
