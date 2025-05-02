@@ -34,7 +34,7 @@ class SuggestionView(APIView):
         priority = input_data.get('priority')
         category_id = input_data.get('category_id')
         timestamp = input_data.get('timestamp')
-        service = SuggestionService(debug=settings.DEBUG)
+        service = SuggestionService()
 
         if deadline is None:
             deadline = service.suggest_deadline(title, now=timestamp)
