@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package cs.vsu.taskbench.ui.list
 
 import androidx.compose.foundation.background
@@ -5,30 +7,37 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,12 +45,17 @@ import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.DropdownOptions
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.TaskCard
+import cs.vsu.taskbench.ui.component.TextField
 import cs.vsu.taskbench.ui.theme.AccentYellow
+import cs.vsu.taskbench.ui.theme.Black
+import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.White
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -60,11 +74,6 @@ fun TaskListScreen(
 ) {
     val viewModel = koinViewModel<TaskListScreenViewModel>()
     val tasks by viewModel.tasks.collectAsStateWithLifecycle()
-    val categories by viewModel.categories.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) { // TODO: replace Unit with selected date
-        viewModel.selectedDate = null
-    }
 
     Scaffold(
         bottomBar = { NavigationBar(navController) }
@@ -73,7 +82,13 @@ fun TaskListScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(padding),
         ) {
-            SortModeRow(Modifier.padding(horizontal = 16.dp))
+            Spacer(Modifier.height(4.dp))
+
+            SortModeRow(
+                viewModel = viewModel,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+
             DateRow(Modifier.padding(horizontal = 16.dp))
 
             val listState = rememberLazyListState()
@@ -112,52 +127,55 @@ fun TaskListScreen(
 }
 
 @Composable
-private fun SortModeRow(modifier: Modifier = Modifier) {
+private fun SortModeRow(
+    viewModel: TaskListScreenViewModel,
+    modifier: Modifier = Modifier,
+) {
+    val categories by viewModel.categories.collectAsStateWithLifecycle()
+
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier.fillMaxWidth(),
     ) {
-        SortButton(
-            title = "categories",
-            options = listOf("abc", "def", "xyz"),
-            onOptionClick = {},
-        )
+        val sheetState = rememberModalBottomSheetState()
+        val scope = rememberCoroutineScope()
 
-        SortButton(
-            title = "sort mode",
-            options = listOf("abc", "def", "xyz"),
-            onOptionClick = {},
-        )
-    }
-}
-
-@Composable
-private fun RowScope.SortButton(
-    title: String,
-    options: List<String>,
-    onOptionClick: (Int) -> Unit,
-) {
-    Column(Modifier.weight(1.0f)) {
-        var expanded by remember { mutableStateOf(false) }
-        DropdownOptions(
-            title = title,
-            onClick = { expanded = true },
-        )
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            containerColor = White,
-        ) {
-            for ((index, option) in options.withIndex()) {
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        onOptionClick(index)
-                        expanded = false
-                    }
-                )
+        var categoriesExpanded by remember { mutableStateOf(false) }
+        LaunchedEffect(categoriesExpanded) {
+            scope.launch {
+                if (categoriesExpanded) sheetState.show() else sheetState.hide()
             }
+        }
+
+        DropdownOptions(
+            title = when (val state = viewModel.categoryFilterState) {
+                CategoryFilterState.Disabled -> stringResource(R.string.label_filter_category_all)
+                is CategoryFilterState.Enabled -> {
+                    state.category?.name ?: stringResource(R.string.label_no_category)
+                }
+            },
+
+            titleColor = Black,
+            onClick = { categoriesExpanded = true },
+        )
+        if (sheetState.isVisible || categoriesExpanded) {
+            CategoryDialog(
+                sheetState = sheetState,
+                onVisibleChange = { categoriesExpanded = it },
+                categories = categories,
+                query = viewModel.categorySearchQuery,
+                onQueryChange = { viewModel.categorySearchQuery = it },
+
+                onDisableFilter = {
+                    viewModel.categoryFilterState = CategoryFilterState.Disabled
+                    categoriesExpanded = false
+                },
+
+                onCategorySelect = {
+                    viewModel.categoryFilterState = CategoryFilterState.Enabled(it)
+                    categoriesExpanded = false
+                },
+            )
         }
     }
 }
@@ -178,6 +196,94 @@ private fun DateRow(modifier: Modifier = Modifier) {
                 selected = false,
                 onClick = {},
             )
+        }
+    }
+}
+
+@Composable
+private fun CategoryDialog(
+    onVisibleChange: (Boolean) -> Unit,
+    categories: List<Category>,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onDisableFilter: () -> Unit,
+    onCategorySelect: (Category?) -> Unit,
+    modifier: Modifier = Modifier,
+    sheetState: SheetState = rememberModalBottomSheetState(),
+) {
+    ModalBottomSheet(
+        sheetState = sheetState,
+        onDismissRequest = { onVisibleChange(false) },
+        containerColor = White,
+        modifier = modifier,
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .defaultMinSize(minHeight = 80.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.End),
+            ) {
+                TextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    placeholder = stringResource(R.string.label_category),
+                    modifier = Modifier.weight(1.0f),
+                )
+            }
+
+            LazyColumn {
+                item {
+                    Text(
+                        text = stringResource(R.string.label_no_category),
+                        fontSize = 16.sp,
+                        color = LightGray,
+                        fontStyle = FontStyle.Italic,
+                        modifier = Modifier
+                            .clickable { onCategorySelect(null) }
+                            .padding(start = 16.dp)
+                            .defaultMinSize(minHeight = 48.dp)
+                            .wrapContentHeight()
+                            .fillMaxWidth(),
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 8.dp))
+                }
+
+                item {
+                    Text(
+                        text = stringResource(R.string.label_filter_category_all),
+                        fontSize = 16.sp,
+                        color = Black,
+                        fontStyle = FontStyle.Italic,
+                        modifier = Modifier
+                            .clickable(onClick = onDisableFilter)
+                            .padding(start = 16.dp)
+                            .defaultMinSize(minHeight = 48.dp)
+                            .wrapContentHeight()
+                            .fillMaxWidth(),
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 8.dp))
+                }
+
+                items(categories, key = { it.id!! }) { category ->
+                    Text(
+                        text = category.name,
+                        fontSize = 16.sp,
+                        color = Black,
+                        modifier = Modifier
+                            .animateItem()
+                            .clickable { onCategorySelect(category) }
+                            .padding(start = 16.dp)
+                            .defaultMinSize(minHeight = 48.dp)
+                            .wrapContentHeight()
+                            .fillMaxWidth(),
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 8.dp))
+                }
+            }
         }
     }
 }

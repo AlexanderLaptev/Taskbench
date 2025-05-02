@@ -251,7 +251,7 @@ fun TaskCreationScreen(navController: NavController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryDialog(
+private fun CategoryDialog(
     sheetState: SheetState,
     onVisibleChange: (Boolean) -> Unit,
     categories: List<Category>,

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.data.task.TaskRepository.SortByMode
 import cs.vsu.taskbench.domain.model.Category
@@ -17,8 +18,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+sealed interface CategoryFilterState {
+    data object Disabled : CategoryFilterState
+    data class Enabled(val category: Category?) : CategoryFilterState
+}
+
 class TaskListScreenViewModel(
     private val taskRepository: TaskRepository,
+    private val categoryRepository: CategoryRepository,
 ) : ViewModel() {
     companion object {
         private val TAG = TaskListScreenViewModel::class.simpleName
@@ -35,18 +42,33 @@ class TaskListScreenViewModel(
         get() = _selectedDate
         set(value) {
             _selectedDate = value
-            viewModelScope.launch { refreshTasks() }
+            refreshTasks()
         }
 
-    private var _selectedCategory by mutableStateOf<Category?>(null)
-    var selectedCategory: Category?
-        get() = _selectedCategory
+    private var _categoryFilterState by mutableStateOf<CategoryFilterState>(CategoryFilterState.Disabled)
+    var categoryFilterState: CategoryFilterState
+        get() = _categoryFilterState
         set(value) {
-            _selectedCategory = value
-            viewModelScope.launch { refreshTasks() }
+            _categoryFilterState = value
+            refreshTasks()
+        }
+
+    private var _categorySearchQuery by mutableStateOf("")
+    var categorySearchQuery: String
+        get() = _categorySearchQuery
+        set(value) {
+            _categorySearchQuery = value
+            refreshCategories()
         }
 
     var sortByMode by mutableStateOf(SortByMode.Priority)
+
+    init {
+        viewModelScope.launch {
+            refreshCategories()
+            refreshTasks()
+        }
+    }
 
     fun deleteTask(task: Task) {
         viewModelScope.launch {
@@ -64,10 +86,17 @@ class TaskListScreenViewModel(
         }
     }
 
-    private suspend fun refreshTasks() {
+    private fun refreshTasks() {
         Log.d(TAG, "refreshTasks: enter")
-        _tasks.update {
-            taskRepository.getTasks(_selectedDate, SortByMode.Priority)
+        viewModelScope.launch {
+            _tasks.update { taskRepository.getTasks(_selectedDate, SortByMode.Priority) }
+        }
+    }
+
+    private fun refreshCategories() {
+        Log.d(TAG, "refreshCategories: enter")
+        viewModelScope.launch {
+            _categories.update { categoryRepository.getAllCategories(_categorySearchQuery) }
         }
     }
 }

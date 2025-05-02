@@ -7,8 +7,7 @@ import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.network.NetworkAuthService
 import cs.vsu.taskbench.data.auth.network.NetworkAuthenticator
 import cs.vsu.taskbench.data.category.CategoryRepository
-import cs.vsu.taskbench.data.category.network.NetworkCategoryDataSource
-import cs.vsu.taskbench.data.category.network.NetworkCategoryRepository
+import cs.vsu.taskbench.data.category.FakeCategoryRepository
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsDataSource
 import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsRepository
@@ -40,7 +39,7 @@ val dataModule = module {
             .build()
     }
 
-    single { get<Retrofit>().create(NetworkCategoryDataSource::class.java) }
+//    single { get<Retrofit>().create(NetworkCategoryDataSource::class.java) }
     single { get<Retrofit>().create(NetworkAuthenticator::class.java) }
     single { get<Retrofit>().create(NetworkStatisticsDataSource::class.java) }
     single { get<Retrofit>().create(NetworkSuggestionDataSource::class.java) }
@@ -48,7 +47,8 @@ val dataModule = module {
 
     singleOf(::NetworkAuthService) bind AuthService::class
     singleOf(::FakeUserRepository) bind UserRepository::class
-    singleOf(::NetworkCategoryRepository) bind CategoryRepository::class
+//    singleOf(::NetworkCategoryRepository) bind CategoryRepository::class
+    single { FakeCategoryRepository } bind CategoryRepository::class
     singleOf(::NetworkStatisticsRepository) bind StatisticsRepository::class
     singleOf(::NetworkSuggestionRepository) bind SuggestionRepository::class
 //    singleOf(::FakeSuggestionRepository) bind SuggestionRepository::class
