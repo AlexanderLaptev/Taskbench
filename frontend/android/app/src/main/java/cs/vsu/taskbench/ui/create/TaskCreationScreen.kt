@@ -7,6 +7,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -163,19 +164,21 @@ fun TaskCreationScreen(navController: NavController) {
             )
         }
 
+        val bottomScaffoldPadding = padding.calculateBottomPadding()
         Box(
             Modifier
                 .fillMaxSize()
                 .padding(
                     top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding(),
-                    bottom = if (imePadding > 0.dp) imePadding else padding.calculateBottomPadding()
+                    bottom = if (imePadding > bottomScaffoldPadding) {
+                        imePadding
+                    } else bottomScaffoldPadding
                 )
         ) {
             if (viewModel.subtasks.isEmpty() && viewModel.suggestedSubtasks.isEmpty()) {
-                Icon(
+                Image(
                     painter = painterResource(R.drawable.logo_full_dark),
                     contentDescription = "",
-                    tint = Color.Unspecified,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
