@@ -7,20 +7,21 @@ import cs.vsu.taskbench.domain.model.Category
 object FakeCategoryRepository : CategoryRepository {
     private val TAG = FakeCategoryRepository::class.simpleName
 
-    private val categories = mutableIntObjectMapOf<Category>().apply {
-        this[1] = Category(1, "Work")
-        this[2] = Category(2, "Home")
-        this[3] = Category(3, "Hobbies")
-        this[4] = Category(4, "Lorem")
-        this[5] = Category(5, "Ipsum")
-        this[6] = Category(6, "Dolor")
-        this[7] = Category(7, "Sit")
-        this[8] = Category(8, "Amet")
-        this[9] = Category(9, "Consectetur")
-        this[10] = Category(10, "Adipiscing")
+    private var id = 1
+    private val categories = mutableIntObjectMapOf<Category>()
+
+    init {
+        resetCategories()
     }
 
-    private var id = 11
+    private fun resetCategories() {
+        categories.clear()
+        val names = listOf("Работа", "Дом", "Машина", "Дети")
+        for (name in names) {
+            categories[id] = Category(id, name)
+            id++
+        }
+    }
 
     override suspend fun preload() {
         Log.d(TAG, "preloading categories")
@@ -29,27 +30,28 @@ object FakeCategoryRepository : CategoryRepository {
     override suspend fun getAllCategories(query: String): List<Category> {
         val result = mutableListOf<Category>()
         if (query.isBlank()) {
-            Log.d(TAG, "requested categories (blank query)")
+            Log.d(TAG, "getAllCategories: returning all categories")
             categories.forEachValue { result += it }
         } else {
+            Log.d(TAG, "getAllCategories: filtering categories")
             val queryLower = query.lowercase()
-            Log.d(TAG, "requested categories (non-blank query)")
             categories.forEachValue {
                 if (queryLower in it.name.lowercase()) result += it
             }
         }
-        Log.d(TAG, "returning ${result.size} categories")
+        Log.d(TAG, "returning ${result.size} results")
         return result
     }
 
     override suspend fun saveCategory(category: Category): Category {
-        Log.d(TAG, "saving category $category")
         if (category.id == null) {
+            Log.d(TAG, "saveCategory: creating a new one")
             val copy = category.copy(id = id)
             categories[id] = copy
             id++
             return copy
         } else {
+            Log.d(TAG, "saveCategory: modifying an existing one")
             check(categories[category.id] == null) { "Attempted to modify a non-existent category" }
             categories[category.id] = category
             return category
@@ -57,7 +59,7 @@ object FakeCategoryRepository : CategoryRepository {
     }
 
     override suspend fun deleteCategory(category: Category) {
-        Log.d(TAG, "deleting category $category")
+        Log.d(TAG, "deleteCategory: enter")
         check(category.id != null) { "Attempted to delete a non-existent category" }
         categories.remove(category.id)
     }
