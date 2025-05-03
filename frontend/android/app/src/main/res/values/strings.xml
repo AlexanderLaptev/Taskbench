@@ -70,5 +70,6 @@
     <string name="label_filter_category_all">Все категории</string>
 
     <string name="error_blank_deadline">Дата не может быть пустой</string>
+    <string name="placeholder_category">Введите категорию</string>
 
 </resources>

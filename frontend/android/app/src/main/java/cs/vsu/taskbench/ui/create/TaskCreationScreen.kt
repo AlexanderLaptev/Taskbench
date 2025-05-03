@@ -13,9 +13,9 @@ import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.ui.ScreenTransitions
-import cs.vsu.taskbench.ui.component.MockTaskEditDialogStateHolder
 import cs.vsu.taskbench.ui.component.NavigationBar
-import cs.vsu.taskbench.ui.component.TaskEditDialog
+import cs.vsu.taskbench.ui.component.dialog.MockTaskEditDialogStateHolder
+import cs.vsu.taskbench.ui.component.dialog.TaskEditDialog
 
 @Composable
 @Destination<RootGraph>(style = ScreenTransitions::class)

@@ -1,4 +1,4 @@
-package cs.vsu.taskbench.ui.component
+package cs.vsu.taskbench.ui.component.dialog
 
 import android.util.Log
 import androidx.compose.material3.AlertDialog
