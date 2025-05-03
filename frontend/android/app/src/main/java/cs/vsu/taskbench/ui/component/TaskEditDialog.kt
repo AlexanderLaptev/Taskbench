@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package cs.vsu.taskbench.ui.component
 
 import androidx.compose.foundation.horizontalScroll
@@ -11,11 +13,15 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -32,6 +38,7 @@ import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 interface TaskEditDialogStateHolder {
@@ -42,6 +49,9 @@ interface TaskEditDialogStateHolder {
     var deadline: LocalDate?
     var isHighPriority: Boolean
     var category: Category?
+
+    var showDeadlineDialog: Boolean
+    var showCategoryDialog: Boolean
 
     fun onSubmitTask()
     fun onAddSubtask()
@@ -58,6 +68,14 @@ fun TaskEditDialog(
     stateHolder: TaskEditDialogStateHolder,
     modifier: Modifier = Modifier,
 ) {
+    if (stateHolder.showDeadlineDialog) {
+        DeadlineDialog(stateHolder)
+    }
+
+    if (stateHolder.showCategoryDialog) {
+        CategoryDialog(stateHolder)
+    }
+
     Column(
         modifier = modifier,
     ) {
@@ -116,6 +134,44 @@ fun TaskEditDialog(
             modifier = Modifier.imePadding(),
         )
     }
+}
+
+@Composable
+private fun DeadlineDialog(
+    stateHolder: TaskEditDialogStateHolder,
+    modifier: Modifier = Modifier,
+) {
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState()
+    ModalBottomSheet(
+        sheetState = sheetState,
+        containerColor = White,
+        onDismissRequest = {
+            scope.launch {
+                sheetState.hide()
+            }.invokeOnCompletion { stateHolder.showDeadlineDialog = false }
+        },
+        modifier = modifier,
+    ) {}
+}
+
+@Composable
+private fun CategoryDialog(
+    stateHolder: TaskEditDialogStateHolder,
+    modifier: Modifier = Modifier,
+) {
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState()
+    ModalBottomSheet(
+        sheetState = sheetState,
+        containerColor = White,
+        onDismissRequest = {
+            scope.launch {
+                sheetState.hide()
+            }.invokeOnCompletion { stateHolder.showCategoryDialog = false }
+        },
+        modifier = modifier,
+    ) {}
 }
 
 @Composable
@@ -248,8 +304,30 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
             _category = value
         }
 
+    private var _showDeadlineDialog by mutableStateOf(false)
+    override var showDeadlineDialog: Boolean
+        get() = _showDeadlineDialog
+        set(value) {
+            _showDeadlineDialog = value
+        }
+
+    private var _showCategoryDialog by mutableStateOf(false)
+    override var showCategoryDialog: Boolean
+        get() = _showCategoryDialog
+        set(value) {
+            _showCategoryDialog = value
+        }
+
     override fun onPriorityChipClick() {
         _isHighPriority = !_isHighPriority
+    }
+
+    override fun onDeadlineChipClick() {
+        _showDeadlineDialog = true
+    }
+
+    override fun onCategoryChipClick() {
+        _showCategoryDialog = true
     }
 
     override fun onSubmitTask() = Unit
@@ -257,8 +335,6 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
     override fun onEditSubtask(text: String) = Unit
     override fun onAddSuggestion(suggestion: String) = Unit
     override fun onRemoveSubtask() = Unit
-    override fun onDeadlineChipClick() = Unit
-    override fun onCategoryChipClick() = Unit
 }
 
 @Preview
