@@ -33,6 +33,7 @@ class MainActivity : ComponentActivity() {
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        // TODO: keep view models after navigation
         setContent {
             KoinApplication(
                 application = {

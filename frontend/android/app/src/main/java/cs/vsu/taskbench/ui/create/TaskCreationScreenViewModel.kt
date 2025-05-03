@@ -4,15 +4,19 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.util.fastDistinctBy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.data.task.TaskRepository
+import cs.vsu.taskbench.data.task.suggestions.SuggestionRepository
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
 import cs.vsu.taskbench.ui.component.dialog.TaskEditDialogStateHolder
 import cs.vsu.taskbench.util.mutableEventFlow
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -24,6 +28,7 @@ import java.time.ZoneId
 class TaskCreationScreenViewModel(
     private val taskRepository: TaskRepository,
     private val categoryRepository: CategoryRepository,
+    private val suggestionRepository: SuggestionRepository,
 ) : ViewModel(), TaskEditDialogStateHolder {
     companion object {
         private val TAG = TaskCreationScreenViewModel::class.simpleName
@@ -38,10 +43,18 @@ class TaskCreationScreenViewModel(
     private val _errorFlow = mutableEventFlow<Error>()
     val errorFlow = _errorFlow.asSharedFlow()
 
-    override var taskInput by mutableStateOf("")
+    private var _taskInput by mutableStateOf("")
+    override var taskInput
+        get() = _taskInput
+        set(value) {
+            _taskInput = value
+            updateSuggestions()
+        }
 
     override var subtasks: List<Subtask> by mutableStateOf(emptyList())
     override var subtaskInput by mutableStateOf("")
+
+    override var categories: List<Category> by mutableStateOf(emptyList())
 
     private var _categoryInput by mutableStateOf("")
     override var categoryInput: String
@@ -51,8 +64,18 @@ class TaskCreationScreenViewModel(
             if (showCategoryDialog) updateCategories()
         }
 
-    private var _suggestions by mutableStateOf<List<String>>(emptyList())
-    override var suggestions: List<String> = _suggestions
+    private var _selectedCategory by mutableStateOf<Category?>(null)
+    override var selectedCategory: Category?
+        get() = _selectedCategory
+        set(value) {
+            _selectedCategory = value
+        }
+
+    init {
+        viewModelScope.launch { updateCategories() }
+    }
+
+    override var suggestions: List<String> by mutableStateOf(emptyList())
 
     private var _deadline by mutableStateOf<LocalDateTime?>(null)
     override var deadline: LocalDateTime?
@@ -67,15 +90,6 @@ class TaskCreationScreenViewModel(
         set(value) {
             _isHighPriority = value
         }
-
-    private var _selectedCategory by mutableStateOf<Category?>(null)
-    override var selectedCategory: Category?
-        get() = _selectedCategory
-        set(value) {
-            _selectedCategory = value
-        }
-
-    override var categories: List<Category> = listOf()
 
     private var _showDeadlineDialog by mutableStateOf(false)
     override var showDeadlineDialog: Boolean
@@ -179,6 +193,7 @@ class TaskCreationScreenViewModel(
     }
 
     override fun onAddSuggestion(suggestion: String) {
+        suggestions = suggestions - suggestion
         addSubtask(suggestion)
         Log.d(TAG, "onAddSuggestion: success")
     }
@@ -218,6 +233,36 @@ class TaskCreationScreenViewModel(
                 Log.d(TAG, "updateCategories: success")
             } catch (e: Exception) {
                 Log.e(TAG, "updateCategories: error while refreshing", e)
+            }
+        }
+    }
+
+    private var pendingUpdate: Job? = null
+
+    private fun updateSuggestions() {
+        suggestions = emptyList()
+        if (_taskInput.length < 8) return
+        pendingUpdate?.cancel()
+        pendingUpdate = viewModelScope.launch {
+            delay(1200)
+            try {
+                val response = suggestionRepository.getSuggestions(
+                    prompt = taskInput,
+                    deadline = _deadline,
+                    isHighPriority = _isHighPriority,
+                    category = _selectedCategory,
+                )
+
+                val contents = subtasks.map { it.content }
+                val newSuggestions = response.subtasks.fastDistinctBy { it }.toMutableList()
+                newSuggestions.removeAll { it in contents }
+
+                suggestions = newSuggestions
+                if (_deadline == null) _deadline = response.deadline
+                if (_selectedCategory == null) _selectedCategory = response.category
+                Log.d(TAG, "updateSuggestions: success")
+            } catch (e: Exception) {
+                Log.e(TAG, "updateSuggestions: error during fetch", e)
             }
         }
     }

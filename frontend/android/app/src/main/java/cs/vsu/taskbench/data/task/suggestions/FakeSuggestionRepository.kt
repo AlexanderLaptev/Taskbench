@@ -30,8 +30,8 @@ class FakeSuggestionRepository(
 
         val random = Random(prompt.hashCode())
         val result = mutableListOf<String>()
-        repeat(random.nextInt(1, 7)) {
-            result += "${it + 1}. ${Lipsum.get(4, 11, random)}"
+        repeat(random.nextInt(4, 8)) {
+            result += Lipsum.get(4, 11, random)
         }
 
         val suggestedDeadline = if (random.nextBoolean()) {
