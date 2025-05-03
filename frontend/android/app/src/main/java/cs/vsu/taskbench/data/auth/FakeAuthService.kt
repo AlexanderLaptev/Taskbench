@@ -39,12 +39,20 @@ class FakeAuthService(
     override suspend fun login(email: String, password: String) {
         Log.d(TAG, "login: enter")
         if (password != PASSWORD) throw UnauthorizedException()
-        dataStore.edit { it[EMAIL_PREFERENCES_KEY] = email }
+        dataStore.edit {
+            it[ACCESS_KEY] = MOCK_VALUE
+            it[REFRESH_KEY] = MOCK_VALUE
+            it[EMAIL_PREFERENCES_KEY] = email
+        }
     }
 
     override suspend fun signUp(email: String, password: String) {
         Log.d(TAG, "signUp: enter")
-        dataStore.edit { it[EMAIL_PREFERENCES_KEY] = email }
+        dataStore.edit {
+            it[ACCESS_KEY] = MOCK_VALUE
+            it[REFRESH_KEY] = MOCK_VALUE
+            it[EMAIL_PREFERENCES_KEY] = email
+        }
     }
 
     override suspend fun logout() {
