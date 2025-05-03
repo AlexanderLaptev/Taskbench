@@ -73,11 +73,13 @@ import java.time.format.DateTimeFormatter
 
 interface TaskEditDialogStateHolder {
     var taskInput: String
-    var subtaskInput: String
-    val subtasks: List<Subtask>
-    val suggestions: List<String>
     var deadline: LocalDateTime?
     var isHighPriority: Boolean
+
+    var subtaskInput: String
+    var subtasks: List<Subtask>
+
+    var suggestions: List<String>
 
     var categories: List<Category>
     var selectedCategory: Category?
@@ -86,6 +88,7 @@ interface TaskEditDialogStateHolder {
     var showDeadlineDialog: Boolean
     var showCategoryDialog: Boolean
 
+
     fun onSubmitTask()
     fun onAddSuggestion(suggestion: String)
 
@@ -93,8 +96,8 @@ interface TaskEditDialogStateHolder {
     fun onCategoryClick(category: Category)
 
     fun onAddSubtask()
-    fun onEditSubtask(text: String)
-    fun onRemoveSubtask()
+    fun onEditSubtask(subtask: Subtask, newText: String)
+    fun onRemoveSubtask(subtask: Subtask)
 
     fun onDeadlineChipClick()
     fun onSetDeadlineDate(epochMilli: Long)
@@ -180,8 +183,8 @@ fun TaskEditDialog(
                 items(subtasks, key = { it.content }) { subtask ->
                     AddedSubtask(
                         text = subtask.content,
-                        onTextChange = stateHolder::onEditSubtask,
-                        onRemove = stateHolder::onRemoveSubtask,
+                        onTextChange = { stateHolder.onEditSubtask(subtask, it) },
+                        onRemove = { stateHolder.onRemoveSubtask(subtask) },
                         modifier = Modifier.animateItem(),
                     )
                 }
@@ -439,7 +442,7 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
             _categoryInput = value
         }
 
-    override val subtasks: List<Subtask> = listOf(
+    override var subtasks: List<Subtask> = listOf(
         Subtask(null, "Lorem ipsum dolor sit amet 1", false),
         Subtask(null, "Lorem ipsum dolor sit amet 2", false),
         Subtask(null, "Lorem ipsum dolor sit amet 3", false),
@@ -456,7 +459,7 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
         "Lorem ipsum dolor sit amet 11",
         "Lorem ipsum dolor sit amet 12",
     )
-    override val suggestions: List<String> = _suggestions
+    override var suggestions: List<String> = _suggestions
 
     private var _deadline by mutableStateOf<LocalDateTime?>(null)
     override var deadline: LocalDateTime?
@@ -540,9 +543,9 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
 
     override fun onSubmitTask() = Unit
     override fun onAddSubtask() = Unit
-    override fun onEditSubtask(text: String) = Unit
+    override fun onEditSubtask(subtask: Subtask, newText: String) = Unit
     override fun onAddSuggestion(suggestion: String) = Unit
-    override fun onRemoveSubtask() = Unit
+    override fun onRemoveSubtask(subtask: Subtask) = Unit
     override fun onAddCategory() = Unit
 }
 

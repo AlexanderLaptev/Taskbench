@@ -87,7 +87,6 @@ fun AddedSubtask(
         value = value,
         onValueChange = {
             value = it
-            onTextChange(it.text)
             selection = it.selection
         },
         placeholder = "",
@@ -107,6 +106,7 @@ fun AddedSubtask(
 
         onMainAction = {
             if (isEditing) {
+                onTextChange(value.text)
                 focusRequester.freeFocus()
                 isEditing = false
             } else onRemove()

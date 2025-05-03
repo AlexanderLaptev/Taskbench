@@ -14,8 +14,8 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.NavigationBar
-import cs.vsu.taskbench.ui.component.dialog.MockTaskEditDialogStateHolder
 import cs.vsu.taskbench.ui.component.dialog.TaskEditDialog
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 @Destination<RootGraph>(style = ScreenTransitions::class)
@@ -24,8 +24,9 @@ fun TaskCreationScreen(navController: NavController) {
         bottomBar = { NavigationBar(navController) },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { scaffoldPadding ->
+        val viewModel = koinViewModel<TaskCreationScreenViewModel>()
         TaskEditDialog(
-            stateHolder = MockTaskEditDialogStateHolder,
+            stateHolder = viewModel,
             modifier = Modifier
                 .padding(top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding())
                 .padding(

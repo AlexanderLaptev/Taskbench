@@ -21,6 +21,6 @@ interface TaskRepository {
         deadline: LocalDate?,
     ): List<Task>
 
-    suspend fun saveTask(task: Task): Task?
+    suspend fun saveTask(task: Task): Task
     suspend fun deleteTask(task: Task)
 }
