@@ -58,18 +58,25 @@
     <string name="label_premium_status">Статус премиума:</string>
     <string name="label_premium_active">активный</string>
     <string name="label_premium_until">Действует до:</string>
-    <string name="pattern_date">d MMMM YYYY \'г.\'</string>
+    <string name="pattern_date">dd MMMM YYYY \'г.\'</string>
     <string name="error_category_too_long">Название категории должно быть короче 50 символов</string>
     <string name="error_category_already_exists">Категория уже существует</string>
     <string name="error_bootstrap_failed">Приложению не удалось запуститься.\n\nДетали:\n%s</string>
     <string name="dialog_title_error">Ошибка</string>
     <string name="label_deadline_missing">Без дедлайна</string>
-    <string name="pattern_deadline">d MMMM YYYY \'г.,\' HH:mm</string>
     <string name="label_sort_by_priority">По приоритету</string>
     <string name="label_sort_by_deadline">По сроку</string>
     <string name="label_filter_category_all">Все категории</string>
 
     <string name="error_blank_deadline">Дата не может быть пустой</string>
     <string name="placeholder_category">Введите категорию</string>
+    <string name="label_not_set">Не выбрано</string>
+    <string name="pattern_time">HH:mm</string>
+    <string name="time_not_set">--:--</string>
+    <string name="button_confirm">Подтвердить</string>
+    <string name="button_clear">Очистить</string>
+    <string name="label_today">сегодня</string>
+    <string name="label_tomorrow">завтра</string>
+    <string name="button_select">Выбрать</string>
 
 </resources>

@@ -62,10 +62,10 @@ import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.White
+import cs.vsu.taskbench.ui.util.formatDeadline
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 private const val TAG = "TaskListScreen"
@@ -402,11 +402,4 @@ private fun DateTile(
             fontSize = 16.sp,
         )
     }
-}
-
-@Composable
-private fun formatDeadline(deadline: LocalDateTime?): String {
-    val pattern = stringResource(R.string.pattern_deadline)
-    val formatter = remember { DateTimeFormatter.ofPattern(pattern) }
-    return deadline?.let { formatter.format(deadline) } ?: ""
 }

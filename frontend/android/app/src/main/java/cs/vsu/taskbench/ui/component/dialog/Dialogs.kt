@@ -13,6 +13,7 @@ import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,9 +22,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.core.view.HapticFeedbackConstantsCompat
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Beige
@@ -95,7 +98,17 @@ fun TimePickerDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
 ) {
-    val pickerState = rememberTimePickerState()
+    val now = LocalTime.now()
+    val pickerState = rememberTimePickerState(now.hour, now.minute)
+
+    var first by remember { mutableStateOf(true) }
+    val view = LocalView.current
+    LaunchedEffect(pickerState.hour, pickerState.minute) {
+        if (!first) {
+            view.performHapticFeedback(HapticFeedbackConstantsCompat.CLOCK_TICK)
+        }
+        first = false
+    }
 
     // FIXME: containerColor currently does nothing [material3:1.4.0-alpha13]
     // It's being used in Surface in modifier.background() instead
@@ -124,7 +137,7 @@ fun TimePickerDialog(
                 onClick = { onComplete(pickerState.hour, pickerState.minute) }
             ) {
                 Text(
-                    text = stringResource(R.string.button_yes),
+                    text = stringResource(R.string.button_select),
                     color = Black,
                 )
             }
@@ -222,7 +235,7 @@ fun DatePickerDialog(
                 }
             ) {
                 Text(
-                    text = stringResource(R.string.button_yes),
+                    text = stringResource(R.string.button_select),
                     color = Black,
                 )
             }

@@ -2,18 +2,27 @@
 
 package cs.vsu.taskbench.ui.component.dialog
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -25,35 +34,49 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.ui.component.AddedSubtask
 import cs.vsu.taskbench.ui.component.BoxEdit
+import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.Chip
 import cs.vsu.taskbench.ui.component.SubtaskCreationField
 import cs.vsu.taskbench.ui.component.SuggestedSubtask
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
+import cs.vsu.taskbench.ui.theme.ExtraLightGray
 import cs.vsu.taskbench.ui.theme.LightGray
+import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
+import cs.vsu.taskbench.ui.util.formatDeadline
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 interface TaskEditDialogStateHolder {
     var taskInput: String
     var subtaskInput: String
     val subtasks: List<Subtask>
     val suggestions: List<String>
-    var deadline: LocalDate?
+    var deadline: LocalDateTime?
     var isHighPriority: Boolean
 
     var categories: List<Category>
@@ -74,6 +97,10 @@ interface TaskEditDialogStateHolder {
     fun onRemoveSubtask()
 
     fun onDeadlineChipClick()
+    fun onSetDeadlineDate(epochMilli: Long)
+    fun onSetDeadlineTime(hour: Int, minute: Int)
+    fun onClearDeadline()
+
     fun onPriorityChipClick()
     fun onCategoryChipClick()
 }
@@ -193,15 +220,126 @@ private fun DeadlineDialog(
     stateHolder: TaskEditDialogStateHolder,
     modifier: Modifier = Modifier,
 ) {
+    var showDateDialog by remember { mutableStateOf(false) }
+    var showTimeDialog by remember { mutableStateOf(false) }
+
+    if (showDateDialog) {
+        DatePickerDialog(
+            onComplete = {
+                stateHolder.onSetDeadlineDate(it)
+                showDateDialog = false
+            },
+            onDismiss = { showDateDialog = false },
+        )
+    }
+
+    if (showTimeDialog) {
+        TimePickerDialog(
+            onComplete = { hour, minute ->
+                stateHolder.onSetDeadlineTime(hour, minute)
+                showTimeDialog = false
+            },
+            onDismiss = { showTimeDialog = false },
+        )
+    }
+
+    val datePattern = stringResource(R.string.pattern_date)
+    val timePattern = stringResource(R.string.pattern_time)
+    val dateFormatter = remember { DateTimeFormatter.ofPattern(datePattern) }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern(timePattern) }
+
     val sheetState = rememberModalBottomSheetState()
     ModalBottomSheet(
         sheetState = sheetState,
         containerColor = White,
         onDismissRequest = { stateHolder.showDeadlineDialog = false },
         modifier = modifier,
-    ) {}
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(
+                start = 16.dp,
+                end = 16.dp,
+                bottom = 16.dp
+            ),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                val hasDeadline = stateHolder.deadline != null
+                val dateText = if (hasDeadline) {
+                    dateFormatter.format(stateHolder.deadline)
+                } else stringResource(R.string.label_not_set)
+
+                DeadlineDialogButton(
+                    iconId = R.drawable.ic_calendar,
+                    text = dateText,
+                    hasDeadline = hasDeadline,
+                    onClick = { showDateDialog = true },
+                    modifier = Modifier.weight(1.0f),
+                )
+
+                val timeText = if (hasDeadline) {
+                    timeFormatter.format(stateHolder.deadline)
+                } else stringResource(R.string.time_not_set)
+                DeadlineDialogButton(
+                    iconId = R.drawable.ic_clock,
+                    text = timeText,
+                    hasDeadline = hasDeadline,
+                    onClick = { showTimeDialog = true },
+                )
+            }
+
+            Button(
+                text = stringResource(R.string.button_confirm),
+                color = AccentYellow,
+                onClick = { stateHolder.showDeadlineDialog = false },
+            )
+            Button(
+                text = stringResource(R.string.button_clear),
+                color = ExtraLightGray,
+                onClick = stateHolder::onClearDeadline,
+            )
+        }
+    }
 }
 
+@Composable
+private fun DeadlineDialogButton(
+    @DrawableRes iconId: Int,
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    hasDeadline: Boolean,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(LightYellow)
+            .clickable(onClick = onClick)
+            .width(IntrinsicSize.Min)
+            .height(52.dp)
+            .padding(16.dp),
+    ) {
+        val color = if (hasDeadline) Black else DarkGray
+        Icon(
+            painter = painterResource(iconId),
+            contentDescription = null,
+            modifier = Modifier.requiredSize(24.dp),
+            tint = color,
+        )
+        Text(
+            text = text,
+            color = color,
+            fontStyle = if (hasDeadline) FontStyle.Normal else FontStyle.Italic,
+            fontSize = 20.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(1.0f),
+        )
+    }
+}
 
 @Composable
 @NonRestartableComposable
@@ -246,7 +384,7 @@ private fun EditAreaChips(
         // Deadline chip
         val deadlineContentColor = if (stateHolder.deadline == null) LightGray else Black
         Chip(
-            text = stringResource(R.string.chip_deadline),
+            text = formatDeadline(stateHolder.deadline),
             icon = painterResource(R.drawable.ic_clock),
             textColor = deadlineContentColor,
             iconTint = deadlineContentColor,
@@ -320,8 +458,8 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
     )
     override val suggestions: List<String> = _suggestions
 
-    private var _deadline by mutableStateOf<LocalDate?>(null)
-    override var deadline: LocalDate?
+    private var _deadline by mutableStateOf<LocalDateTime?>(null)
+    override var deadline: LocalDateTime?
         get() = _deadline
         set(value) {
             _deadline = value
@@ -379,6 +517,25 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
     override fun onCategoryClick(category: Category) {
         _selectedCategory = category
         _showCategoryDialog = false
+    }
+
+    override fun onSetDeadlineDate(epochMilli: Long) {
+        val instant = Instant.ofEpochMilli(epochMilli)
+        val date = LocalDate.ofInstant(instant, ZoneId.systemDefault())
+        val time = _deadline?.toLocalTime() ?: LocalTime.now()
+        val newDeadline = LocalDateTime.of(date, time).let {
+            if (_deadline == null) it.plusHours(1) else it
+        }
+        _deadline = newDeadline
+    }
+
+    override fun onSetDeadlineTime(hour: Int, minute: Int) {
+        val date = _deadline?.toLocalDate() ?: LocalDate.now()
+        _deadline = LocalDateTime.of(date, LocalTime.of(hour, minute))
+    }
+
+    override fun onClearDeadline() {
+        _deadline = null
     }
 
     override fun onSubmitTask() = Unit
