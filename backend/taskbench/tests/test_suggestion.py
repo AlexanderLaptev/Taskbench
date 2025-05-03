@@ -19,7 +19,7 @@ class SuggestionServiceTestCase(SimpleTestCase):
     def test_deadline_suggestion(self):
         text = 'Не забыть, что завтра в 3 часа дня созвон'
         now_time = datetime(2025, 4, 24, 12, 00, 0, tzinfo=timezone.utc)
-        supposed_time = datetime(2025,4,25,15,00,0, tzinfo=timezone.utc)
+        supposed_time = datetime(2025,4,25,15,00,0, tzinfo=timezone.utc).isoformat().replace('+00:00', 'Z')
         result = SuggestionService().suggest_deadline(text, now=now_time)
         print(result)
         self.assertEqual(result, supposed_time)
