@@ -38,8 +38,8 @@
     <string name="label_priority">Приоритет</string>
     <string name="placeholder_enter_task">Введите задачу</string>
     <string name="placeholder_enter_subtask">Введите подзадачу</string>
-    <string name="list_subtasks">Подзадачи:</string>
-    <string name="list_suggestions">Предложения ИИ:</string>
+    <string name="label_subtask_list">Подзадачи:</string>
+    <string name="label_suggestion_list">Предложения ИИ:</string>
 
     <string name="priority_high">Высокий приоритет</string>
     <string name="priority_normal">Обычный приоритет</string>

@@ -26,7 +26,6 @@ fun TaskCreationScreen(navController: NavController) {
     ) { scaffoldPadding ->
         TaskEditDialog(
             stateHolder = MockTaskEditDialogStateHolder,
-            drawLogo = true,
             modifier = Modifier
                 .padding(top = WindowInsets.systemBars.asPaddingValues().calculateTopPadding())
                 .padding(

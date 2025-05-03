@@ -1,22 +1,26 @@
 package cs.vsu.taskbench.ui.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cs.vsu.taskbench.R
@@ -24,6 +28,7 @@ import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
+import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
@@ -40,6 +45,9 @@ interface TaskEditDialogStateHolder {
 
     fun onSubmitTask()
     fun onAddSubtask()
+    fun onEditSubtask(text: String)
+    fun onRemoveSubtask()
+    fun onAddSuggestion(suggestion: String)
     fun onDeadlineChipClick()
     fun onPriorityChipClick()
     fun onCategoryChipClick()
@@ -48,58 +56,56 @@ interface TaskEditDialogStateHolder {
 @Composable
 fun TaskEditDialog(
     stateHolder: TaskEditDialogStateHolder,
-    drawLogo: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(32.dp),
         modifier = modifier,
     ) {
-        SubtaskArea(stateHolder = stateHolder)
-
-        if (drawLogo) {
-            Image(
-                painter = painterResource(R.drawable.logo_full_dark),
-                contentDescription = null,
-                modifier = Modifier
-                    .weight(1.0f)
-                    .fillMaxWidth()
-                    .wrapContentSize(),
-            )
-        } else Spacer(Modifier.weight(1.0f))
-
-        EditArea(
-            stateHolder = stateHolder,
-            modifier = Modifier.imePadding(),
-        )
-    }
-}
-
-@Composable
-private fun SubtaskArea(
-    stateHolder: TaskEditDialogStateHolder,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier) {
         SubtaskCreationField(
             text = stateHolder.subtaskInput,
             onTextChange = { stateHolder.subtaskInput = it },
             placeholder = stringResource(R.string.placeholder_enter_subtask),
             onAddButtonClick = stateHolder::onAddSubtask,
         )
-    }
-}
 
-@Composable
-private fun EditArea(
-    stateHolder: TaskEditDialogStateHolder,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier,
-    ) {
+        Spacer(Modifier.height(8.dp))
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .weight(1.0f)
+                .fillMaxWidth(),
+        ) {
+            val subtasks = stateHolder.subtasks
+            val suggestions = stateHolder.suggestions
+
+            if (subtasks.isNotEmpty()) {
+                item { SubtaskSection(stringResource(R.string.label_subtask_list)) }
+                items(subtasks, key = { it.content }) { subtask ->
+                    AddedSubtask(
+                        text = subtask.content,
+                        onTextChange = stateHolder::onEditSubtask,
+                        onRemove = stateHolder::onRemoveSubtask,
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+            }
+
+            if (suggestions.isNotEmpty()) {
+                item { SubtaskSection(stringResource(R.string.label_suggestion_list)) }
+                items(suggestions, key = { it }) { suggestion ->
+                    SuggestedSubtask(
+                        text = suggestion,
+                        onAdd = { stateHolder.onAddSuggestion(suggestion) },
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
         EditAreaChips(stateHolder = stateHolder)
+
+        Spacer(Modifier.height(8.dp))
         BoxEdit(
             value = stateHolder.taskInput,
             onValueChange = { stateHolder.taskInput = it },
@@ -107,8 +113,40 @@ private fun EditArea(
             inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
             placeholder = stringResource(R.string.placeholder_enter_task),
             onClick = stateHolder::onSubmitTask,
+            modifier = Modifier.imePadding(),
         )
     }
+}
+
+@Composable
+@NonRestartableComposable
+private fun SubtaskSection(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = text,
+        fontWeight = FontWeight.Medium,
+        color = DarkGray,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun EditArea(
+    stateHolder: TaskEditDialogStateHolder,
+) {
+    EditAreaChips(stateHolder = stateHolder)
+    Spacer(Modifier.height(8.dp))
+    BoxEdit(
+        value = stateHolder.taskInput,
+        onValueChange = { stateHolder.taskInput = it },
+        buttonIcon = painterResource(R.drawable.ic_add_circle_filled),
+        inactiveButtonIcon = painterResource(R.drawable.ic_add_circle_outline),
+        placeholder = stringResource(R.string.placeholder_enter_task),
+        onClick = stateHolder::onSubmitTask,
+        modifier = Modifier.imePadding(),
+    )
 }
 
 @Composable
@@ -171,16 +209,23 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
         }
 
     override val subtasks: List<Subtask> = listOf(
-        Subtask(null, "Lorem ipsum dolor sit amet", false),
-        Subtask(null, "Lorem ipsum dolor sit amet", false),
-        Subtask(null, "Lorem ipsum dolor sit amet", false),
+        Subtask(null, "Lorem ipsum dolor sit amet 1", false),
+        Subtask(null, "Lorem ipsum dolor sit amet 2", false),
+        Subtask(null, "Lorem ipsum dolor sit amet 3", false),
+        Subtask(null, "Lorem ipsum dolor sit amet 4", false),
+        Subtask(null, "Lorem ipsum dolor sit amet 5", false),
+        Subtask(null, "Lorem ipsum dolor sit amet 6", false),
     )
 
-    override val suggestions: List<String> = listOf(
-        "Lorem ipsum dolor sit amet",
-        "Lorem ipsum dolor sit amet",
-        "Lorem ipsum dolor sit amet",
+    private var _suggestions = mutableListOf(
+        "Lorem ipsum dolor sit amet 7",
+        "Lorem ipsum dolor sit amet 8",
+        "Lorem ipsum dolor sit amet 9",
+        "Lorem ipsum dolor sit amet 10",
+        "Lorem ipsum dolor sit amet 11",
+        "Lorem ipsum dolor sit amet 12",
     )
+    override val suggestions: List<String> = _suggestions
 
     private var _deadline by mutableStateOf<LocalDate?>(null)
     override var deadline: LocalDate?
@@ -203,28 +248,23 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
             _category = value
         }
 
-    override fun onSubmitTask() = Unit
-    override fun onAddSubtask() = Unit
-    override fun onDeadlineChipClick() = Unit
     override fun onPriorityChipClick() {
         _isHighPriority = !_isHighPriority
     }
 
+    override fun onSubmitTask() = Unit
+    override fun onAddSubtask() = Unit
+    override fun onEditSubtask(text: String) = Unit
+    override fun onAddSuggestion(suggestion: String) = Unit
+    override fun onRemoveSubtask() = Unit
+    override fun onDeadlineChipClick() = Unit
     override fun onCategoryChipClick() = Unit
 }
 
 @Preview
 @Composable
-private fun PreviewNoLogo() {
+private fun Preview() {
     TaskbenchTheme {
-        TaskEditDialog(MockTaskEditDialogStateHolder, false)
-    }
-}
-
-@Preview
-@Composable
-private fun PreviewWithLogo() {
-    TaskbenchTheme {
-        TaskEditDialog(MockTaskEditDialogStateHolder, true)
+        TaskEditDialog(MockTaskEditDialogStateHolder)
     }
 }
