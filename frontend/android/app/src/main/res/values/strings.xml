@@ -81,5 +81,9 @@
     <string name="error_task_not_saved">Произошла ошибка при сохранении задачи</string>
     <string name="error_category_not_saved">Произошла ошибка при сохранении категории</string>
     <string name="error_could_not_connect">Не удалось подключиться к серверу</string>
+    <string name="menu_my_account">Мой аккаунт</string>
+    <string name="menu_settings_logout">Выйти из аккаунта</string>
+    <string name="menu_settings_change_password">Сменить пароль</string>
+    <string name="menu_settings_subscription">Управление подпиской</string>
 
 </resources>

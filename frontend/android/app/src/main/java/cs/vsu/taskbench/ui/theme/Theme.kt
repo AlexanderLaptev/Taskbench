@@ -12,6 +12,7 @@ fun TaskbenchTheme(
         background = Beige,
         surface = Beige,
         onSurface = Black,
+        outlineVariant = LightGray,
     )
 
     MaterialTheme(
