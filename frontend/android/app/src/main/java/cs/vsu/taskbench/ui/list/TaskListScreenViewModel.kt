@@ -13,10 +13,14 @@ import cs.vsu.taskbench.data.task.TaskRepository.SortByMode
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
+import cs.vsu.taskbench.ui.create.TaskCreationScreenViewModel.Error
+import cs.vsu.taskbench.util.mutableEventFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.net.ConnectException
 import java.time.LocalDate
 
 class TaskListScreenViewModel(
@@ -26,6 +30,14 @@ class TaskListScreenViewModel(
     companion object {
         private val TAG = TaskListScreenViewModel::class.simpleName
     }
+
+    enum class Error {
+        CouldNotConnect,
+        Unknown,
+    }
+
+    private val _errorFlow = mutableEventFlow<Error>()
+    val errorFlow = _errorFlow.asSharedFlow()
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks = _tasks.asStateFlow()
@@ -66,22 +78,23 @@ class TaskListScreenViewModel(
         }
 
     init {
-        viewModelScope.launch {
+        catchErrorsAsync {
             refreshCategories()
             refreshTasks()
+            Log.d(TAG, "init: success")
         }
     }
 
     fun deleteTask(task: Task) {
-        viewModelScope.launch {
+        catchErrorsAsync {
             taskRepository.deleteTask(task)
+            Log.d(TAG, "deleteTask: success")
             refreshTasks()
         }
     }
 
-    fun setSubtaskChecked(task: Task, subtask: Subtask, isChecked: Boolean) {
-        Log.d(TAG, "setSubtaskChecked: task=${task.id}; subtask=${subtask.id}; checked=$isChecked")
-        viewModelScope.launch {
+    fun setSubtaskChecked(subtask: Subtask, isChecked: Boolean) {
+        catchErrorsAsync {
             val changed = subtask.copy(isDone = isChecked)
             taskRepository.saveSubtask(changed)
             Log.d(TAG, "setSubtaskChecked: saved task")
@@ -90,7 +103,7 @@ class TaskListScreenViewModel(
     }
 
     private fun refreshTasks() {
-        viewModelScope.launch {
+        catchErrorsAsync {
             _tasks.update {
                 var result = taskRepository.getTasks(
                     categoryFilterState,
@@ -102,16 +115,30 @@ class TaskListScreenViewModel(
                         result = result.filter { it.categoryId == 0 }
                     }
                 }
+                Log.d(TAG, "refreshTasks: success")
                 result
             }
         }
-        Log.d(TAG, "refreshTasks: success")
     }
 
     private fun refreshCategories() {
-        viewModelScope.launch {
+        catchErrorsAsync {
             _categories.update { categoryRepository.getAllCategories(_categorySearchQuery) }
+            Log.d(TAG, "refreshCategories: success")
         }
-        Log.d(TAG, "refreshCategories: success")
+    }
+
+    private inline fun catchErrorsAsync(crossinline block: suspend () -> Unit) {
+        viewModelScope.launch {
+            try {
+                block()
+            } catch (e: ConnectException) {
+                Log.e(TAG, "catchErrors: connection error", e)
+                _errorFlow.tryEmit(Error.CouldNotConnect)
+            } catch (e: Exception) {
+                Log.e(TAG, "catchErrors: unknown error", e)
+                _errorFlow.tryEmit(Error.Unknown)
+            }
+        }
     }
 }

@@ -22,6 +22,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -35,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -56,6 +59,7 @@ import cs.vsu.taskbench.ui.component.TaskCard
 import cs.vsu.taskbench.ui.component.dialog.BottomSheetCategoryDialog
 import cs.vsu.taskbench.ui.component.dialog.CategoryDialogActions
 import cs.vsu.taskbench.ui.component.dialog.CategoryDialogMode
+import cs.vsu.taskbench.ui.list.TaskListScreenViewModel.Error
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.White
@@ -78,9 +82,26 @@ fun TaskListScreen(
     navController: NavController,
 ) {
     val viewModel = koinViewModel<TaskListScreenViewModel>()
+    val snackbarHostState = remember { SnackbarHostState() }
     val tasks by viewModel.tasks.collectAsStateWithLifecycle()
+    val resources = LocalContext.current.resources
+
+    LaunchedEffect(Unit) {
+        viewModel.errorFlow.collect {
+            val message = when (it) {
+                Error.CouldNotConnect -> R.string.error_could_not_connect
+                Error.Unknown -> R.string.error_unknown
+            }
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(
+                message = resources.getString(message),
+                withDismissAction = true,
+            )
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = { NavigationBar(navController) }
     ) { padding ->
         Column(
@@ -130,11 +151,7 @@ fun TaskListScreen(
                             .padding(horizontal = 16.dp),
 
                         onSubtaskCheckedChange = { subtask, checked ->
-                            viewModel.setSubtaskChecked(
-                                task,
-                                subtask,
-                                checked,
-                            )
+                            viewModel.setSubtaskChecked(subtask, checked)
                         },
                     )
                 }
