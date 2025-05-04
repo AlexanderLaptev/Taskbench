@@ -92,11 +92,17 @@ class TaskListScreenViewModel(
     private fun refreshTasks() {
         viewModelScope.launch {
             _tasks.update {
-                taskRepository.getTasks(
+                var result = taskRepository.getTasks(
                     categoryFilterState,
                     sortByMode,
                     selectedDate,
                 )
+                (_categoryFilterState as? CategoryFilterState.Enabled)?.let { state ->
+                    if (state.category == null) {
+                        result = result.filter { it.categoryId == 0 }
+                    }
+                }
+                result
             }
         }
         Log.d(TAG, "refreshTasks: success")
