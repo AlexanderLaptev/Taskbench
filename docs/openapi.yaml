@@ -8,6 +8,9 @@ servers:
   - url: https://api.taskbench.ru/v1
     description: Production server
 
+security:
+  - BearerAuth: []
+
 paths:
   /ai/suggestions:
     post:
@@ -19,12 +22,12 @@ paths:
             schema:
               type: object
               properties:
-                text:
+                title:
                   type: string
                   description: Task description text
                 timestamp:
-                  type: integer
-                  format: int64
+                  type: string
+                  format: date-time
                   description: Unix timestamp
                 dpc:
                   $ref: '#/components/schemas/DPC'
@@ -77,6 +80,19 @@ paths:
           schema:
             type: string
             format: date
+          description: Filter by exact date (cannot be used with after/before)
+        - in: query
+          name: after
+          schema:
+            type: string
+            format: date-time
+          description: Filter tasks with deadline after this datetime (UTC)
+        - in: query
+          name: before
+          schema:
+            type: string
+            format: date-time
+          description: Filter tasks with deadline before this datetime (UTC)
         - in: query
           name: offset
           schema:
@@ -96,6 +112,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    
 
   /tasks/{task_id}:
     delete:
@@ -205,6 +231,108 @@ paths:
         '204':
           description: Subtask removed successfully
 
+  /user/register:
+    post:
+      summary: Create user and get json web tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: mySecret12
+      responses:
+        '201':
+          description: Successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                    example: 42
+                  access:
+                    type: string
+                    description: JWT access token
+                    example: eyJ0eXAiOiJKV1QiLCJhbGci...
+                  refresh:
+                    type: string
+                    description: JWT refresh token
+                    example: eyJ0eXAiOiJKV1QiLCJhbGci...
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Email already exists
+      security: []
+       
+  /user/login/:
+    post:
+      summary: Login an existing user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: mySecret123
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                    example: 42
+                  access:
+                    type: string
+                    description: JWT access token
+                    example: eyJ0eXAiOiJKV1QiLCJhbGci...
+                  refresh:
+                    type: string
+                    description: JWT refresh token
+                    example: eyJ0eXAiOiJKV1QiLCJhbGci...
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid email or password
+      security: []
+      
   /user/password:
     patch:
       summary: Change user password
@@ -223,25 +351,49 @@ paths:
         '204':
           description: Password changed successfully
 
-  /bootstrap:
-    get:
-      summary: Get bootstrap data
+  /user/delete:
+    delete:
+      summary: Delete an existing user
+      description: Delete the current authenticated user.
       responses:
         '200':
-          description: Bootstrap data retrieved
+          description: Successfully deleted user
+        '401':
+          description: Unauthorized — invalid or missing token
+        '404':
+          description: User not found
+      security:
+        - BearerAuth: []
+
+  /token/refresh/:
+    post:
+      summary: Refresh access token
+      description: Obtain a new access token using a valid refresh token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh
+              properties:
+                refresh:
+                  type: string
+                  example: eyJ0eXAiOiJKV1QiLCJhbGci...
+      responses:
+        '200':
+          description: New access token
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  categories:
-                    type: array
-                    items:
-                      type: string
-                  premium_status:
-                    type: boolean
-                  jwt:
+                  access:
                     type: string
+                    example: eyJ0eXAiOiJKV1QiLCJhbGci...
+        '401':
+          description: Invalid or expired refresh token
 
   /statistics:
     get:
@@ -265,8 +417,117 @@ paths:
                       format: float
                     maxItems: 7
                     minItems: 7
+                    
+  /categories:
+    get:
+      summary: Get user's categories
+      responses:
+        '200':
+          description: List of user's categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+                  
+    post:
+      summary: Create new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 50
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid input
+        '409':
+          description: Category already exists
+  
+  /user/subscription/status/:
+    get:
+      summary: Get user's subscription status
+      description: Check if user has active subscription
+      responses:
+        '200':
+          description: Subscription status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  has_subscription:
+                    type: boolean
+                    description: Subscription active status
+                  start_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  end_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  transaction_id:
+                    type: string
+                    nullable: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
+
+  /user/subscription/:
+    post:
+      summary: Create test subscription
+      description: Create a test subscription for 1 month
+      responses:
+        '201':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User already has active subscription"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
 
 components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      
   schemas:
     DPC:
       type: object
@@ -325,3 +586,42 @@ components:
           type: string
         is_done:
           type: boolean
+          
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 50
+      required:
+        - name
+    
+    Subscription:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        subscription_id:
+          type: integer
+          example: 1
+        start_date:
+          type: string
+          format: date-time
+          example: "2023-05-20T10:00:00Z"
+        end_date:
+          type: string
+          format: date-time
+          example: "2023-06-20T10:00:00Z"
+        transaction_id:
+          type: string
+          example: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid token"
