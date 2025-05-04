@@ -16,6 +16,6 @@ val useCaseModule = module {
         val fakeTaskRepo = getOrNull<FakeTaskRepository>()
         if (fakeTaskRepo != null) preloadRepositories += fakeTaskRepo
 
-        BootstrapUseCase(get(), preloadRepositories)
+        BootstrapUseCase(get(), get(), preloadRepositories)
     }
 }

@@ -26,6 +26,7 @@ import com.ramcosta.composedestinations.generated.destinations.TaskCreationScree
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.domain.usecase.BootstrapUseCase
+import cs.vsu.taskbench.domain.usecase.BootstrapUseCase.Result
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
@@ -39,20 +40,22 @@ fun SplashScreen(navigator: DestinationsNavigator) {
     val bootstrapUseCase = koinInject<BootstrapUseCase>()
     var exception: Exception? by remember { mutableStateOf(null) }
 
+    val noInternetErrorMessage = stringResource(R.string.error_no_internet)
     LaunchedEffect(Unit) {
         delay(300) // a little delay so the splash screen doesn't disappear instantly
         try {
             val result = bootstrapUseCase()
             val direction = when (result) {
-                BootstrapUseCase.Result.Success -> TaskCreationScreenDestination
-                BootstrapUseCase.Result.LoginRequired -> LoginScreenDestination
+                Result.Success -> TaskCreationScreenDestination
+                Result.LoginRequired -> LoginScreenDestination
+                Result.NoInternet -> throw RuntimeException(noInternetErrorMessage)
             }
             with(navigator) {
                 popBackStack()
                 navigate(direction)
             }
         } catch (e: Exception) {
-            Log.e("SplashScreen", "unknown error", e)
+            Log.e("SplashScreen", "exception during bootstrap", e)
             exception = e
         }
     }

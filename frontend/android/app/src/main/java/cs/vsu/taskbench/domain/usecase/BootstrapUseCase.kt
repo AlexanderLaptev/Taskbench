@@ -1,14 +1,17 @@
 package cs.vsu.taskbench.domain.usecase
 
+import android.content.Context
 import android.util.Log
 import cs.vsu.taskbench.data.PreloadRepository
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.UnauthorizedException
+import cs.vsu.taskbench.ui.util.hasInternetConnection
 import cs.vsu.taskbench.util.HttpStatusCodes
 import cs.vsu.taskbench.util.MockRandom
 import retrofit2.HttpException
 
 class BootstrapUseCase(
+    private val context: Context,
     private val authService: AuthService,
     private val preloadRepos: List<PreloadRepository>,
 ) {
@@ -19,10 +22,17 @@ class BootstrapUseCase(
     enum class Result {
         Success,
         LoginRequired,
+        NoInternet,
     }
 
     suspend operator fun invoke(): Result {
         MockRandom.reset()
+
+        if (!context.hasInternetConnection()) {
+            Log.d(TAG, "invoke: no internet, returning early")
+            return Result.NoInternet
+        }
+
         Log.d(TAG, "invoke: bootstrap started")
         try {
             authService.getSavedTokens()
