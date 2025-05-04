@@ -117,6 +117,7 @@ class TaskCreationScreenViewModel(
     override fun onCategoryChipClick() {
         categoryInput = ""
         _showCategoryDialog = true
+        updateCategories()
     }
 
     override fun onCategoryClick(category: Category) {
@@ -204,7 +205,8 @@ class TaskCreationScreenViewModel(
     override fun onAddCategory() {
         catchErrorsAsync {
             val category = Category(id = null, name = _categoryInput)
-            categoryRepository.saveCategory(category)
+            _selectedCategory = categoryRepository.saveCategory(category)
+            showCategoryDialog = false
             Log.d(TAG, "onAddCategory: success")
         }
     }
@@ -221,7 +223,7 @@ class TaskCreationScreenViewModel(
 
     private fun updateCategories() {
         catchErrorsAsync {
-            categories = categoryRepository.getAllCategories(_categoryInput)
+            categories = categoryRepository.getAllCategories(_categoryInput).sortedBy { it.name }
             Log.d(TAG, "updateCategories: success")
         }
     }

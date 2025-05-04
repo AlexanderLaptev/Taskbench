@@ -155,6 +155,10 @@ fun TaskEditDialog(
                         stateHolder.selectedCategory = null
                         onDismiss()
                     }
+
+                    override fun onAdd() {
+                        stateHolder.onAddCategory()
+                    }
                 }
             },
         )
