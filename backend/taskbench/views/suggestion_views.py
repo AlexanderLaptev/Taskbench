@@ -58,8 +58,8 @@ class SuggestionView(APIView):
 
         return JsonResponse({
             "suggested_dpc": {
-                "deadline": str(deadline) if deadline is not None else '',
-                "priority": priority,
+                "deadline": deadline.replace(tzinfo=None).isoformat(timespec='seconds') if deadline is not None else '',
+                "priority": 0,
                 "category_id": category_id if category_name is not None else '',
                 "category_name": category_name if category_name is not None else '',
             },

@@ -116,15 +116,14 @@ class SuggestionService:
         except (ValueError, TypeError):
             return 0
 
-    def suggest_deadline(self, text: str, *, now: datetime | None = None) -> str | None:
+    def suggest_deadline(self, text: str, *, now: datetime | None = None) -> datetime | None:
         """
         Анализирует текст с естественным языком и ищет даты.
         Выбирает либо последнюю из прошедших дат, либо ближайшую из будущих.
         :param text: анализируемый текст
         :param now: время, которое считается за текущее.
         """
-        now = now or datetime.now(tz=timezone.utc)
-        now = self._make_aware(now or datetime.now())
+        now = now or datetime.now().replace(tzinfo=None)
 
         found = dateparser.search.search_dates(
             text,
@@ -132,8 +131,7 @@ class SuggestionService:
             settings={
                 "RELATIVE_BASE": now,
                 "PREFER_DATES_FROM": "future",
-                "RETURN_AS_TIMEZONE_AWARE": True,
-
+                "RETURN_AS_TIMEZONE_AWARE": False,
             },
         )
 
@@ -141,17 +139,10 @@ class SuggestionService:
             return None
 
         # found -> список кортежей (фрагмент, datetime)
-        # tz = now.tzinfo
-        datetimes = [self._make_aware(dt) for _, dt in found]
+        datetimes = [dt for _, dt in found]
 
-        future = [d for d in datetimes if d > now]
-        return (min(future) if future else max(datetimes)).astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
-
-
-    @staticmethod
-    def _make_aware(dt: datetime, tz=timezone.utc) -> datetime:
-        """Возвращает datetime с tzinfo (добавляет tz, если его нет)."""
-        return dt if dt.tzinfo else dt.replace(tzinfo=tz)
+        future = [d.replace(tzinfo=None) for d in datetimes if d.replace(tzinfo=None) > now.replace(tzinfo=None)]
+        return min(future) if future else max(datetimes)
 
     @staticmethod
     def _equal_ignore_space_case(a: Union[str, bytes], b: Union[str, bytes]) -> bool:

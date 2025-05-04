@@ -11,15 +11,15 @@ from rest_framework import status
 class SuggestionServiceTestCase(SimpleTestCase):
     def __init__(self, method_name: str = "runTest"):
         super().__init__(method_name)
-        self.SuggestionService = SuggestionService(debug=False)
+        self.SuggestionService = SuggestionService(debug=True)
 
     def setUp(self):
         pass
 
     def test_deadline_suggestion(self):
         text = 'Не забыть, что завтра в 3 часа дня созвон'
-        now_time = datetime(2025, 4, 24, 12, 00, 0, tzinfo=timezone.utc)
-        supposed_time = datetime(2025,4,25,15,00,0, tzinfo=timezone.utc).isoformat().replace('+00:00', 'Z')
+        now_time = datetime(2025, 4, 24, 12, 00, 0).replace(tzinfo=None)
+        supposed_time = datetime(2025,4,25,15,00,0).replace(tzinfo=None)
         result = SuggestionService().suggest_deadline(text, now=now_time)
         print(result)
         self.assertEqual(result, supposed_time)
