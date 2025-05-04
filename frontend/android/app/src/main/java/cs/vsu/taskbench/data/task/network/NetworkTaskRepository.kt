@@ -47,7 +47,7 @@ class NetworkTaskRepository(
                     id = task.id,
                     content = task.content,
                     deadline = task.dpc.deadline?.let {
-                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(it) as LocalDateTime?
+                        LocalDateTime.parse(it, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                     },
                     isHighPriority = when (task.dpc.priority) {
                         null -> false
@@ -111,7 +111,7 @@ class NetworkTaskRepository(
         id = id,
         content = content,
         deadline = dpc.deadline?.let {
-            DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(it) as LocalDateTime?
+            LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         },
         isHighPriority = when (dpc.priority) {
             null -> false
