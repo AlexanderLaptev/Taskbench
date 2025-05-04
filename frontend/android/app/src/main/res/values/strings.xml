@@ -78,5 +78,8 @@
     <string name="label_today">сегодня</string>
     <string name="label_tomorrow">завтра</string>
     <string name="button_select">Выбрать</string>
+    <string name="error_task_not_saved">Произошла ошибка при сохранении задачи</string>
+    <string name="error_category_not_saved">Произошла ошибка при сохранении категории</string>
+    <string name="error_could_not_connect">Не удалось подключиться к серверу</string>
 
 </resources>

@@ -19,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import java.net.ConnectException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -35,8 +36,8 @@ class TaskCreationScreenViewModel(
     }
 
     enum class Error {
-        TaskNotSaved,
-        CategoryNotSaved,
+        CouldNotConnect,
+        Unknown,
     }
 
     private val _errorFlow = mutableEventFlow<Error>()
@@ -50,6 +51,7 @@ class TaskCreationScreenViewModel(
             updateSuggestions()
         }
 
+    // TODO: replace with strings
     override var subtasks: List<Subtask> by mutableStateOf(emptyList())
     override var subtaskInput by mutableStateOf("")
 
@@ -142,7 +144,7 @@ class TaskCreationScreenViewModel(
     }
 
     override fun onSubmitTask() {
-        viewModelScope.launch {
+        catchErrorsAsync {
             val task = Task(
                 id = null,
                 content = taskInput,
@@ -151,15 +153,9 @@ class TaskCreationScreenViewModel(
                 subtasks = subtasks,
                 categoryId = selectedCategory?.id,
             )
-
-            try {
-                taskRepository.saveTask(task)
-                clearInput()
-                Log.d(TAG, "onSubmitTask: success")
-            } catch (e: Exception) {
-                Log.e(TAG, "onSubmitTask: error while saving task", e)
-                _errorFlow.tryEmit(Error.TaskNotSaved)
-            }
+            taskRepository.saveTask(task)
+            clearInput()
+            Log.d(TAG, "onSubmitTask: success")
         }
     }
 
@@ -206,15 +202,10 @@ class TaskCreationScreenViewModel(
     }
 
     override fun onAddCategory() {
-        viewModelScope.launch {
+        catchErrorsAsync {
             val category = Category(id = null, name = _categoryInput)
-            try {
-                categoryRepository.saveCategory(category)
-                Log.d(TAG, "onAddCategory: success")
-            } catch (e: Exception) {
-                Log.e(TAG, "onAddCategory: error while saving", e)
-                _errorFlow.tryEmit(Error.CategoryNotSaved)
-            }
+            categoryRepository.saveCategory(category)
+            Log.d(TAG, "onAddCategory: success")
         }
     }
 
@@ -229,12 +220,22 @@ class TaskCreationScreenViewModel(
     }
 
     private fun updateCategories() {
+        catchErrorsAsync {
+            categories = categoryRepository.getAllCategories(_categoryInput)
+            Log.d(TAG, "updateCategories: success")
+        }
+    }
+
+    private inline fun catchErrorsAsync(crossinline block: suspend () -> Unit) {
         viewModelScope.launch {
             try {
-                categories = categoryRepository.getAllCategories(_categoryInput)
-                Log.d(TAG, "updateCategories: success")
+                block()
+            } catch (e: ConnectException) {
+                Log.e(TAG, "catchErrors: connection error", e)
+                _errorFlow.tryEmit(Error.CouldNotConnect)
             } catch (e: Exception) {
-                Log.e(TAG, "updateCategories: error while refreshing", e)
+                Log.e(TAG, "catchErrors: unknown error", e)
+                _errorFlow.tryEmit(Error.Unknown)
             }
         }
     }
@@ -264,8 +265,12 @@ class TaskCreationScreenViewModel(
                 if (_deadline == null) _deadline = response.deadline
                 if (_selectedCategory == null) _selectedCategory = response.category
                 Log.d(TAG, "updateSuggestions: success")
+            } catch (e: ConnectException) {
+                Log.e(TAG, "updateSuggestions: connection error", e)
+                _errorFlow.tryEmit(Error.CouldNotConnect)
             } catch (e: Exception) {
                 Log.e(TAG, "updateSuggestions: error during fetch", e)
+                _errorFlow.tryEmit(Error.Unknown)
             }
         }
     }
