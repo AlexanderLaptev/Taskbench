@@ -10,11 +10,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,63 +57,68 @@ fun LazyItemScope.TaskCard(
         gesturesEnabled = swipeEnabled || state.targetValue == SwipeToDismissBoxValue.EndToStart,
         modifier = Modifier.animateItem()
     ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = White,
-                contentColor = Black,
-            ),
-            shape = RoundedCornerShape(10.dp),
-            onClick = onClick,
-            modifier = modifier,
+        // TODO: re-enable ripple once we have card expansion
+        CompositionLocalProvider(
+            LocalRippleConfiguration provides null,
         ) {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(16.dp),
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = White,
+                    contentColor = Black,
+                ),
+                shape = RoundedCornerShape(10.dp),
+                onClick = onClick,
+                modifier = modifier,
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_clock),
-                        contentDescription = null,
-                    )
-                    Text(
-                        text = deadlineText.ifBlank {
-                            stringResource(R.string.label_deadline_missing)
-                        },
-                        fontSize = 16.sp,
-                        color = if (deadlineText.isBlank()) LightGray else Black,
-                    )
-                }
-
-                Text(
-                    text = bodyText,
-                    fontSize = 20.sp,
-                )
-
-                if (subtasks.isNotEmpty()) {
-                    HorizontalDivider(
-                        color = LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                    )
-                }
-
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(16.dp),
                 ) {
-                    for (subtask in subtasks) {
-                        var checked by remember { mutableStateOf(subtask.isDone) }
-                        SubtaskComposable(
-                            content = subtask.content,
-                            checked = checked,
-                            onCheckedChange = {
-                                checked = !checked
-                                onSubtaskCheckedChange(subtask, it)
-                            },
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_clock),
+                            contentDescription = null,
                         )
+                        Text(
+                            text = deadlineText.ifBlank {
+                                stringResource(R.string.label_deadline_missing)
+                            },
+                            fontSize = 16.sp,
+                            color = if (deadlineText.isBlank()) LightGray else Black,
+                        )
+                    }
+
+                    Text(
+                        text = bodyText,
+                        fontSize = 20.sp,
+                    )
+
+                    if (subtasks.isNotEmpty()) {
+                        HorizontalDivider(
+                            color = LightGray,
+                            thickness = 1.dp,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        )
+                    }
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        for (subtask in subtasks) {
+                            var checked by remember { mutableStateOf(subtask.isDone) }
+                            SubtaskComposable(
+                                content = subtask.content,
+                                checked = checked,
+                                onCheckedChange = {
+                                    checked = !checked
+                                    onSubtaskCheckedChange(subtask, it)
+                                },
+                            )
+                        }
                     }
                 }
             }
