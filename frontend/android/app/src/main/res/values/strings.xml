@@ -85,6 +85,6 @@
     <string name="menu_settings_logout">Выйти из аккаунта</string>
     <string name="menu_settings_change_password">Сменить пароль</string>
     <string name="menu_settings_subscription">Управление подпиской</string>
-    <string name="version_number">v1.0.0-alpha</string>
+    <string name="version_number">v1.0.0-alpha1</string>
 
 </resources>
