@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun formatDeadline(deadline: LocalDateTime?): String {
-    if (deadline == null) return stringResource(R.string.chip_deadline)
+    if (deadline == null) return stringResource(R.string.label_deadline_missing)
 
     val datePattern = stringResource(R.string.pattern_date)
     val timePattern = stringResource(R.string.pattern_time)
