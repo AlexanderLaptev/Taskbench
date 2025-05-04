@@ -54,13 +54,17 @@ class NetworkTaskRepository(
                         0 -> false
                         else -> true
                     },
-                    subtasks = task.subtasks.map { subtask ->
-                        Subtask(
-                            id = subtask.id,
-                            content = subtask.content,
-                            isDone = subtask.is_done,
-                        )
-                    },
+                    subtasks = task.subtasks
+                        .asSequence()
+                        .map { subtask ->
+                            Subtask(
+                                id = subtask.id,
+                                content = subtask.content,
+                                isDone = subtask.is_done,
+                            )
+                        }
+                        .sortedBy { it.id }
+                        .toList(),
                     categoryId = task.dpc.category_id,
                 )
             }
