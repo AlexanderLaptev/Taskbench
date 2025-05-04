@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.ui
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -48,27 +52,38 @@ import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.White
 import org.koin.compose.koinInject
+import java.net.ConnectException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+
+private const val TAG = "StatisticsScreen"
 
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
 fun StatisticsScreen(
     navController: NavController,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val statisticsRepository = koinInject<StatisticsRepository>()
+    var statistics by remember { mutableStateOf<Statistics?>(null) }
+    val userRepo = koinInject<UserRepository>()
+    val user = userRepo.user!!
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = { NavigationBar(navController) },
     ) { padding ->
-        val statsRepository = koinInject<StatisticsRepository>()
-        var statistics by remember { mutableStateOf<Statistics?>(null) }
-        val userRepo = koinInject<UserRepository>()
-        val user = userRepo.user!!
-
-        val datePattern = stringResource(R.string.pattern_date)
-        val dateFormatter = remember { DateTimeFormatter.ofPattern(datePattern) }
-
+        val resources = LocalContext.current.resources
         LaunchedEffect(Unit) {
-            statistics = statsRepository.getStatistics(LocalDate.now())
+            try {
+                statistics = statisticsRepository.getStatistics(LocalDate.now())
+            } catch (e: ConnectException) {
+                Log.e(TAG, "connection error", e)
+                snackbarHostState.showSnackbar(resources.getString(R.string.error_could_not_connect))
+            } catch (e: Exception) {
+                Log.e(TAG, "unknown error", e)
+                snackbarHostState.showSnackbar(resources.getString(R.string.error_unknown))
+            }
         }
 
         Column(
@@ -126,6 +141,10 @@ fun StatisticsScreen(
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
+                            val datePattern = stringResource(R.string.pattern_date)
+                            val dateFormatter =
+                                remember { DateTimeFormatter.ofPattern(datePattern) }
+
                             Text(
                                 text = buildAnnotatedString {
                                     append(stringResource(R.string.label_premium_status))
