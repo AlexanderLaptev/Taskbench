@@ -110,5 +110,5 @@ val dataModule = module {
             .addConverterFactory(MoshiConverterFactory.create(get()))
             .build()
     }
-    allFake()
+    allNet()
 }

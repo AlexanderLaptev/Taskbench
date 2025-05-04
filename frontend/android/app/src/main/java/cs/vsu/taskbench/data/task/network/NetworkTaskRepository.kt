@@ -47,7 +47,7 @@ class NetworkTaskRepository(
                     id = task.id,
                     content = task.content,
                     deadline = task.dpc.deadline?.let {
-                        LocalDateTime.parse(it, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                     },
                     isHighPriority = when (task.dpc.priority) {
                         null -> false
@@ -65,16 +65,14 @@ class NetworkTaskRepository(
                 )
             }
         }
-        error("Could not get tasks from the server")
+        error("")
     }
 
     override suspend fun saveTask(task: Task): Task {
-        Log.d(TAG, "saveTask: saving task $task")
         return if (task.id == null) createTask(task) else updateTask(task)
     }
 
     private suspend fun createTask(task: Task): Task {
-        Log.d(TAG, "createTask: enter")
         authService.withAuth { access ->
             val response = dataSource.createTask(
                 access,
@@ -85,22 +83,31 @@ class NetworkTaskRepository(
                 )
             )
             val result = response.toModel()
+            Log.d(TAG, "createTask: success")
             return result
         }
-        Log.e(TAG, "createTask: failed to create task")
-        error("Could not create task")
+        error("")
     }
 
-    private suspend fun updateTask(task: Task): Task {
-        TODO()
-        Log.d(TAG, "updateTask: enter")
+    override suspend fun saveSubtask(subtask: Subtask): Subtask {
         authService.withAuth { access ->
+            val request = EditSubtaskRequest(subtask.content, subtask.isDone)
+            val response = dataSource.editSubtask(access, subtask.id!!, request)
+            return Subtask(
+                id = response.id,
+                content = response.content,
+                isDone = response.is_done,
+            )
         }
+        error("")
+    }
+
+    private fun updateTask(task: Task): Task {
+        Log.e(TAG, "updateTask: not implemented")
         return task
     }
 
     override suspend fun deleteTask(task: Task) {
-        Log.d(TAG, "deleteTask: task='$task'")
         authService.withAuth { access ->
             dataSource.deleteTask(access, task.id!!)
         }

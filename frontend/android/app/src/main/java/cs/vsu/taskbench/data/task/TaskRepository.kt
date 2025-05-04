@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.data.task
 
 import cs.vsu.taskbench.domain.model.Category
+import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
 import java.time.LocalDate
 
@@ -22,5 +23,6 @@ interface TaskRepository {
     ): List<Task>
 
     suspend fun saveTask(task: Task): Task
+    suspend fun saveSubtask(subtask: Subtask): Subtask
     suspend fun deleteTask(task: Task)
 }

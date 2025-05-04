@@ -48,7 +48,7 @@ class NetworkSuggestionRepository(
             val suggestedDeadline = response.suggested_dpc.deadline?.let {
                 if (it.isNotBlank()) {
                     try {
-                        DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(it) as LocalDateTime
+                        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                     } catch (e: DateTimeParseException) {
                         Log.e(TAG, "getSuggestions: date time parse error", e)
                         null

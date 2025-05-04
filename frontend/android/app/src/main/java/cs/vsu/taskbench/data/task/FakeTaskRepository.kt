@@ -166,6 +166,21 @@ class FakeTaskRepository(
         return saveTaskInternal(task)
     }
 
+    override suspend fun saveSubtask(subtask: Subtask): Subtask {
+        index.forEachKey { taskId ->
+            val task = index[taskId]!!
+            val index = task.subtasks.indexOfFirst { subtask.id == it.id }
+            if (index > 0) {
+                val updated = task.subtasks.toMutableList()
+                updated[index] = subtask
+                this.index[taskId] = task.copy(subtasks = updated)
+                Log.d(TAG, "saveSubtask: success")
+                return subtask
+            }
+        }
+        error("Could not find subtask ID")
+    }
+
     private fun saveTaskInternal(task: Task): Task {
         if (task.id == null) { // create
             val saved = task.copy(id = taskId)

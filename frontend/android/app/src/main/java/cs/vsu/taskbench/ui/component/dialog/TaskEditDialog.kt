@@ -2,7 +2,6 @@
 
 package cs.vsu.taskbench.ui.component.dialog
 
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -164,7 +163,6 @@ fun TaskEditDialog(
     Column(
         modifier = modifier,
     ) {
-        Log.d("TaskEditDialog", "input=${stateHolder.subtaskInput}")
         SubtaskCreationField(
             text = stateHolder.subtaskInput,
             onTextChange = { stateHolder.subtaskInput = it },

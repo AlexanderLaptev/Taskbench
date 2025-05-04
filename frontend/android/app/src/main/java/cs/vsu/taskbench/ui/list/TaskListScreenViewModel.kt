@@ -82,9 +82,8 @@ class TaskListScreenViewModel(
     fun setSubtaskChecked(task: Task, subtask: Subtask, isChecked: Boolean) {
         Log.d(TAG, "setSubtaskChecked: task=${task.id}; subtask=${subtask.id}; checked=$isChecked")
         viewModelScope.launch {
-            val subtasks = task.subtasks.toMutableList()
-            subtasks[subtasks.indexOf(subtask)] = subtask.copy(isDone = isChecked)
-            taskRepository.saveTask(task.copy(subtasks = subtasks))
+            val changed = subtask.copy(isDone = isChecked)
+            taskRepository.saveSubtask(changed)
             Log.d(TAG, "setSubtaskChecked: saved task")
             refreshTasks()
         }
