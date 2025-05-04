@@ -112,7 +112,7 @@ class TaskListView(APIView):
                     "content": task.title,
                     "is_done": False,
                     "dpc": {
-                        "deadline": task.deadline.isoformat() if task.deadline is not None else None,
+                        "deadline": task.deadline.replace(tzinfo=None).isoformat(timespec='seconds') if task.deadline is not None else None,
                         "priority": task.priority,
                         "category_id": category.category_id if category else 0,
                         "category_name": category.name if category else ""
@@ -194,7 +194,7 @@ class TaskListView(APIView):
                 "content": task.title,
                 "is_done": False,
                 "dpc": {
-                    "deadline": task.deadline.isoformat() if task.deadline else None,
+                    "deadline": task.deadline.replace(tzinfo=None).isoformat(timespec='seconds') if task.deadline else None,
                     "priority": task.priority,
                     "category_id": category.category_id if category else 0,
                     "category_name": category.name if category else ""
@@ -257,7 +257,7 @@ class TaskDetailView(APIView):
                 "content": task.title,
                 "is_done": True,
                 "dpc": {
-                    "deadline": task.deadline.isoformat() if task.deadline else None,
+                    "deadline": task.deadline.replace(tzinfo=None).isoformat(timespec='seconds') if task.deadline else None,
                     "priority": task.priority,
                     "category_id": category.category_id if category else 0,
                     "category_name": category.name if category else ""
@@ -321,7 +321,7 @@ class TaskDetailView(APIView):
                 "content": task.title,
                 "is_done": task.is_completed,
                 "dpc": {
-                    "deadline": task.deadline.isoformat() if task.deadline else None,
+                    "deadline": task.deadline.replace(tzinfo=None).isoformat(timespec='seconds') if task.deadline else None,
                     "priority": task.priority,
                     "category_id": category.category_id if category else 0,
                     "category_name": category.name if category else ""
