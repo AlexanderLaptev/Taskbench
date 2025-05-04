@@ -75,9 +75,20 @@ fun SettingsScreen(
             Image(
                 painter = painterResource(R.drawable.logo_full_dark),
                 contentDescription = null,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
+            Text(
+                text = stringResource(R.string.version_number),
+                color = DarkGray,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .padding(bottom = 32.dp)
-                    .align(Alignment.CenterHorizontally),
+                    .padding(
+                        top = 4.dp,
+                        end = 8.dp,
+                        bottom = 32.dp,
+                    )
+                    .align(Alignment.End),
             )
 
             val context = LocalContext.current
