@@ -8,13 +8,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,10 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -57,10 +53,11 @@ import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.DropdownOptions
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.TaskCard
-import cs.vsu.taskbench.ui.component.TextField
+import cs.vsu.taskbench.ui.component.dialog.BottomSheetCategoryDialog
+import cs.vsu.taskbench.ui.component.dialog.CategoryDialogActions
+import cs.vsu.taskbench.ui.component.dialog.CategoryDialogMode
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
-import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.White
 import cs.vsu.taskbench.ui.util.formatDeadline
 import kotlinx.coroutines.launch
@@ -90,16 +87,17 @@ fun TaskListScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(padding),
         ) {
-            Spacer(Modifier.height(4.dp))
+            val listState = rememberLazyListState()
 
+            Spacer(Modifier.height(4.dp))
             SortModeRow(
                 viewModel = viewModel,
+                listState = listState,
                 modifier = Modifier
                     .zIndex(2.0f)
                     .padding(horizontal = 16.dp),
             )
 
-            val listState = rememberLazyListState()
             DateRow(
                 selectedDate = viewModel.selectedDate,
                 onDateSelected = {
@@ -149,6 +147,7 @@ fun TaskListScreen(
 @Composable
 private fun SortModeRow(
     viewModel: TaskListScreenViewModel,
+    listState: LazyListState,
     modifier: Modifier = Modifier,
 ) {
     val categories by viewModel.categories.collectAsStateWithLifecycle()
@@ -204,8 +203,8 @@ private fun SortModeRow(
                         )
                     },
                     onClick = {
-                        viewModel.sortByMode = SortByMode.Priority
                         sortModesExpanded = false
+                        viewModel.sortByMode = SortByMode.Priority
                     },
                 )
                 DropdownMenuItem(
@@ -216,8 +215,8 @@ private fun SortModeRow(
                         )
                     },
                     onClick = {
-                        viewModel.sortByMode = SortByMode.Deadline
                         sortModesExpanded = false
+                        viewModel.sortByMode = SortByMode.Deadline
                     },
                 )
             }
@@ -225,21 +224,41 @@ private fun SortModeRow(
     }
 
     if (sheetState.isVisible || categoriesExpanded) {
-        CategoryDialog(
-            sheetState = sheetState,
-            onVisibleChange = { categoriesExpanded = it },
+        BottomSheetCategoryDialog(
+            CategoryDialogMode.Filter,
             categories = categories,
-            query = viewModel.categorySearchQuery,
-            onQueryChange = { viewModel.categorySearchQuery = it },
+            input = viewModel.categorySearchQuery,
+            sheetState = sheetState,
+            actions = remember {
+                object : CategoryDialogActions {
+                    override fun onInputChange(input: String) {
+                        viewModel.categorySearchQuery = input
+                    }
 
-            onDisableFilter = {
-                viewModel.categoryFilterState = CategoryFilterState.Disabled
-                categoriesExpanded = false
-            },
+                    override fun onSelect(category: Category) {
+                        viewModel.categoryFilterState = CategoryFilterState.Enabled(category)
+                        postSelect()
+                    }
 
-            onCategorySelect = {
-                viewModel.categoryFilterState = CategoryFilterState.Enabled(it)
-                categoriesExpanded = false
+                    override fun onDismiss() {
+                        categoriesExpanded = false
+                    }
+
+                    override fun onDeselect() {
+                        viewModel.categoryFilterState = CategoryFilterState.Enabled(null)
+                        postSelect()
+                    }
+
+                    override fun onSelectAll() {
+                        viewModel.categoryFilterState = CategoryFilterState.Disabled
+                        postSelect()
+                    }
+
+                    private fun postSelect() {
+                        categoriesExpanded = false
+                        scope.launch { listState.animateScrollToItem(0) }
+                    }
+                }
             },
         )
     }
@@ -279,94 +298,6 @@ private fun DateRow(
 }
 
 private val DATE_TILE_SHAPE = RoundedCornerShape(10.dp)
-
-@Composable
-private fun CategoryDialog(
-    onVisibleChange: (Boolean) -> Unit,
-    categories: List<Category>,
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onDisableFilter: () -> Unit,
-    onCategorySelect: (Category?) -> Unit,
-    modifier: Modifier = Modifier,
-    sheetState: SheetState = rememberModalBottomSheetState(),
-) {
-    ModalBottomSheet(
-        sheetState = sheetState,
-        onDismissRequest = { onVisibleChange(false) },
-        containerColor = White,
-        modifier = modifier,
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .defaultMinSize(minHeight = 80.dp)
-                .fillMaxWidth()
-                .padding(16.dp),
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.End),
-            ) {
-                TextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    placeholder = stringResource(R.string.label_category),
-                    modifier = Modifier.weight(1.0f),
-                )
-            }
-
-            LazyColumn {
-                item {
-                    Text(
-                        text = stringResource(R.string.label_no_category),
-                        fontSize = 16.sp,
-                        color = LightGray,
-                        fontStyle = FontStyle.Italic,
-                        modifier = Modifier
-                            .clickable { onCategorySelect(null) }
-                            .padding(start = 16.dp)
-                            .defaultMinSize(minHeight = 48.dp)
-                            .wrapContentHeight()
-                            .fillMaxWidth(),
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 8.dp))
-                }
-
-                item {
-                    Text(
-                        text = stringResource(R.string.label_filter_category_all),
-                        fontSize = 16.sp,
-                        color = Black,
-                        fontStyle = FontStyle.Italic,
-                        modifier = Modifier
-                            .clickable(onClick = onDisableFilter)
-                            .padding(start = 16.dp)
-                            .defaultMinSize(minHeight = 48.dp)
-                            .wrapContentHeight()
-                            .fillMaxWidth(),
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 8.dp))
-                }
-
-                items(categories, key = { it.id!! }) { category ->
-                    Text(
-                        text = category.name,
-                        fontSize = 16.sp,
-                        color = Black,
-                        modifier = Modifier
-                            .animateItem()
-                            .clickable { onCategorySelect(category) }
-                            .padding(start = 16.dp)
-                            .defaultMinSize(minHeight = 48.dp)
-                            .wrapContentHeight()
-                            .fillMaxWidth(),
-                    )
-                    HorizontalDivider(Modifier.padding(horizontal = 8.dp))
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun DateTile(

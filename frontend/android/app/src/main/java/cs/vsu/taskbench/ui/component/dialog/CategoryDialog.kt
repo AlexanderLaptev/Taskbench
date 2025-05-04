@@ -72,7 +72,7 @@ fun BottomSheetCategoryDialog(
         CategoryDialog(
             mode = mode,
             categories = categories,
-            value = input,
+            input = input,
             actions = actions,
             modifier = Modifier.padding(
                 start = 16.dp,
@@ -87,7 +87,7 @@ fun BottomSheetCategoryDialog(
 fun CategoryDialog(
     mode: CategoryDialogMode,
     categories: List<Category>,
-    value: String,
+    input: String,
     actions: CategoryDialogActions,
     modifier: Modifier = Modifier,
 ) {
@@ -100,7 +100,7 @@ fun CategoryDialog(
             modifier = Modifier.height(IntrinsicSize.Min),
         ) {
             TextField(
-                value = value,
+                value = input,
                 onValueChange = actions::onInputChange,
                 placeholder = stringResource(R.string.placeholder_category),
                 placeholderStyle = TextStyle(color = LightGray, fontSize = 16.sp),

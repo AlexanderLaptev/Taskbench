@@ -57,7 +57,13 @@ class TaskListScreenViewModel(
             refreshCategories()
         }
 
-    var sortByMode by mutableStateOf(SortByMode.Priority)
+    private var _sortByMode by mutableStateOf(SortByMode.Priority)
+    var sortByMode: SortByMode
+        get() = _sortByMode
+        set(value) {
+            _sortByMode = value
+            refreshTasks()
+        }
 
     init {
         viewModelScope.launch {
@@ -85,7 +91,6 @@ class TaskListScreenViewModel(
     }
 
     private fun refreshTasks() {
-        Log.d(TAG, "refreshTasks: enter")
         viewModelScope.launch {
             _tasks.update {
                 taskRepository.getTasks(
@@ -95,12 +100,13 @@ class TaskListScreenViewModel(
                 )
             }
         }
+        Log.d(TAG, "refreshTasks: success")
     }
 
     private fun refreshCategories() {
-        Log.d(TAG, "refreshCategories: enter")
         viewModelScope.launch {
             _categories.update { categoryRepository.getAllCategories(_categorySearchQuery) }
         }
+        Log.d(TAG, "refreshCategories: success")
     }
 }
