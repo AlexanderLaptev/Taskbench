@@ -2,6 +2,7 @@
 
 package cs.vsu.taskbench.ui.component.dialog
 
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,6 +30,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,6 +73,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+@Stable
 interface TaskEditDialogStateHolder {
     var taskInput: String
     var deadline: LocalDateTime?
@@ -88,7 +91,6 @@ interface TaskEditDialogStateHolder {
     var showDeadlineDialog: Boolean
     var showCategoryDialog: Boolean
 
-
     fun onSubmitTask()
     fun onAddSuggestion(suggestion: String)
 
@@ -98,6 +100,7 @@ interface TaskEditDialogStateHolder {
     fun onAddSubtask()
     fun onEditSubtask(subtask: Subtask, newText: String)
     fun onRemoveSubtask(subtask: Subtask)
+    fun canSaveSubtask(text: String): Boolean
 
     fun onDeadlineChipClick()
     fun onSetDeadlineDate(epochMilli: Long)
@@ -161,11 +164,13 @@ fun TaskEditDialog(
     Column(
         modifier = modifier,
     ) {
+        Log.d("TaskEditDialog", "input=${stateHolder.subtaskInput}")
         SubtaskCreationField(
             text = stateHolder.subtaskInput,
             onTextChange = { stateHolder.subtaskInput = it },
             placeholder = stringResource(R.string.placeholder_enter_subtask),
-            onAddButtonClick = stateHolder::onAddSubtask,
+            onAdd = stateHolder::onAddSubtask,
+            canAdd = stateHolder::canSaveSubtask,
         )
 
         Spacer(Modifier.height(8.dp))
@@ -183,8 +188,9 @@ fun TaskEditDialog(
                 items(subtasks, key = { it.content }) { subtask ->
                     AddedSubtask(
                         text = subtask.content,
-                        onTextChange = { stateHolder.onEditSubtask(subtask, it) },
                         onRemove = { stateHolder.onRemoveSubtask(subtask) },
+                        onEditConfirm = { stateHolder.onEditSubtask(subtask, it) },
+                        canEdit = stateHolder::canSaveSubtask,
                         modifier = Modifier.animateItem(),
                     )
                 }
@@ -546,6 +552,7 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
     override fun onEditSubtask(subtask: Subtask, newText: String) = Unit
     override fun onAddSuggestion(suggestion: String) = Unit
     override fun onRemoveSubtask(subtask: Subtask) = Unit
+    override fun canSaveSubtask(text: String): Boolean = true
     override fun onAddCategory() = Unit
 }
 

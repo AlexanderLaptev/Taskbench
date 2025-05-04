@@ -47,70 +47,86 @@ fun SubtaskCreationField(
     text: String,
     onTextChange: (String) -> Unit,
     placeholder: String,
-    onAddButtonClick: () -> Unit,
+    onAdd: () -> Unit,
+    canAdd: (String) -> Boolean,
     modifier: Modifier = Modifier,
 ) {
-    var selection by remember { mutableStateOf(TextRange.Zero) }
+    var selection by remember { mutableStateOf(TextRange(text.length)) }
     var value by remember(text) { mutableStateOf(TextFieldValue(text, selection)) }
 
     SubtaskTemplate(
-        value = value,
-        onValueChange = {
-            value = it
-            onTextChange(it.text)
-            selection = it.selection
-        },
         placeholder = placeholder,
         color = White,
         editable = true,
-        mainActionIcon = R.drawable.ic_add_circle_outline,
-        showEditAction = false,
-        onMainAction = onAddButtonClick,
-        onEdit = {},
         modifier = modifier,
+
+        value = value,
+        onValueChange = {
+            value = it
+            selection = it.selection
+            onTextChange(it.text)
+        },
+
+        mainActionEnabled = canAdd(value.text),
+        mainActionIcon = R.drawable.ic_add_circle_outline,
+        onMainAction = onAdd,
     )
 }
 
 @Composable
 fun AddedSubtask(
     text: String,
-    onTextChange: (String) -> Unit,
+    onEditConfirm: (String) -> Unit,
     onRemove: () -> Unit,
+    canEdit: (String) -> Boolean,
     modifier: Modifier = Modifier,
 ) {
-    var selection by remember { mutableStateOf(TextRange.Zero) }
-    var value by remember(text) { mutableStateOf(TextFieldValue(text, selection)) }
+    var value by remember(text) { mutableStateOf(TextFieldValue(text, TextRange(text.length))) }
+    var oldText by remember { mutableStateOf(text) }
     var isEditing by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
     SubtaskTemplate(
+        color = AccentYellow,
+        placeholder = "",
+        editable = isEditing,
+
         value = value,
         onValueChange = {
             value = it
-            selection = it.selection
         },
-        placeholder = "",
-        color = AccentYellow,
-        editable = isEditing,
+
+        mainActionEnabled = !isEditing || canEdit(value.text),
         mainActionIcon = if (isEditing) {
             R.drawable.ic_ok_circle_outline
-        } else R.drawable.ic_remove_circle_outline,
-        showEditAction = !isEditing,
-        onEdit = {
-            isEditing = true
-            value = TextFieldValue(value.text, TextRange(value.text.length))
-            focusRequester.requestFocus()
-        },
-        focusRequester = focusRequester,
-        modifier = modifier,
-
+        } else R.drawable.ic_delete,
         onMainAction = {
             if (isEditing) {
-                onTextChange(value.text)
+                value = value.copy(selection = TextRange.Zero)
                 focusRequester.freeFocus()
                 isEditing = false
+                onEditConfirm(value.text)
             } else onRemove()
         },
+
+        showSecondaryAction = true,
+        secondaryActionIcon = if (isEditing) {
+            R.drawable.ic_remove_circle_outline
+        } else R.drawable.ic_edit,
+        onSecondaryAction = {
+            if (isEditing) {
+                value = TextFieldValue(oldText, TextRange.Zero)
+                focusRequester.freeFocus()
+            } else {
+                oldText = text
+                value = value.copy(selection = TextRange(value.text.length))
+                focusRequester.requestFocus()
+            }
+            isEditing = !isEditing
+        },
+
+        focusRequester = focusRequester,
+        modifier = modifier,
     )
 }
 
@@ -128,9 +144,8 @@ fun SuggestedSubtask(
         color = White,
         editable = false,
         mainActionIcon = R.drawable.ic_add_circle_outline,
-        showEditAction = false,
         onMainAction = onAdd,
-        onEdit = {},
+        onSecondaryAction = {},
         modifier = modifier,
     )
 }
@@ -138,8 +153,6 @@ fun SuggestedSubtask(
 private val shape = RoundedCornerShape(10.dp)
 private val textStyle = TextStyle(fontSize = 16.sp)
 private val textFieldModifier = Modifier.fillMaxWidth()
-
-//TODO: make the ripple circular and not square
 
 @Composable
 private fun SubtaskTemplate(
@@ -149,14 +162,16 @@ private fun SubtaskTemplate(
     color: Color,
     editable: Boolean,
     @DrawableRes mainActionIcon: Int,
-    showEditAction: Boolean,
     onMainAction: () -> Unit,
-    onEdit: () -> Unit,
     modifier: Modifier = Modifier,
+    showSecondaryAction: Boolean = false,
+    onSecondaryAction: () -> Unit = {},
+    @DrawableRes secondaryActionIcon: Int = R.drawable.ic_edit,
     focusRequester: FocusRequester = remember { FocusRequester() },
+    mainActionEnabled: Boolean = true,
 ) {
-    val isEnabled = value.text.isNotEmpty()
-    val iconTint = if (isEnabled) Color.Unspecified else Color.LightGray
+    val enabled = value.text.isNotEmpty() && mainActionEnabled
+    val iconTint = if (enabled) Color.Unspecified else Color.LightGray
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -191,14 +206,13 @@ private fun SubtaskTemplate(
 
         Spacer(Modifier.width(8.dp))
 
-        if (showEditAction) {
+        if (showSecondaryAction) {
             IconButton(
-                onClick = onEdit,
-                enabled = isEnabled,
+                onClick = onSecondaryAction,
                 modifier = Modifier.size(32.dp),
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_edit),
+                    painter = painterResource(secondaryActionIcon),
                     contentDescription = null,
                     tint = Color.Unspecified,
                 )
@@ -207,7 +221,7 @@ private fun SubtaskTemplate(
 
         IconButton(
             onClick = onMainAction,
-            enabled = isEnabled,
+            enabled = enabled,
             modifier = Modifier.size(32.dp),
         ) {
             Icon(
@@ -233,13 +247,15 @@ private fun Preview() {
                 text = text1,
                 onTextChange = { text1 = it },
                 placeholder = "Enter subtask",
-                onAddButtonClick = { text1 = "" },
+                onAdd = {},
+                canAdd = { true },
             )
 
             AddedSubtask(
                 text = text2,
-                onTextChange = { text2 = it },
                 onRemove = { text2 = "" },
+                onEditConfirm = {},
+                canEdit = { true },
             )
 
             SuggestedSubtask(

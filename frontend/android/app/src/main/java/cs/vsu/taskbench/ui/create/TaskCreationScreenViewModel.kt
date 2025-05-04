@@ -37,7 +37,6 @@ class TaskCreationScreenViewModel(
     enum class Error {
         TaskNotSaved,
         CategoryNotSaved,
-        SubtaskAlreadyExists,
     }
 
     private val _errorFlow = mutableEventFlow<Error>()
@@ -155,6 +154,7 @@ class TaskCreationScreenViewModel(
 
             try {
                 taskRepository.saveTask(task)
+                clearInput()
                 Log.d(TAG, "onSubmitTask: success")
             } catch (e: Exception) {
                 Log.e(TAG, "onSubmitTask: error while saving task", e)
@@ -163,21 +163,28 @@ class TaskCreationScreenViewModel(
         }
     }
 
-    // TODO: forbid saving duplicate subtasks
+    private fun clearInput() {
+        _taskInput = ""
+        _deadline = null
+        _isHighPriority = false
+        _selectedCategory = null
+
+        subtaskInput = ""
+        subtasks = emptyList()
+        suggestions = emptyList()
+    }
+
     override fun onEditSubtask(subtask: Subtask, newText: String) {
         val result = subtasks.toMutableList()
         val index = subtasks.indexOf(subtask)
-
-        val edited = subtask.copy(content = newText)
-        if (edited in subtasks) {
-            Log.d(TAG, "onEditSubtask: already exists")
-            _errorFlow.tryEmit(Error.SubtaskAlreadyExists)
-            return
-        }
-
-        result[index] = edited
+        result[index] = subtask.copy(content = newText)
         subtasks = result
         Log.d(TAG, "onEditSubtask: success")
+    }
+
+    override fun canSaveSubtask(text: String): Boolean {
+        val strings = subtasks.map { it.content }
+        return text !in strings
     }
 
     override fun onRemoveSubtask(subtask: Subtask) {
@@ -217,11 +224,6 @@ class TaskCreationScreenViewModel(
             content = text,
             isDone = false,
         )
-        if (subtask in subtasks) {
-            Log.d(TAG, "addSubtask: already exists")
-            _errorFlow.tryEmit(Error.SubtaskAlreadyExists)
-            return false
-        }
         subtasks = subtasks + subtask
         return true
     }
@@ -253,6 +255,7 @@ class TaskCreationScreenViewModel(
                     category = _selectedCategory,
                 )
 
+                // TODO: refactor
                 val contents = subtasks.map { it.content }
                 val newSuggestions = response.subtasks.fastDistinctBy { it }.toMutableList()
                 newSuggestions.removeAll { it in contents }
