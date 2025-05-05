@@ -42,6 +42,8 @@ Android: [v1.0.0-alpha1](https://github.com/AlexanderLaptev/Taskbench/releases/t
 
 Презентация MVP: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F%20MVP.pdf)
 
+Отчет по тестированию: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9E%D1%82%D1%87%D0%B5%D1%82_%D0%BE_%D1%82%D0%B5%D1%81%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B8.pdf) [docx](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9E%D1%82%D1%87%D0%B5%D1%82_%D0%BE_%D1%82%D0%B5%D1%81%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B8.docx)
+
 [UML-диаграммы](https://github.com/AlexanderLaptev/Taskbench/tree/main/docs/uml)
 
 [ER-диаграмма](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/entity-relationship.png)
@@ -56,6 +58,8 @@ Android: [v1.0.0-alpha1](https://github.com/AlexanderLaptev/Taskbench/releases/t
 Презентация технического задания: [Rutube](https://rutube.ru/video/private/28b51d1e9849401dfcaa63298a0dcf9c/?r=wd&p=4zDlEhm9HK6rTGxWsY9P9A) [Youtube](https://youtu.be/Q_z2xZhO-a8)
 
 Презентация MVP: [Rutube](https://rutube.ru/video/private/bb229f83e99452776d465823f25cbd5f/?p=Xq-SS4tYm4VydGFI8dXGRw) [Youtube](https://youtu.be/R6wsB2vhNCU)
+
+Видео работы приложения на этапе MVP: [Rutube](https://rutube.ru/video/private/5e10277dfc473e89541de1fe479b875f/?p=mdr_jVzocJGpftARcr3sEQ) [Youtube](https://www.youtube.com/watch?v=IHyJNA_fSFE)
 
 ## Взаимная проверка
 [1 этап](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%A7%D0%B5%D0%BA%D0%BB%D0%B8%D1%81%D1%82%201%20%D1%8D%D1%82%D0%B0%D0%BF.pdf)
