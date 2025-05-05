@@ -9,7 +9,7 @@ djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
 gigachat==0.1.39.post1
 gunicorn==23.0.0
-h11==0.14.0
+h11==0.16.0
 httpcore==1.0.8
 httpx==0.28.1
 idna==3.10
