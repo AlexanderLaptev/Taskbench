@@ -15,6 +15,17 @@
 
 Особенностью проекта является умная обработка вводимых данных, позволяющая быстро и легко определить задачу в нужную категорию, подобрать для неё подходящее время и даже разбить её на подзадачи.
 
+## Релизы
+Android: [v1.0.0-alpha1](https://github.com/AlexanderLaptev/Taskbench/releases/tag/v1.0.0-alpha1)
+
+## Панель администрирования
+
+[Админ-панель](http://193.135.137.154:8000/admin/login/)  
+
+> **Учётные данные**  
+> - **Пользователь**: `taskbench-admin`  
+> - **Пароль**: `1m<W(Xa2o7u%g`
+
 ## Сервисы
 
 [Доска с задачами](https://github.com/users/AlexanderLaptev/projects/7/views/1?layout=board)
@@ -25,13 +36,17 @@
 
 Техническое задание: [docx](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%A2%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5%20%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5.docx) [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%A2%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5%20%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5.pdf)
 
-Презентация технического задания: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/business%20model/%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F%20%D1%82%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B3%D0%BE%20%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F.pdf)
+Презентация технического задания: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F%20%D1%82%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B3%D0%BE%20%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F.pdf)
 
 Предпроектное исследование: [docx](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9F%D1%80%D0%B5%D0%B4%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%BD%D0%BE%D0%B5%20%D0%B8%D1%81%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5.docx) [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9F%D1%80%D0%B5%D0%B4%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%BD%D0%BE%D0%B5%20%D0%B8%D1%81%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5.pdf)
+
+Презентация MVP: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F%20MVP.pdf)
 
 [UML-диаграммы](https://github.com/AlexanderLaptev/Taskbench/tree/main/docs/uml)
 
 [ER-диаграмма](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/entity-relationship.png)
+
+[Действительная ER-диаграмма](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/entity-relationship-real.png)
 
 [OpenAPI](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/openapi.yaml)
 
@@ -39,6 +54,8 @@
 
 ## Видео
 Презентация технического задания: [Rutube](https://rutube.ru/video/private/28b51d1e9849401dfcaa63298a0dcf9c/?r=wd&p=4zDlEhm9HK6rTGxWsY9P9A) [Youtube](https://youtu.be/Q_z2xZhO-a8)
+
+Презентация MVP: [Rutube](https://rutube.ru/video/private/bb229f83e99452776d465823f25cbd5f/?p=Xq-SS4tYm4VydGFI8dXGRw) [Youtube](https://youtu.be/R6wsB2vhNCU)
 
 ## Взаимная проверка
 [1 этап](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%A7%D0%B5%D0%BA%D0%BB%D0%B8%D1%81%D1%82%201%20%D1%8D%D1%82%D0%B0%D0%BF.pdf)
