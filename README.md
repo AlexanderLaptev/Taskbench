@@ -36,11 +36,11 @@ Android: [v1.0.0-alpha1](https://github.com/AlexanderLaptev/Taskbench/releases/t
 
 Техническое задание: [docx](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%A2%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5%20%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5.docx) [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%A2%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5%20%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5.pdf)
 
-Презентация технического задания: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/6e94977a9902ec8bf43b2baf4cd5bbd0a46be683/docs/%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F%20%D1%82%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B3%D0%BE%20%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F.pdf)
+Презентация технического задания: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F%20%D1%82%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B3%D0%BE%20%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F.pdf)
 
 Предпроектное исследование: [docx](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9F%D1%80%D0%B5%D0%B4%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%BD%D0%BE%D0%B5%20%D0%B8%D1%81%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5.docx) [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9F%D1%80%D0%B5%D0%B4%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%BD%D0%BE%D0%B5%20%D0%B8%D1%81%D1%81%D0%BB%D0%B5%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5.pdf)
 
-Презентация MVP: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/6e94977a9902ec8bf43b2baf4cd5bbd0a46be683/docs/%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F%20MVP.pdf)
+Презентация MVP: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F%20MVP.pdf)
 
 [UML-диаграммы](https://github.com/AlexanderLaptev/Taskbench/tree/main/docs/uml)
 
