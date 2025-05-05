@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - 'backend-django'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: main
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create test env file
+        run: |
+          cat <<EOF > backend/.env
+          DJANGO_SECRET_KEY=TEST_KEY
+          DEBUG=True
+          DJANGO_LOGLEVEL=info
+          DJANGO_ALLOWED_HOSTS=localhost,0.0.0.0
+          DATABASE_NAME=test_db
+          DATABASE_USERNAME=test_db_user
+          DATABASE_PASSWORD=test_db_password
+          DATABASE_HOST=database
+          DATABASE_PORT=5432
+          GIGACHAT_AUTH_KEY=${{ secrets.GIGACHAT_AUTH_KEY }}
+          EOF
+
+      - name: Local deploy for test
+        run: |
+          cd backend
+          docker compose -f docker-compose.yaml -f docker-compose.override.yaml up --build -d
+
+          docker compose logs --tail=20
+
+          
+      - name: Wait for containers to be healthy
+        run: |
+          TIMEOUT=60
+          INTERVAL=2
+          ELAPSED=0
+      
+          echo "Waiting for all services to become healthy..."
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            STATUS=$(docker inspect --format '{{json .State.Health.Status}}' $(docker compose ps -q) | grep -v "healthy" || true)
+            if [ -z "$STATUS" ]; then
+              echo "All services are healthy!"
+              exit 0
+            fi
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+      
+          echo "Some services did not become healthy in time:"
+          docker compose ps
+          docker compose logs
+          exit 1    
+
+      - name: Tear down containers
+        if: always()
+        run: |
+          cd backend
+          docker compose -f docker-compose.yaml -f docker-compose.override.yaml down -v
+

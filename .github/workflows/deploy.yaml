@@ -1,10 +1,7 @@
-name: CI
+name: CD
 
 on:
   push:
-    branches:
-      - 'backend-django'
-  pull_request:
     branches:
       - 'backend-django'
 
@@ -59,18 +56,6 @@ jobs:
           docker compose ps
           docker compose logs
           exit 1    
-
-#      - name: Check if app is responding on port (using docker container with tests)
-#        run: |
-#          cd backend
-#          if docker compose logs --tail=20 test | grep -q "success"; then
-#            echo "image is ok"
-#            exit 0
-#          else
-#            echo "port connection failed"
-#            docker compose logs test
-#            exit 1
-#          fi
 
       - name: Tear down containers
         if: always()
