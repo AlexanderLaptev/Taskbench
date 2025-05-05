@@ -1,0 +1,51 @@
+# Инструкция по развертыванию
+
+1. Создать .env файл, в котором указать переменные среды:
+   - Используются для сборки
+    > DJANGO_SECRET_KEY - используется для хеширования
+
+    > DATABASE_NAME - название базы данных
+
+    > DATABASE_USERNAME - пользователь базы данных
+
+    > DATABASE_PASSWORD - пароль от базы данных
+
+    > GIGACHAT_AUTH_KEY - API ключ от Gigachat
+   - Используются в github actions
+    > SERVER_HOST - ip сервера
+
+    > SERVER_USER - ssh пользователь
+
+    > SERVER_PASSWORD - пароль от ssh пользователя
+
+    > DOCKER_USERNAME - пользователь dockerhub с docker image
+
+    > DOCKER_PASSWORD - пароль от dockerhub
+
+    > DOCKER_TOKEN - токен аккаунта dockerhub
+2. Для локального тестирования можно поднять контейнеры локально:
+```
+   docker compose up --build
+```
+В этом случае используется docker-compose.override.yaml, в котором указана сборка DOCKERFILE
+
+3. Для развертывания на сервере используется:
+ - на github runner-е
+```
+   docker build -t ${{ DOCKER_USERNAME }}/taskbench-backend:latest .
+   docker push ${{ DOCKER_USERNAME }}/taskbench-backend:latest
+```
+- на сервере
+```
+   docker compose pull
+   docker compose down
+   docker compose up -d
+```
+4. Для получения записей логов:
+```
+   docker logs taskbench-backend
+```
+или 
+```
+   docker logs taskbench-backend -f
+```
