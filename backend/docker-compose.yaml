@@ -1,6 +1,7 @@
 services:
   database:
     image: postgres:17
+    restart: always
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USERNAME}
@@ -21,6 +22,7 @@ services:
 #    build: .
     image: taskbench/taskbench-backend:latest
     container_name: taskbench-backend
+    restart: always
     ports:
       - "8000:8000"
     depends_on:
