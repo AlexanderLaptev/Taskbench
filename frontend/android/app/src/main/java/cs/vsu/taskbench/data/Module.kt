@@ -83,24 +83,6 @@ private fun Module.netTasks() {
     singleOf(::NetworkTaskRepository) bind TaskRepository::class
 }
 
-private fun Module.allFake() {
-    fakeAuth()
-    fakeUser()
-    fakeSuggestions()
-    fakeCategories()
-    fakeStatistics()
-    fakeTasks()
-}
-
-private fun Module.allNet() {
-    netAuth()
-    fakeUser() // TODO!
-    netSuggestions()
-    netCategories()
-    netStatistics()
-    netTasks()
-}
-
 val dataModule = module {
     single { get<Context>().dataStore }
     single { Moshi.Builder().build() }
@@ -110,5 +92,11 @@ val dataModule = module {
             .addConverterFactory(MoshiConverterFactory.create(get()))
             .build()
     }
-    allNet()
+
+    netAuth()
+    fakeUser() // TODO!
+    netSuggestions()
+    netCategories()
+    netStatistics()
+    netTasks()
 }

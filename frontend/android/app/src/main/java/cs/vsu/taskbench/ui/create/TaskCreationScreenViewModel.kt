@@ -15,6 +15,7 @@ import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
 import cs.vsu.taskbench.ui.component.dialog.TaskEditDialogStateHolder
 import cs.vsu.taskbench.util.mutableEventFlow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asSharedFlow
@@ -232,10 +233,12 @@ class TaskCreationScreenViewModel(
         }
     }
 
-    private inline fun catchErrorsAsync(crossinline block: suspend () -> Unit) {
-        viewModelScope.launch {
+    private inline fun catchErrorsAsync(crossinline block: suspend () -> Unit): Job {
+        return viewModelScope.launch {
             try {
                 block()
+            } catch (e: CancellationException) {
+                // ignore
             } catch (e: ConnectException) {
                 Log.e(TAG, "catchErrors: connection error", e)
                 _errorFlow.tryEmit(Error.CouldNotConnect)
@@ -249,11 +252,11 @@ class TaskCreationScreenViewModel(
     private var pendingUpdate: Job? = null
 
     private fun updateSuggestions() {
-        catchErrorsAsync {
-            suggestions = emptyList() // clear the current suggestions
-            pendingUpdate?.cancel() // cancel the previous request
-
+        suggestions = emptyList() // clear the current suggestions
+        pendingUpdate?.cancel() // cancel the previous request
+        pendingUpdate = catchErrorsAsync {
             delay(1200)
+            Log.d(TAG, "updateSuggestions: updating suggestions")
             // Do not send empty requests (the server will return HTTP 400 anyway).
             if (_taskInput.length < 8) return@catchErrorsAsync
             val response = suggestionRepository.getSuggestions(
