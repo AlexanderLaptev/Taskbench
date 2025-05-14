@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -50,7 +50,7 @@ fun Chip(
             .clip(shape)
             .clickable(onClick = onClick)
             .background(color = color, shape = shape)
-            .requiredHeight(32.dp)
+            .defaultMinSize(minHeight = 32.dp)
             .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
         if (icon != null) {

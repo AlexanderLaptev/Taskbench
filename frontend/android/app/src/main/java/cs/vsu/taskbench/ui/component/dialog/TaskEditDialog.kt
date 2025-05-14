@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -331,7 +332,7 @@ private fun DeadlineDialogButton(
             .background(LightYellow)
             .clickable(onClick = onClick)
             .width(IntrinsicSize.Min)
-            .height(52.dp)
+            .defaultMinSize(minHeight = 52.dp)
             .padding(16.dp),
     ) {
         val color = if (hasDeadline) Black else DarkGray
