@@ -245,36 +245,29 @@ class TaskCreationScreenViewModel(
     private var pendingUpdate: Job? = null
 
     private fun updateSuggestions() {
-        suggestions = emptyList()
-        if (_taskInput.length < 8) return
-        pendingUpdate?.cancel()
-        pendingUpdate = viewModelScope.launch {
+        catchErrorsAsync {
+            suggestions = emptyList() // clear the current suggestions
+            pendingUpdate?.cancel() // cancel the previous request
+
             delay(1200)
-            try {
-                if (_taskInput.length < 8) return@launch
-                val response = suggestionRepository.getSuggestions(
-                    prompt = taskInput,
-                    deadline = _deadline,
-                    isHighPriority = _isHighPriority,
-                    category = _selectedCategory,
-                )
+            // Do not send empty requests (the server will return HTTP 400 anyway).
+            if (_taskInput.length < 8) return@catchErrorsAsync
+            val response = suggestionRepository.getSuggestions(
+                prompt = taskInput,
+                deadline = _deadline,
+                isHighPriority = _isHighPriority,
+                category = _selectedCategory,
+            )
 
-                // TODO: refactor
-                val contents = subtasks.map { it.content }
-                val newSuggestions = response.subtasks.fastDistinctBy { it }.toMutableList()
-                newSuggestions.removeAll { it in contents }
+            // Remove duplicates as those will crash the UI.
+            val contents = subtasks.map { it.content }
+            val newSuggestions = response.subtasks.fastDistinctBy { it }.toMutableList()
+            newSuggestions.removeAll { it in contents }
 
-                suggestions = newSuggestions
-                if (_deadline == null) _deadline = response.deadline
-                if (_selectedCategory == null) _selectedCategory = response.category
-                Log.d(TAG, "updateSuggestions: success")
-            } catch (e: ConnectException) {
-                Log.e(TAG, "updateSuggestions: connection error", e)
-                _errorFlow.tryEmit(Error.CouldNotConnect)
-            } catch (e: Exception) {
-                Log.e(TAG, "updateSuggestions: error during fetch", e)
-                _errorFlow.tryEmit(Error.Unknown)
-            }
+            // Update the suggestions and DPC.
+            suggestions = newSuggestions
+            if (_deadline == null) _deadline = response.deadline
+            if (_selectedCategory == null) _selectedCategory = response.category
         }
     }
 }
