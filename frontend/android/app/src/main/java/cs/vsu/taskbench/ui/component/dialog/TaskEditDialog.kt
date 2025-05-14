@@ -249,7 +249,9 @@ private fun DeadlineDialog(
 
     if (showTimeDialog) {
         TimePickerDialog(
+            initialTime = stateHolder.deadline?.toLocalTime() ?: LocalTime.now(),
             onComplete = { hour, minute ->
+                stateHolder.isDeadlineSetManually = true
                 stateHolder.onSetDeadlineTime(hour, minute)
                 showTimeDialog = false
             },
