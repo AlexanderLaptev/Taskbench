@@ -36,6 +36,7 @@ fun TaskCreationScreen(navController: NavController) {
             val message = when (it) {
                 Error.CouldNotConnect -> R.string.error_could_not_connect
                 Error.Unknown -> R.string.error_unknown
+                Error.Timeout -> R.string.error_timeout
             }
             snackbarHostState.currentSnackbarData?.dismiss()
             snackbarHostState.showSnackbar(

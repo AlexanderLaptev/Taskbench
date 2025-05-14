@@ -21,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.net.ConnectException
+import java.net.SocketTimeoutException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -39,6 +40,7 @@ class TaskCreationScreenViewModel(
     enum class Error {
         CouldNotConnect,
         Unknown,
+        Timeout,
     }
 
     private val _errorFlow = mutableEventFlow<Error>()
@@ -238,10 +240,14 @@ class TaskCreationScreenViewModel(
             try {
                 block()
             } catch (e: CancellationException) {
-                // ignore
+                // TODO: figure out the root cause
+                // ignoring for now
+            } catch (e: SocketTimeoutException) {
+                Log.e(TAG, "catchErrorsAsync: socket timeout", e)
+                _errorFlow.tryEmit(Error.CouldNotConnect)
             } catch (e: ConnectException) {
                 Log.e(TAG, "catchErrors: connection error", e)
-                _errorFlow.tryEmit(Error.CouldNotConnect)
+                _errorFlow.tryEmit(Error.Timeout)
             } catch (e: Exception) {
                 Log.e(TAG, "catchErrors: unknown error", e)
                 _errorFlow.tryEmit(Error.Unknown)
