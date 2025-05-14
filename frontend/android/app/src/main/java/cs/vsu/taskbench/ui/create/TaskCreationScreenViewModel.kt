@@ -261,7 +261,7 @@ class TaskCreationScreenViewModel(
             if (_taskInput.length < 8) return@catchErrorsAsync
             val response = suggestionRepository.getSuggestions(
                 prompt = taskInput,
-                deadline = _deadline,
+                deadline = if (isDeadlineSetManually) _deadline else null,
                 isHighPriority = _isHighPriority,
                 category = _selectedCategory,
             )
@@ -273,7 +273,10 @@ class TaskCreationScreenViewModel(
 
             // Update the suggestions and DPC.
             suggestions = newSuggestions
-            if (!isDeadlineSetManually) _deadline = response.deadline
+            if (!isDeadlineSetManually) {
+                Log.d(TAG, "updateSuggestions: updating deadline")
+                _deadline = response.deadline
+            }
             if (_selectedCategory == null) _selectedCategory = response.category
         }
     }
