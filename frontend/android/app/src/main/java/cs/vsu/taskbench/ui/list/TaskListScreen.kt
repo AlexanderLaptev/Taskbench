@@ -52,6 +52,7 @@ import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.task.CategoryFilterState
 import cs.vsu.taskbench.data.task.TaskRepository.SortByMode
 import cs.vsu.taskbench.domain.model.Category
+import cs.vsu.taskbench.ui.Locales
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.DropdownOptions
 import cs.vsu.taskbench.ui.component.NavigationBar
@@ -291,9 +292,9 @@ private fun DateRow(
     val listState = rememberLazyListState(todayIndex)
     val today = LocalDate.now()
 
-    val monthFormatter = remember { DateTimeFormatter.ofPattern("MMM") }
-    val dayFormatter = remember { DateTimeFormatter.ofPattern("d") }
-    val weekdayFormatter = remember { DateTimeFormatter.ofPattern("EE") }
+    val monthFormatter = remember { DateTimeFormatter.ofPattern("MMM", Locales.RU) }
+    val dayFormatter = remember { DateTimeFormatter.ofPattern("d", Locales.RU) }
+    val weekdayFormatter = remember { DateTimeFormatter.ofPattern("EE", Locales.RU) }
 
     LazyRow(
         state = listState,

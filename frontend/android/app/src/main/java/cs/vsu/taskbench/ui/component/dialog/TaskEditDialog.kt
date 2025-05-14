@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
+import cs.vsu.taskbench.ui.Locales
 import cs.vsu.taskbench.ui.component.AddedSubtask
 import cs.vsu.taskbench.ui.component.BoxEdit
 import cs.vsu.taskbench.ui.component.Button
@@ -269,8 +270,8 @@ private fun DeadlineDialog(
 
     val datePattern = stringResource(R.string.pattern_date)
     val timePattern = stringResource(R.string.pattern_time)
-    val dateFormatter = remember { DateTimeFormatter.ofPattern(datePattern) }
-    val timeFormatter = remember { DateTimeFormatter.ofPattern(timePattern) }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern(datePattern, Locales.RU) }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern(timePattern, Locales.RU) }
 
     val sheetState = rememberModalBottomSheetState()
     ModalBottomSheet(
