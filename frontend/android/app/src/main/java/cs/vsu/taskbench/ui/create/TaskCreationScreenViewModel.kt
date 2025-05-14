@@ -85,6 +85,8 @@ class TaskCreationScreenViewModel(
             _deadline = value
         }
 
+    override var isDeadlineSetManually: Boolean = false
+
     private var _isHighPriority by mutableStateOf(false)
     override var isHighPriority: Boolean
         get() = _isHighPriority
@@ -142,6 +144,7 @@ class TaskCreationScreenViewModel(
 
     override fun onClearDeadline() {
         _deadline = null
+        isDeadlineSetManually = false
     }
 
     override fun onSubmitTask() {
@@ -169,6 +172,7 @@ class TaskCreationScreenViewModel(
         subtaskInput = ""
         subtasks = emptyList()
         suggestions = emptyList()
+        isDeadlineSetManually = false
     }
 
     override fun onEditSubtask(subtask: Subtask, newText: String) {
@@ -266,7 +270,7 @@ class TaskCreationScreenViewModel(
 
             // Update the suggestions and DPC.
             suggestions = newSuggestions
-            if (_deadline == null) _deadline = response.deadline
+            if (!isDeadlineSetManually) _deadline = response.deadline
             if (_selectedCategory == null) _selectedCategory = response.category
         }
     }

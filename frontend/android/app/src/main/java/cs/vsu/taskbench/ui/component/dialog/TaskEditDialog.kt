@@ -78,6 +78,7 @@ interface TaskEditDialogStateHolder {
     var taskInput: String
     var deadline: LocalDateTime?
     var isHighPriority: Boolean
+    var isDeadlineSetManually: Boolean
 
     var subtaskInput: String
     var subtasks: List<Subtask>
@@ -238,6 +239,7 @@ private fun DeadlineDialog(
     if (showDateDialog) {
         DatePickerDialog(
             onComplete = {
+                stateHolder.isDeadlineSetManually = true
                 stateHolder.onSetDeadlineDate(it)
                 showDateDialog = false
             },
@@ -476,6 +478,8 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
         set(value) {
             _deadline = value
         }
+
+    override var isDeadlineSetManually: Boolean = true
 
     private var _isHighPriority by mutableStateOf(false)
     override var isHighPriority: Boolean
