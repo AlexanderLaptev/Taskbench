@@ -104,9 +104,6 @@ interface TaskEditDialogStateHolder {
     fun canSaveSubtask(text: String): Boolean
 
     fun onDeadlineChipClick()
-    fun onSetDeadlineDate(epochMilli: Long)
-    fun onSetDeadlineTime(hour: Int, minute: Int)
-    fun onClearDeadline()
 
     fun onPriorityChipClick()
     fun onCategoryChipClick()
@@ -236,11 +233,19 @@ private fun DeadlineDialog(
     var showDateDialog by remember { mutableStateOf(false) }
     var showTimeDialog by remember { mutableStateOf(false) }
 
+    var newDeadline by remember { mutableStateOf(stateHolder.deadline) }
+    LaunchedEffect(stateHolder.deadline) { newDeadline = stateHolder.deadline }
+
+    var cleared by remember { mutableStateOf(false) }
+
     if (showDateDialog) {
         DatePickerDialog(
             onComplete = {
-                stateHolder.isDeadlineSetManually = true
-                stateHolder.onSetDeadlineDate(it)
+                val date = LocalDate.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
+                newDeadline = LocalDateTime.of(
+                    date,
+                    newDeadline?.toLocalTime() ?: LocalTime.now().plusHours(1),
+                )
                 showDateDialog = false
             },
             onDismiss = { showDateDialog = false },
@@ -251,8 +256,11 @@ private fun DeadlineDialog(
         TimePickerDialog(
             initialTime = stateHolder.deadline?.toLocalTime() ?: LocalTime.now(),
             onComplete = { hour, minute ->
-                stateHolder.isDeadlineSetManually = true
-                stateHolder.onSetDeadlineTime(hour, minute)
+                val time = LocalTime.of(hour, minute)
+                newDeadline = LocalDateTime.of(
+                    newDeadline?.toLocalDate() ?: LocalDate.now(),
+                    time,
+                )
                 showTimeDialog = false
             },
             onDismiss = { showTimeDialog = false },
@@ -282,9 +290,9 @@ private fun DeadlineDialog(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                val hasDeadline = stateHolder.deadline != null
+                val hasDeadline = newDeadline != null
                 val dateText = if (hasDeadline) {
-                    dateFormatter.format(stateHolder.deadline)
+                    dateFormatter.format(newDeadline)
                 } else stringResource(R.string.label_not_set)
 
                 DeadlineDialogButton(
@@ -296,7 +304,7 @@ private fun DeadlineDialog(
                 )
 
                 val timeText = if (hasDeadline) {
-                    timeFormatter.format(stateHolder.deadline)
+                    timeFormatter.format(newDeadline)
                 } else stringResource(R.string.time_not_set)
                 DeadlineDialogButton(
                     iconId = R.drawable.ic_clock,
@@ -309,12 +317,19 @@ private fun DeadlineDialog(
             Button(
                 text = stringResource(R.string.button_confirm),
                 color = AccentYellow,
-                onClick = { stateHolder.showDeadlineDialog = false },
+                onClick = {
+                    stateHolder.isDeadlineSetManually = !cleared
+                    stateHolder.deadline = newDeadline
+                    stateHolder.showDeadlineDialog = false
+                },
             )
             Button(
                 text = stringResource(R.string.button_clear),
                 color = ExtraLightGray,
-                onClick = stateHolder::onClearDeadline,
+                onClick = {
+                    newDeadline = null
+                    cleared = true
+                },
             )
         }
     }
@@ -535,25 +550,6 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
     override fun onCategoryClick(category: Category) {
         _selectedCategory = category
         _showCategoryDialog = false
-    }
-
-    override fun onSetDeadlineDate(epochMilli: Long) {
-        val instant = Instant.ofEpochMilli(epochMilli)
-        val date = LocalDate.ofInstant(instant, ZoneId.systemDefault())
-        val time = _deadline?.toLocalTime() ?: LocalTime.now()
-        val newDeadline = LocalDateTime.of(date, time).let {
-            if (_deadline == null) it.plusHours(1) else it
-        }
-        _deadline = newDeadline
-    }
-
-    override fun onSetDeadlineTime(hour: Int, minute: Int) {
-        val date = _deadline?.toLocalDate() ?: LocalDate.now()
-        _deadline = LocalDateTime.of(date, LocalTime.of(hour, minute))
-    }
-
-    override fun onClearDeadline() {
-        _deadline = null
     }
 
     override fun onSubmitTask() = Unit

@@ -22,11 +22,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.net.ConnectException
 import java.net.SocketTimeoutException
-import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
 
 class TaskCreationScreenViewModel(
     private val taskRepository: TaskRepository,
@@ -128,26 +124,6 @@ class TaskCreationScreenViewModel(
     override fun onCategoryClick(category: Category) {
         _selectedCategory = category
         _showCategoryDialog = false
-    }
-
-    override fun onSetDeadlineDate(epochMilli: Long) {
-        val instant = Instant.ofEpochMilli(epochMilli)
-        val date = LocalDate.ofInstant(instant, ZoneId.systemDefault())
-        val time = _deadline?.toLocalTime() ?: LocalTime.now()
-        val newDeadline = LocalDateTime.of(date, time).let {
-            if (_deadline == null) it.plusHours(1) else it
-        }
-        _deadline = newDeadline
-    }
-
-    override fun onSetDeadlineTime(hour: Int, minute: Int) {
-        val date = _deadline?.toLocalDate() ?: LocalDate.now()
-        _deadline = LocalDateTime.of(date, LocalTime.of(hour, minute))
-    }
-
-    override fun onClearDeadline() {
-        _deadline = null
-        isDeadlineSetManually = false
     }
 
     override fun onSubmitTask() {
