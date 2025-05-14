@@ -10,10 +10,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.SettingsMainMenuDestination
 import com.ramcosta.composedestinations.generated.navgraphs.SettingsNavGraph
+import com.ramcosta.composedestinations.manualcomposablecalls.composable
+import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.theme.White
@@ -27,8 +31,10 @@ fun SettingsScreen(
     Scaffold(
         bottomBar = { NavigationBar(navController) }
     ) { scaffoldPadding ->
+        val settingsNavController = rememberNavController()
         DestinationsNavHost(
             navGraph = SettingsNavGraph,
+            navController = settingsNavController,
             modifier = Modifier
                 .padding(scaffoldPadding)
                 .padding(
@@ -40,6 +46,13 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .background(color = White, shape = RoundedCornerShape(10.dp))
                 .padding(16.dp),
-        )
+        ) {
+            composable(SettingsMainMenuDestination) {
+                SettingsMainMenu(
+                    globalNavigator = navController.rememberDestinationsNavigator(),
+                    settingsNavigator = settingsNavController.rememberDestinationsNavigator(),
+                )
+            }
+        }
     }
 }

@@ -88,5 +88,6 @@
     <string name="version_number">v1.0.0-alpha1</string>
     <string name="button_back">Назад</string>
     <string name="placeholder_old_password">Старый пароль</string>
+    <string name="dialog_logout_text">Вы действительно хотите выйти из аккаунта?</string>
 
 </resources>
