@@ -251,6 +251,7 @@ class TaskCreationScreenViewModel(
         pendingUpdate = viewModelScope.launch {
             delay(1200)
             try {
+                if (_taskInput.length < 8) return@launch
                 val response = suggestionRepository.getSuggestions(
                     prompt = taskInput,
                     deadline = _deadline,
