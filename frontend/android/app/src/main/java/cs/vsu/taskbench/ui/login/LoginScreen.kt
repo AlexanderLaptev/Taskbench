@@ -241,7 +241,7 @@ private fun LoginControls(
         TextField(
             value = screenState.password,
             color = Beige,
-            placeholder = stringResource(R.string.label_password),
+            placeholder = stringResource(R.string.placeholder_password),
             password = true,
             onValueChange = screenState.onPasswordChange,
         )
@@ -254,7 +254,7 @@ private fun LoginControls(
                 TextField(
                     value = screenState.confirmPassword,
                     color = Beige,
-                    placeholder = stringResource(R.string.label_confirm_password),
+                    placeholder = stringResource(R.string.placeholder_confirm_password),
                     password = true,
                     onValueChange = screenState.onConfirmPasswordChange,
                 )

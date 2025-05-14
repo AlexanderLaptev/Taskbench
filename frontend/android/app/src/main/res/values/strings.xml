@@ -15,8 +15,8 @@
     <string name="label_back">Назад</string>
     <string name="button_forgot_password">Забыли пароль?</string>
     <string name="label_email">Электронная почта</string>
-    <string name="label_password">Пароль</string>
-    <string name="label_confirm_password">Подтвердите пароль</string>
+    <string name="placeholder_password">Пароль</string>
+    <string name="placeholder_confirm_password">Подтвердите пароль</string>
     <string name="label_forgot_password">Забыли пароль?</string>
 
     <string name="error_empty_email">Введите адрес электронной почты</string>
@@ -86,5 +86,7 @@
     <string name="menu_settings_change_password">Сменить пароль</string>
     <string name="menu_settings_subscription">Управление подпиской</string>
     <string name="version_number">v1.0.0-alpha1</string>
+    <string name="button_back">Назад</string>
+    <string name="placeholder_old_password">Старый пароль</string>
 
 </resources>

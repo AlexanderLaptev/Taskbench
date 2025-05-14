@@ -2,12 +2,9 @@ package cs.vsu.taskbench.ui.settings
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,16 +20,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.generated.destinations.LoginScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.PasswordChangeScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.ui.theme.DarkGray
-import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
-@Destination<SettingsGraph>(start = true)
+@Destination<SettingsGraph>(start = true, style = ScreenTransitions::class)
 fun SettingsMainMenu(navigator: DestinationsNavigator, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     val authService = koinInject<AuthService>()
@@ -40,16 +37,7 @@ fun SettingsMainMenu(navigator: DestinationsNavigator, modifier: Modifier = Modi
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = modifier
-            .padding(
-                start = 16.dp,
-                top = 8.dp,
-                end = 16.dp,
-                bottom = 16.dp,
-            )
-            .fillMaxSize()
-            .background(color = White, shape = RoundedCornerShape(10.dp))
-            .padding(16.dp),
+        modifier = modifier,
     ) {
         Image(
             painter = painterResource(R.drawable.logo_full_dark),
@@ -82,7 +70,7 @@ fun SettingsMainMenu(navigator: DestinationsNavigator, modifier: Modifier = Modi
         SettingsMenuOption(
             text = stringResource(R.string.menu_settings_change_password),
             icon = painterResource(R.drawable.ic_edit),
-            onClick = placeholder,
+            onClick = { navigator.navigate(PasswordChangeScreenDestination) },
         )
         HorizontalDivider()
         SettingsMenuOption(
