@@ -148,8 +148,7 @@ class TaskAPITests(TestCase):
     def test_invalid_date_filter(self):
         url = f"{reverse('task_list')}?date=invalid-date"
         response = self.client.get(url, **self.get_auth_headers())
-        # Либо ожидаем 500 (если это текущее поведение), либо изменяем view чтобы возвращал 400
-        self.assertEqual(response.status_code, 500)  # или 400, в зависимости от того, что возвращает ваш API
+        self.assertEqual(response.status_code, 400)
 
     def test_update_task(self):
         url = reverse('task_detail', args=[self.task1.task_id])
@@ -224,8 +223,7 @@ class TaskAPITests(TestCase):
     def test_invalid_date_filter(self):
         url = f"{reverse('task_list')}?date=invalid-date"
         response = self.client.get(url, **self.get_auth_headers())
-        # Поскольку view возвращает 500 при невалидной дате, меняем ожидание
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
         self.assertIn('error', response.json())
 
     def test_create_task_invalid_data(self):

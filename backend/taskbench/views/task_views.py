@@ -1,14 +1,15 @@
-from django.shortcuts import render
-from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+import json
+
+from django.http import JsonResponse, HttpResponse
 from django.utils.dateparse import parse_datetime
+from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 
 from ..models.models import Task, Subtask, TaskCategory, Category
-import json
-
+from ..serializers.task_serializers import task_response
 from ..serializers.user_serializers import JwtSerializer
-from ..services.user_service import get_token
+from ..services.task_service import get_task_list
+from ..services.user_service import get_token, AuthenticationError
 
 
 # /tasks - GET, POST
@@ -39,99 +40,18 @@ from ..services.user_service import get_token
 # }
 class TaskListView(APIView):
     def get(self, request, *args, **kwargs):
+        token = get_token(request)
+        params = request.GET
         try:
-            # Get token from request and validate user
-            token = get_token(request)
-            serializer = JwtSerializer(data=token)
-            if not serializer.is_valid():
-                return JsonResponse({'error': 'Invalid token'}, status=401)
-            user = serializer.validated_data['user']
-
-            # Get request parameters
-            category_id = request.GET.get('category_id')
-            sort_by = request.GET.get('sort_by')
-            after = request.GET.get('after')
-            before = request.GET.get('before')
-            date = request.GET.get('date')
-            offset = int(request.GET.get('offset', 0))
-            limit = int(request.GET.get('limit', 10))
-
-            # Base query - exclude completed tasks
-            tasks = Task.objects.filter(user=user, is_completed=False) \
-                .prefetch_related('subtasks', 'task_categories__category')
-
-            # Validate filters
-            if date is not None and (after is not None or before is not None ):
-                return JsonResponse(
-                    {'error': 'Use either date or after/before, not together'},
-                    status=400
-                )
-
-            # Apply filters
-            if category_id is not None :
-                tasks = tasks.filter(task_categories__category_id=category_id)
-
-            if date is not None :
-                tasks = tasks.filter(deadline__date=date)
-
-            # Фильтрация по времени
-            if after is not None or before is not None :
-                # Исключаем задачи без дедлайна
-                tasks = tasks.exclude(deadline__isnull=True)
-
-                if after is not None :
-                    after_dt = parse_datetime(after)
-                    if not after_dt:
-                        return JsonResponse({'error': 'Invalid after datetime'}, status=400)
-                    tasks = tasks.filter(deadline__gte=after_dt)
-
-                if before is not None :
-                    before_dt = parse_datetime(before)
-                    if not before_dt:
-                        return JsonResponse({'error': 'Invalid before datetime'}, status=400)
-                    tasks = tasks.filter(deadline__lte=before_dt)
-
-            # Apply sorting
-            if sort_by == 'priority':
-                tasks = tasks.order_by('-priority', 'deadline', 'task_id')  # Вариант 2
-            elif sort_by == 'deadline':
-                tasks = tasks.order_by('deadline', '-priority', 'task_id')  # Вариант 1
-            else:
-                tasks = tasks.order_by('-priority', 'deadline', 'task_id')  # Дефолтный вариант
-
-            # Pagination
-            tasks = tasks[offset:offset + limit]
-
-            # Prepare response
-            data = []
-            for task in tasks:
-                category = task.task_categories.first().category if task.task_categories.first() else None
-
-                task_data = {
-                    "id": task.task_id,
-                    "content": task.title,
-                    "is_done": False,
-                    "dpc": {
-                        "deadline": task.deadline.replace(tzinfo=None).isoformat(timespec='seconds') if task.deadline is not None else None,
-                        "priority": task.priority,
-                        "category_id": category.category_id if category else 0,
-                        "category_name": category.name if category else ""
-                    },
-                    "subtasks": [
-                        {
-                            "id": subtask.subtask_id,
-                            "content": subtask.text,
-                            "is_done": subtask.is_completed
-                        }
-                        for subtask in task.subtasks.all()
-                    ]
-                }
-                data.append(task_data)
-
-            return JsonResponse(data, safe=False)
-
+            return task_response(get_task_list(token=token, params=params))
+        except AuthenticationError as e:
+            return JsonResponse({'error': str(e)}, status=401)
+        except ValidationError as e:
+            return JsonResponse({'error': str(e)}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+
+
 
     def post(self, request, *args, **kwargs):
         try:

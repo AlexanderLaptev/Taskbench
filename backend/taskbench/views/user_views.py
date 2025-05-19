@@ -21,7 +21,7 @@ class RegisterView(APIView):
         try:
             return user_response(*register_user(data), status=201)
         except Exception as e:
-            return JsonResponse(str(e), status=400)
+            return JsonResponse({'error': str(e)}, status=400)
 
 
 class LoginView(APIView):
@@ -31,7 +31,7 @@ class LoginView(APIView):
         try:
             return user_response(*login_user(data), status=200)
         except Exception as e:
-            return JsonResponse(str(e), status=400)
+            return JsonResponse({'error': str(e)}, status=400)
 
 
 class DeleteUserView(APIView):
@@ -42,7 +42,7 @@ class DeleteUserView(APIView):
             delete_user(token)
             return Response(status=204)
         except AuthenticationError as e:
-            return JsonResponse(str(e), status=401)
+            return JsonResponse({'error': str(e)}, status=401)
 
 
 class ChangePasswordView(APIView):
@@ -53,9 +53,9 @@ class ChangePasswordView(APIView):
             change_password(token=get_token(request), data=data)
             return Response(status=204)
         except AuthenticationError as e:
-            return JsonResponse(str(e), status=401)
+            return JsonResponse({'error': str(e)}, status=401)
         except ValidationError as e:
-            return JsonResponse(str(e), status=400)
+            return JsonResponse({'error': str(e)}, status=400)
 
 
 class TokenRefreshView(APIView):
@@ -68,7 +68,7 @@ class TokenRefreshView(APIView):
         try:
             return user_response(*token_refresh(token), status=200)
         except Exception as e:
-            return JsonResponse(str(e), status=400)
+            return JsonResponse({'error': str(e)}, status=400)
 
 
 class SubscriptionStatusView(APIView):
