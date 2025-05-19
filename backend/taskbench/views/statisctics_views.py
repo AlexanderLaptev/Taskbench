@@ -6,9 +6,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from ..models.models import Task
-from ..serializers.statistics_serializer import StatisticsSerializer
+from ..serializers.statistics_serializers import StatisticsSerializer
 from ..serializers.user_serializers import JwtSerializer
-from ..services.jwt_service import get_token_from_request
+from ..services.user_service import get_token
 
 
 class StatisticsView(APIView):
@@ -24,7 +24,7 @@ class StatisticsView(APIView):
     разделенное на максимальное количество выполненных задач за день в текущей неделе.
     """
     def get(self, request, *args, **kwargs):
-        serializer = JwtSerializer(data=get_token_from_request(request))
+        serializer = JwtSerializer(data=get_token(request))
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 

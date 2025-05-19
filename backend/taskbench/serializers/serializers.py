@@ -1,12 +1,5 @@
 from rest_framework import serializers
 from ..models.models import User, Task, Subtask, Category, TaskCategory
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = '__all__'
-
-
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
@@ -16,12 +9,6 @@ class TaskSerializer(serializers.ModelSerializer):
 class SubtaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subtask
-        fields = '__all__'
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
         fields = '__all__'
 
 

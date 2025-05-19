@@ -10,7 +10,7 @@ from backend.settings import DEBUG
 from taskbench.models.models import Category
 from taskbench.serializers.task_serializers import TaskDPCtoFlatSerializer
 from taskbench.serializers.user_serializers import JwtSerializer
-from taskbench.services.jwt_service import get_token_from_request
+from taskbench.services.user_service import get_token
 # from taskbench.serializers.task_serializers import TaskSerializer
 from taskbench.services.suggestion_service import SuggestionService
 
@@ -24,7 +24,7 @@ class SuggestionView(APIView):
         serializer = TaskDPCtoFlatSerializer(data=data)
         if not serializer.is_valid():
             return JsonResponse(serializer.errors, status=400)
-        user_serializer = JwtSerializer(data=get_token_from_request(request))
+        user_serializer = JwtSerializer(data=get_token(request))
         if not user_serializer.is_valid():
             return Response("Invalid token", status=401)
         user_id = user_serializer.validated_data['user'].user_id

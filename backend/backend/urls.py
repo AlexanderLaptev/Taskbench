@@ -17,14 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from taskbench.views.category_views import CategoryListView
 from taskbench.views.statisctics_views import StatisticsView
+from taskbench.views.subtask_views import (
+    SubtaskCreateView,
+    SubtaskDetailView
+)
 from taskbench.views.suggestion_views import SuggestionView
 from taskbench.views.task_views import (
     TaskListView,
     TaskDetailView,
-    SubtaskCreateView,
-    SubtaskDetailView,
-    CategoryListView
 )
 from taskbench.views.user_views import (
     RegisterView,
