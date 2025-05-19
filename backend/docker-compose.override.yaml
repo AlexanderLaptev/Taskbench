@@ -2,6 +2,10 @@ services:
   taskbench-backend:
     build: .
     image: taskbench/taskbench-backend:dev
+    restart: no
+
+  database:
+    restart: no
 
 #  test:
 #    image: alpine:latest
