@@ -394,7 +394,6 @@ class CategoryAPITests(TestCase):
             data=json.dumps(data),
             **self.get_auth_headers()
         )
-        print("test_create_category_success", response.json())
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Category.objects.count(), 4)  # 3 из setUp + 1 новая
 
@@ -436,7 +435,6 @@ class CategoryAPITests(TestCase):
             data=json.dumps(data),
             **self.get_auth_headers()
         )
-        print("test_create_category_duplicate_name", response.json())
         self.assertEqual(response.status_code, 409)
         self.assertIn('error', response.json())
 

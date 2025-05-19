@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from ..models.models import Task
-from ..serializers.statistics_serializer import StatisticsSerializer
+from ..serializers.statistics_serializers import StatisticsSerializer
 from ..serializers.user_serializers import JwtSerializer
 from ..services.user_service import get_token
 

@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from taskbench.serializers.subtask_serializers import subtask_json
+
 
 class Sort(Enum):
     PRIORITY = 'priority'
@@ -46,14 +48,6 @@ def task_json(task, category, subtasks):
             "category_name": category.name if category else ""
         },
         "subtasks": [subtask_json(subtask) for subtask in subtasks]
-    }
-
-
-def subtask_json(subtask):
-    return {
-        "id": subtask.subtask_id,
-        "content": subtask.text,
-        "is_done": subtask.is_completed
     }
 
 

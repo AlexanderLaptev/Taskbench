@@ -9,13 +9,10 @@ from taskbench.services.user_service import get_token
 from taskbench.utils.exceptions import AuthenticationError, AlreadyExists
 
 
-# GET
-# http://127.0.0.1:8000/categories/
-# POST
-# {
-#     "name": "Хехе"
-# }
 class CategoryListView(APIView):
+    """
+    GET, POST http://127.0.0.1:8000/categories/
+    """
 
     def get(self, request, *args, **kwargs):
         try:
@@ -29,6 +26,10 @@ class CategoryListView(APIView):
             return JsonResponse({'error': str(e)}, status=500)
 
     def post(self, request, *args, **kwargs):
+        """
+        POST
+        { "name": "Хехе" }
+        """
         try:
             token = get_token(request)
             data = json.loads(request.body)
