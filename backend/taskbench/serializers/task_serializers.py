@@ -27,9 +27,11 @@ def task_list_response(tasks):
         data.append(task_json(task, category, task.subtasks.all()))
     return JsonResponse(data, safe=False)
 
+
 def task_response(task, status):
     category = task.task_categories.first().category if task.task_categories.first() else None
     return JsonResponse(task_json(task, category, task.subtasks.all()), safe=False, status=status)
+
 
 def task_json(task, category, subtasks):
     return {
@@ -43,8 +45,9 @@ def task_json(task, category, subtasks):
             "category_id": category.category_id if category else 0,
             "category_name": category.name if category else ""
         },
-        "subtasks": [ subtask_json(subtask) for subtask in subtasks ]
+        "subtasks": [subtask_json(subtask) for subtask in subtasks]
     }
+
 
 def subtask_json(subtask):
     return {
@@ -52,6 +55,7 @@ def subtask_json(subtask):
         "content": subtask.text,
         "is_done": subtask.is_completed
     }
+
 
 class TaskDPCtoFlatSerializer(serializers.Serializer):
     category_id = serializers.IntegerField(required=False, allow_null=True)
@@ -100,7 +104,6 @@ class TaskSearchParametersSerializer(serializers.Serializer):
             validated_data['date'] = None
         if (before is not None) and (after is not None) and (before < after):
             raise ValidationError('Invalid date')
-
 
         validated_data['offset'] = data.get('offset') if data.get('offset') is not None else 0
         validated_data['limit'] = data.get('limit') if data.get('limit') is not None else 10

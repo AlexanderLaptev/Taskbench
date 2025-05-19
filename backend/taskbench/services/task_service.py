@@ -4,13 +4,21 @@ from rest_framework.exceptions import ValidationError
 from taskbench.models.models import Task, Category, TaskCategory, Subtask
 from taskbench.serializers.task_serializers import TaskSearchParametersSerializer, Sort
 from taskbench.services.user_service import get_user
+from taskbench.utils.exceptions import NotFound
 
 
-def get_task(user, task_id):
+def get_task(user, task_id) -> Task:
     try:
         return Task.objects.get(task_id=task_id, user=user)
     except Task.DoesNotExist:
-        return None
+        raise NotFound("Task does not exist")
+
+
+def get_category(user, category_id):
+    try:
+        return Category.objects.get(category_id=category_id, user=user)
+    except Category.DoesNotExist:
+        raise ValidationError('Category not found or access denied')
 
 
 def get_task_list(token, params):
@@ -79,7 +87,7 @@ def create_task(token, data):
 
 def complete_task(token, task_id):
     user = get_user(token)
-    task = get_task(user = user, task_id = task_id)
+    task = get_task(user=user, task_id=task_id)
     if task.is_completed:
         raise ValidationError('Task already completed')
     task.is_completed = True
@@ -87,8 +95,36 @@ def complete_task(token, task_id):
     return task
 
 
-def get_category(user, category_id):
-    try:
-        return Category.objects.get(category_id=category_id, user=user)
-    except Category.DoesNotExist:
-        raise ValidationError('Category not found or access denied')
+def update_task(token, task_id, data):
+    user = get_user(token)
+    task = get_task(user=user, task_id=task_id)
+
+    if task is None:
+        raise NotFound("Task does not exist")
+
+    content = data.get('content')
+    dpc = data.get('dpc', {})
+
+    if content:
+        task.title = content
+    if not dpc:
+        task.save()
+        return task
+
+    if 'deadline' in dpc:
+        task.deadline = parse_datetime(dpc['deadline']) if dpc['deadline'] else None
+    if 'priority' in dpc:
+        try:
+            task.priority = int(dpc['priority'])
+        except:
+            raise ValidationError('Invalid priority')
+    if 'category_id' in dpc:
+        try:
+            category = get_category(user=user, category_id=dpc['category_id'])
+            TaskCategory.objects.filter(task=task, category=category).delete()
+            # task.task_categories.all().delete()  # предыдущие категории
+            TaskCategory.objects.create(task=task, category=category)
+        except Category.DoesNotExist:
+            raise ValidationError('Category not found or access denied')
+    task.save()
+    return task

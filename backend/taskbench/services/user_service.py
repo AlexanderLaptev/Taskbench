@@ -4,15 +4,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from taskbench.models.models import User
 from taskbench.serializers.user_serializers import JwtSerializer, UserRegisterSerializer, LoginSerializer
-
-
-class AuthenticationError(Exception):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return self.message
+from taskbench.utils.exceptions import AuthenticationError
 
 
 def get_token(request: HttpRequest):

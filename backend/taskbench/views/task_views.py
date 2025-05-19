@@ -1,14 +1,13 @@
 import json
 
 from django.http import JsonResponse, HttpResponse
-from django.utils.dateparse import parse_datetime
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 
-from ..models.models import Task, Subtask, TaskCategory, Category
+from ..models.models import Task, Subtask, Category
 from ..serializers.task_serializers import task_list_response, task_response
 from ..serializers.user_serializers import JwtSerializer
-from ..services.task_service import get_task_list, create_task, complete_task, get_task
+from ..services.task_service import get_task_list, create_task, complete_task, update_task
 from ..services.user_service import get_token, AuthenticationError
 
 
@@ -87,70 +86,16 @@ class TaskDetailView(APIView):
             return JsonResponse({'error': str(e)}, status=400)
 
     def patch(self, request, task_id, *args, **kwargs):
-        # Get token from request and validate user
         token = get_token(request)
-        serializer = JwtSerializer(data=token)
-        if not serializer.is_valid():
-            return JsonResponse({'error': 'Invalid token'}, status=401)
-        user = serializer.validated_data['user']
-
-        task = get_task(task_id=task_id, user=user)
-        if not task:
-            return JsonResponse({'error': 'Task not found'}, status=404)
-
+        data = json.loads(request.body)
         try:
-            data = json.loads(request.body)
-            # Update allowed task fields
-            if 'content' in data:
-                task.title = data['content']
-            if 'dpc' in data:
-                dpc = data['dpc']
-                if 'deadline' in dpc:
-                    task.deadline = parse_datetime(dpc['deadline']) if dpc['deadline'] else None
-                if 'priority' in dpc:
-                    task.priority = dpc['priority']
-                if 'category_id' in dpc:
-                    task.task_categories.all().delete()
-                    if dpc['category_id']:
-                        try:
-                            # Проверяем, что категория принадлежит текущему пользователю
-                            category = Category.objects.get(
-                                category_id=dpc['category_id'],
-                                user=user
-                            )
-                            TaskCategory.objects.create(task=task, category=category)
-                        except Category.DoesNotExist:
-                            return JsonResponse(
-                                {'error': 'Category not found or access denied'},
-                                status=400
-                            )
-                task.save()
-            # Form response with category name from DB
-            category = task.task_categories.first().category if task.task_categories.first() else None
-            response_data = {
-                "id": task.task_id,
-                "content": task.title,
-                "is_done": task.is_completed,
-                "dpc": {
-                    "deadline": task.deadline.replace(tzinfo=None).isoformat(
-                        timespec='seconds') if task.deadline else None,
-                    "priority": task.priority,
-                    "category_id": category.category_id if category else 0,
-                    "category_name": category.name if category else ""
-                },
-                "subtasks": [
-                    {
-                        "id": s.subtask_id,
-                        "content": s.text,
-                        "is_done": s.is_completed
-                    } for s in task.subtasks.all()
-                ]
-            }
-            return JsonResponse(response_data)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-        except Exception as e:
+            return task_response(update_task(token=token, task_id=task_id, data=data), 200)
+        except AuthenticationError as e:
+            return JsonResponse({'error': str(e)}, status=401)
+        except ValidationError as e:
             return JsonResponse({'error': str(e)}, status=400)
+        # except Exception as e:
+        #     return JsonResponse({'error': str(e)}, status=500)
 
 
 # /subtasks - POST
