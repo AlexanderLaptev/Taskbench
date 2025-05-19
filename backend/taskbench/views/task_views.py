@@ -8,7 +8,7 @@ from ..models.models import Task, Subtask, TaskCategory, Category
 import json
 
 from ..serializers.user_serializers import JwtSerializer
-from ..services.jwt_service import get_token_from_request
+from ..services.user_service import get_token
 
 
 # /tasks - GET, POST
@@ -41,7 +41,7 @@ class TaskListView(APIView):
     def get(self, request, *args, **kwargs):
         try:
             # Get token from request and validate user
-            token = get_token_from_request(request)
+            token = get_token(request)
             serializer = JwtSerializer(data=token)
             if not serializer.is_valid():
                 return JsonResponse({'error': 'Invalid token'}, status=401)
@@ -136,7 +136,7 @@ class TaskListView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             # Get token from request and validate user
-            token = get_token_from_request(request)
+            token = get_token(request)
             serializer = JwtSerializer(data=token)
             if not serializer.is_valid():
                 return JsonResponse({'error': 'Invalid token'}, status=401)
@@ -231,7 +231,7 @@ class TaskDetailView(APIView):
 
     def delete(self, request, task_id, *args, **kwargs):
         # Get token from request and validate user
-        token = get_token_from_request(request)
+        token = get_token(request)
         serializer = JwtSerializer(data=token)
         if not serializer.is_valid():
             return JsonResponse({'error': 'Invalid token'}, status=401)
@@ -277,7 +277,7 @@ class TaskDetailView(APIView):
 
     def patch(self, request, task_id, *args, **kwargs):
         # Get token from request and validate user
-        token = get_token_from_request(request)
+        token = get_token(request)
         serializer = JwtSerializer(data=token)
         if not serializer.is_valid():
             return JsonResponse({'error': 'Invalid token'}, status=401)
@@ -352,7 +352,7 @@ class SubtaskCreateView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             # Get token from request and validate user
-            token = get_token_from_request(request)
+            token = get_token(request)
             serializer = JwtSerializer(data=token)
             if not serializer.is_valid():
                 return JsonResponse({'error': 'Invalid token'}, status=401)
@@ -418,7 +418,7 @@ class SubtaskDetailView(APIView):
     def patch(self, request, subtask_id, *args, **kwargs):
         try:
             # Get token from request and validate user
-            token = get_token_from_request(request)
+            token = get_token(request)
             serializer = JwtSerializer(data=token)
             if not serializer.is_valid():
                 return JsonResponse({'error': 'Invalid token'}, status=401)
@@ -459,7 +459,7 @@ class SubtaskDetailView(APIView):
     def delete(self, request, subtask_id, *args, **kwargs):
         try:
             # Get token from request and validate user
-            token = get_token_from_request(request)
+            token = get_token(request)
             serializer = JwtSerializer(data=token)
             if not serializer.is_valid():
                 return JsonResponse({'error': 'Invalid token'}, status=401)
@@ -487,7 +487,7 @@ class CategoryListView(APIView):
     def get(self, request, *args, **kwargs):
         try:
             # Аутентификация
-            token = get_token_from_request(request)
+            token = get_token(request)
             serializer = JwtSerializer(data=token)
             if not serializer.is_valid():
                 return JsonResponse({'error': 'Invalid token'}, status=401)
@@ -507,7 +507,7 @@ class CategoryListView(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            token = get_token_from_request(request)
+            token = get_token(request)
             serializer = JwtSerializer(data=token)
             if not serializer.is_valid():
                 return JsonResponse({'error': 'Invalid token'}, status=401)
