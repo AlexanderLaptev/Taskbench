@@ -1,6 +1,5 @@
-from django.contrib.auth.password_validation import validate_password
-from django.http import HttpRequest, JsonResponse
-from rest_framework.exceptions import ValidationError, AuthenticationFailed
+from django.http import HttpRequest
+from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from taskbench.models.models import User
@@ -22,14 +21,13 @@ def get_token(request: HttpRequest):
     return {'token': token}
 
 
-def get_user(request: HttpRequest):
-    token = get_token(request)
+def get_user(token):
+    # token = get_token(request)
     serializer = JwtSerializer(data=token)
     if serializer.is_valid():
-        user = serializer.validated_data['user']
+        return serializer.validated_data['user']
     else:
-        user = None
-    return user
+        raise AuthenticationError(str(serializer.errors))
 
 
 def generate_token(user):
@@ -63,31 +61,18 @@ def login_user(data):
 
 
 def token_refresh(token):
-    serializer = JwtSerializer(data=token)
-    if serializer.is_valid():
-        user = serializer.validated_data['user']
-        refresh, access = generate_token(user)
-        return user, refresh, access
-    else:
-        raise AuthenticationError(str(serializer.errors))
+    user = get_user(token)
+    refresh, access = generate_token(user)
+    return user, refresh, access
 
 
 def delete_user(token):
-    serializer = JwtSerializer(data=token)
-    if serializer.is_valid():
-        user = serializer.validated_data['user']
-        user.delete()
-    else:
-        raise AuthenticationError(str(serializer.errors))
+    user = get_user(token)
+    user.delete()
 
 
 def change_password(token, data):
-    serializer = JwtSerializer(data=token)
-    if serializer.is_valid():
-        user = serializer.validated_data['user']
-    else:
-        raise AuthenticationError(str(serializer.errors))
-
+    user = get_user(token)
     old_password = data.get('old_password')
     new_password = data.get('new_password')
     if not old_password or not new_password:
@@ -101,4 +86,3 @@ def change_password(token, data):
         user.save()
     except Exception as e:
         raise ValidationError(str(e))
-

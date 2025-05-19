@@ -2,21 +2,24 @@ from django.utils.dateparse import parse_datetime
 from rest_framework.exceptions import ValidationError
 
 from taskbench.models.models import Task, Category, TaskCategory, Subtask
-from taskbench.serializers.task_serializers import TaskSearchParametersSerializer, Sort, TaskDPCtoFlatSerializer
-from taskbench.serializers.user_serializers import JwtSerializer
-from taskbench.services.user_service import AuthenticationError
+from taskbench.serializers.task_serializers import TaskSearchParametersSerializer, Sort
+from taskbench.services.user_service import get_user
+
+
+def get_task(user, task_id):
+    try:
+        return Task.objects.get(task_id=task_id, user=user)
+    except Task.DoesNotExist:
+        return None
 
 
 def get_task_list(token, params):
-    user_serializer = JwtSerializer(data=token)
     params_serializer = TaskSearchParametersSerializer(data=params)
 
-    if not user_serializer.is_valid():
-        raise AuthenticationError('Invalid token')
     if not params_serializer.is_valid():
         raise ValidationError('Invalid params')
 
-    user = user_serializer.validated_data['user']
+    user = get_user(token)
     params = params_serializer.validated_data
 
     sort_by = params['sort_by']
@@ -45,12 +48,7 @@ def get_task_list(token, params):
 
 
 def create_task(token, data):
-    user_serializer = JwtSerializer(data=token)
-
-    if not user_serializer.is_valid():
-        raise AuthenticationError('Invalid token')
-
-    user = user_serializer.validated_data['user']
+    user = get_user(token)
     content = data.get('content')
     dpc = data.get('dpc', {})
     subtasks = data.get('subtasks', [])
@@ -77,6 +75,17 @@ def create_task(token, data):
         )
 
     return task
+
+
+def complete_task(token, task_id):
+    user = get_user(token)
+    task = get_task(user = user, task_id = task_id)
+    if task.is_completed:
+        raise ValidationError('Task already completed')
+    task.is_completed = True
+    task.save()
+    return task
+
 
 def get_category(user, category_id):
     try:

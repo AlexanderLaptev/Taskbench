@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from ..models.models import Task, Subtask, TaskCategory, Category
 from ..serializers.task_serializers import task_list_response, task_response
 from ..serializers.user_serializers import JwtSerializer
-from ..services.task_service import get_task_list, create_task
+from ..services.task_service import get_task_list, create_task, complete_task, get_task
 from ..services.user_service import get_token, AuthenticationError
 
 
@@ -75,58 +75,16 @@ class TaskListView(APIView):
 #   }
 # }
 class TaskDetailView(APIView):
-    def get_task(self, task_id, user):
-        try:
-            return Task.objects.get(task_id=task_id, user=user)
-        except Task.DoesNotExist:
-            return None
+
 
     def delete(self, request, task_id, *args, **kwargs):
-        # Get token from request and validate user
         token = get_token(request)
-        serializer = JwtSerializer(data=token)
-        if not serializer.is_valid():
-            return JsonResponse({'error': 'Invalid token'}, status=401)
-        user = serializer.validated_data['user']
-
-        task = self.get_task(task_id, user)
-        if not task:
-            return JsonResponse({'error': 'Task not found'}, status=404)
-
         try:
-            # Check if task is already completed
-            if task.is_completed:
-                return JsonResponse({'error': 'Task already completed'}, status=400)
-
-            # Mark task as completed
-            task.is_completed = True
-            task.save()
-
-            # Return updated task
-            category = task.task_categories.first().category if task.task_categories.first() else None
-            response_data = {
-                "id": task.task_id,
-                "content": task.title,
-                "is_done": True,
-                "dpc": {
-                    "deadline": task.deadline.replace(tzinfo=None).isoformat(
-                        timespec='seconds') if task.deadline else None,
-                    "priority": task.priority,
-                    "category_id": category.category_id if category else 0,
-                    "category_name": category.name if category else ""
-                },
-                "subtasks": [
-                    {
-                        "id": s.subtask_id,
-                        "content": s.text,
-                        "is_done": s.is_completed
-                    } for s in task.subtasks.all()
-                ]
-            }
-            return JsonResponse(response_data)
-
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return task_response(complete_task(token=token,task_id=task_id), 200)
+        except AuthenticationError as e:
+            return JsonResponse({'error': str(e)}, status=401)
+        except ValidationError as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
     def patch(self, request, task_id, *args, **kwargs):
         # Get token from request and validate user
@@ -136,7 +94,7 @@ class TaskDetailView(APIView):
             return JsonResponse({'error': 'Invalid token'}, status=401)
         user = serializer.validated_data['user']
 
-        task = self.get_task(task_id, user)
+        task = get_task(task_id=task_id, user=user)
         if not task:
             return JsonResponse({'error': 'Task not found'}, status=404)
 

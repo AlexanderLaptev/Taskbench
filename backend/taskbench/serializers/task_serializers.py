@@ -1,7 +1,6 @@
 from enum import Enum
 
 from django.http import JsonResponse
-from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -44,16 +43,15 @@ def task_json(task, category, subtasks):
             "category_id": category.category_id if category else 0,
             "category_name": category.name if category else ""
         },
-        "subtasks": [
-            {
-                "id": subtask.subtask_id,
-                "content": subtask.text,
-                "is_done": subtask.is_completed
-            }
-            for subtask in subtasks
-        ]
+        "subtasks": [ subtask_json(subtask) for subtask in subtasks ]
     }
 
+def subtask_json(subtask):
+    return {
+        "id": subtask.subtask_id,
+        "content": subtask.text,
+        "is_done": subtask.is_completed
+    }
 
 class TaskDPCtoFlatSerializer(serializers.Serializer):
     category_id = serializers.IntegerField(required=False, allow_null=True)
