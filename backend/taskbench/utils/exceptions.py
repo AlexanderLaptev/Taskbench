@@ -13,3 +13,5 @@ class AuthenticationError(BaseError):
 class NotFound(BaseError):
     pass
 
+class AlreadyExists(BaseError):
+    pass

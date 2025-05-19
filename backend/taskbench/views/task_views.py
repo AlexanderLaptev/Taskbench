@@ -4,7 +4,7 @@ from django.http import JsonResponse, HttpResponse
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 
-from ..models.models import Task, Subtask, Category
+from ..models.models import Task, Subtask
 from ..serializers.task_serializers import task_list_response, task_response
 from ..serializers.user_serializers import JwtSerializer
 from ..services.task_service import get_task_list, create_task, complete_task, update_task
@@ -39,9 +39,9 @@ from ..services.user_service import get_token, AuthenticationError
 # }
 class TaskListView(APIView):
     def get(self, request, *args, **kwargs):
-        token = get_token(request)
-        params = request.GET
         try:
+            token = get_token(request)
+            params = request.GET
             return task_list_response(get_task_list(token=token, params=params))
         except AuthenticationError as e:
             return JsonResponse({'error': str(e)}, status=401)
@@ -51,15 +51,16 @@ class TaskListView(APIView):
             return JsonResponse({'error': str(e)}, status=500)
 
     def post(self, request, *args, **kwargs):
-        token = get_token(request)
-        data = json.loads(request.body)
-
         try:
+            token = get_token(request)
+            data = json.loads(request.body)
             return task_response(create_task(token=token, data=data), 201)
         except AuthenticationError as e:
             return JsonResponse({'error': str(e)}, status=401)
         except ValidationError as e:
             return JsonResponse({'error': str(e)}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
 
 # /tasks/{task_id} - PATCH, DELETE
@@ -77,8 +78,8 @@ class TaskDetailView(APIView):
 
 
     def delete(self, request, task_id, *args, **kwargs):
-        token = get_token(request)
         try:
+            token = get_token(request)
             return task_response(complete_task(token=token,task_id=task_id), 200)
         except AuthenticationError as e:
             return JsonResponse({'error': str(e)}, status=401)
@@ -86,16 +87,18 @@ class TaskDetailView(APIView):
             return JsonResponse({'error': str(e)}, status=400)
 
     def patch(self, request, task_id, *args, **kwargs):
-        token = get_token(request)
-        data = json.loads(request.body)
         try:
+            token = get_token(request)
+            data = json.loads(request.body)
             return task_response(update_task(token=token, task_id=task_id, data=data), 200)
         except AuthenticationError as e:
             return JsonResponse({'error': str(e)}, status=401)
         except ValidationError as e:
             return JsonResponse({'error': str(e)}, status=400)
-        # except Exception as e:
-        #     return JsonResponse({'error': str(e)}, status=500)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
 
 # /subtasks - POST
@@ -233,67 +236,3 @@ class SubtaskDetailView(APIView):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
-
-# GET
-# http://127.0.0.1:8000/categories/
-# POST
-# {
-#     "name": "Хехе"
-# }
-class CategoryListView(APIView):
-    def get(self, request, *args, **kwargs):
-        try:
-            # Аутентификация
-            token = get_token(request)
-            serializer = JwtSerializer(data=token)
-            if not serializer.is_valid():
-                return JsonResponse({'error': 'Invalid token'}, status=401)
-            user = serializer.validated_data['user']
-
-            categories = Category.objects.filter(user=user)
-
-            data = [{
-                "id": category.category_id,
-                "name": category.name
-            } for category in categories]
-
-            return JsonResponse(data, safe=False)
-
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
-    def post(self, request, *args, **kwargs):
-        try:
-            token = get_token(request)
-            serializer = JwtSerializer(data=token)
-            if not serializer.is_valid():
-                return JsonResponse({'error': 'Invalid token'}, status=401)
-            user = serializer.validated_data['user']
-
-            data = json.loads(request.body)
-            category_name = data.get('name')
-
-            if not category_name:
-                return JsonResponse({'error': 'Name is required'}, status=400)
-
-            if len(category_name) > 50:
-                return JsonResponse({'error': 'Category name too long (max 50 chars)'}, status=400)
-
-            if Category.objects.filter(user=user, name=category_name).exists():
-                return JsonResponse({'error': 'Category already exists'}, status=409)
-
-            # Создание категории
-            category = Category.objects.create(
-                name=category_name,
-                user=user
-            )
-
-            return JsonResponse({
-                "id": category.category_id,
-                "name": category.name
-            }, status=201)
-
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
