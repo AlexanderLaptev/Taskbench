@@ -1,11 +1,13 @@
+from datetime import timedelta
+from django.utils import timezone
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect
 from django.http import HttpResponseForbidden, JsonResponse
-from django.views.decorators.csrf import csrf_protect, csrf_exempt
+from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_protect
 
-from taskbench.models.models import Subscription
+from taskbench.models.models import Subscription, Subtask, Task, User
 
 
 @csrf_protect
@@ -35,21 +37,27 @@ def subscription_page(request):
 
 @user_passes_test(lambda u: u.is_staff)
 def stats_api(request):
-    data = {
-        "total_users": 280,
-        "total_subscribers": 28,
-        "new_users_week": 40,
-        "new_users_today": 10,
-        "new_subs_week": 6,
-        "new_subs_today": 2,
-        "active_users_week": 144,
-        "active_users_today": 67,
-        "total_tasks": 20509,
-        "tasks_week": 1563,
-        "tasks_today": 250,
-        "total_subtasks": 48524,
-    }
-    return JsonResponse(data)
+    if request.method == "GET":
+        now = timezone.now()
+        today = now.date()
+        start_of_week = now - timedelta(days=now.weekday())
+        start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        data = {
+            "total_users": User.objects.all().count(),
+            "total_subscribers": Subscription.objects.values('user').distinct().count(),
+            "new_users_week": User.objects.filter(created_at__gte=start_of_week).count(),
+            "new_users_today": User.objects.filter(created_at__date=today).count(),
+            "new_subs_week": Subscription.objects.filter(start_date__gt=start_of_week).count(),
+            "new_subs_today": Subscription.objects.filter(start_date__date=today).count(),
+            "active_users_week": User.objects.filter(access_at__gt=start_of_week).count(),
+            "active_users_today": User.objects.filter(access_at__date=today).count(),
+            "total_tasks": Task.objects.all().count(),
+            "tasks_week": Task.objects.filter(created_at__gte=start_of_week).count(),
+            "tasks_today": Task.objects.filter(created_at__date=today).count(),
+            "total_subtasks": Subtask.objects.all().count(),
+        }
+        return JsonResponse(data)
 
 @user_passes_test(lambda u: u.is_staff)
 def subscription_list_api(request):

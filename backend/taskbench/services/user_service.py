@@ -1,4 +1,5 @@
 from django.http import HttpRequest
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -17,7 +18,10 @@ def get_user(token):
     # token = get_token(request)
     serializer = JwtSerializer(data=token)
     if serializer.is_valid():
-        return serializer.validated_data['user']
+        user = serializer.validated_data['user']
+        user.access_at = timezone.now()
+        user.save()
+        return user
     else:
         raise AuthenticationError(str(serializer.errors))
 

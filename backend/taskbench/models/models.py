@@ -8,6 +8,7 @@ class User(models.Model):
     email = models.EmailField(max_length=100, unique=True, null=False)
     password_hash = models.CharField(max_length=255, null=False)
     created_at = models.DateTimeField(default=timezone.now)
+    access_at = models.DateTimeField(default=timezone.now, null=True)
 
     def __str__(self):
         return self.email
