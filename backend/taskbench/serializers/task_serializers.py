@@ -1,6 +1,7 @@
 from enum import Enum
 
 from django.http import JsonResponse
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -20,33 +21,38 @@ def match_sort(sort_by: str | None) -> Sort:
     return Sort.DEFAULT
 
 
-def task_response(tasks):
+def task_list_response(tasks):
     data = []
     for task in tasks:
         category = task.task_categories.first().category if task.task_categories.first() else None
-
-        task_data = {
-            "id": task.task_id,
-            "content": task.title,
-            "is_done": False,
-            "dpc": {
-                "deadline": task.deadline.replace(tzinfo=None).isoformat(
-                    timespec='seconds') if task.deadline is not None else None,
-                "priority": task.priority,
-                "category_id": category.category_id if category else 0,
-                "category_name": category.name if category else ""
-            },
-            "subtasks": [
-                {
-                    "id": subtask.subtask_id,
-                    "content": subtask.text,
-                    "is_done": subtask.is_completed
-                }
-                for subtask in task.subtasks.all()
-            ]
-        }
-        data.append(task_data)
+        data.append(task_json(task, category, task.subtasks.all()))
     return JsonResponse(data, safe=False)
+
+def task_response(task, status):
+    category = task.task_categories.first().category if task.task_categories.first() else None
+    return JsonResponse(task_json(task, category, task.subtasks.all()), safe=False, status=status)
+
+def task_json(task, category, subtasks):
+    return {
+        "id": task.task_id,
+        "content": task.title,
+        "is_done": False,
+        "dpc": {
+            "deadline": task.deadline.replace(tzinfo=None).isoformat(
+                timespec='seconds') if task.deadline is not None else None,
+            "priority": task.priority,
+            "category_id": category.category_id if category else 0,
+            "category_name": category.name if category else ""
+        },
+        "subtasks": [
+            {
+                "id": subtask.subtask_id,
+                "content": subtask.text,
+                "is_done": subtask.is_completed
+            }
+            for subtask in subtasks
+        ]
+    }
 
 
 class TaskDPCtoFlatSerializer(serializers.Serializer):

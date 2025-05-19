@@ -6,22 +6,22 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 
 from ..models.models import Task, Subtask, TaskCategory, Category
-from ..serializers.task_serializers import task_response
+from ..serializers.task_serializers import task_list_response, task_response
 from ..serializers.user_serializers import JwtSerializer
-from ..services.task_service import get_task_list
+from ..services.task_service import get_task_list, create_task
 from ..services.user_service import get_token, AuthenticationError
 
 
 # /tasks - GET, POST
-#пример: GET http://127.0.0.1:8000/tasks/
-#GET http://127.0.0.1:8000/tasks/?sort_by=priority
-#GET http://127.0.0.1:8000/tasks/?sort_by=deadline
-#GET http://127.0.0.1:8000/tasks/?date=2026-05-25  - с фильтром по дате
+# пример: GET http://127.0.0.1:8000/tasks/
+# GET http://127.0.0.1:8000/tasks/?sort_by=priority
+# GET http://127.0.0.1:8000/tasks/?sort_by=deadline
+# GET http://127.0.0.1:8000/tasks/?date=2026-05-25  - с фильтром по дате
 # GET http://127.0.0.1:8000/tasks/?after=2025-01-01T00:00:00Z
 # GET http://127.0.0.1:8000/tasks/?before=2025-12-31T23:59:59Z
 # GET http://127.0.0.1:8000/tasks/?after=2025-01-01T00:00:00Z&before=2025-12-31T23:59:59Z
 # GET http://127.0.0.1:8000/tasks/?date=2025-05-01
-#POST http://127.0.0.1:8000/tasks/
+# POST http://127.0.0.1:8000/tasks/
 # {
 #     "content": "Подготовить презентацию",
 #     "dpc": {
@@ -43,7 +43,7 @@ class TaskListView(APIView):
         token = get_token(request)
         params = request.GET
         try:
-            return task_response(get_task_list(token=token, params=params))
+            return task_list_response(get_task_list(token=token, params=params))
         except AuthenticationError as e:
             return JsonResponse({'error': str(e)}, status=401)
         except ValidationError as e:
@@ -51,89 +51,21 @@ class TaskListView(APIView):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
-
-
     def post(self, request, *args, **kwargs):
+        token = get_token(request)
+        data = json.loads(request.body)
+
         try:
-            # Get token from request and validate user
-            token = get_token(request)
-            serializer = JwtSerializer(data=token)
-            if not serializer.is_valid():
-                return JsonResponse({'error': 'Invalid token'}, status=401)
-            user = serializer.validated_data['user']
-
-            data = json.loads(request.body)
-            task_text = data.get('content')
-            dpc = data.get('dpc', {})
-            subtasks = data.get('subtasks', [])
-
-            if not task_text:
-                return JsonResponse({'error': 'Missing required field: content'}, status=400)
-
-            # Create task
-            task = Task.objects.create(
-                title=task_text,
-                deadline=parse_datetime(dpc.get('deadline')) if dpc.get('deadline') else None,
-                priority=dpc.get('priority', 0),
-                user=user,
-                is_completed=False
-            )
-
-            # Add category if specified
-            if 'category_id' in dpc:
-                category_id = dpc['category_id']
-                try:
-                    # Проверяем что категория принадлежит текущему пользователю
-                    category = Category.objects.get(category_id=category_id, user=user)
-                except Category.DoesNotExist:
-                    return JsonResponse(
-                        {'error': 'Category not found or access denied'},
-                        status=400
-                    )
-
-                TaskCategory.objects.create(task=task, category=category)
-
-            # Create subtasks
-            for subtask_data in subtasks:
-                Subtask.objects.create(
-                    text=subtask_data['content'],
-                    task=task,
-                    is_completed=False
-                )
-
-            # Get updated task data
-            category = task.task_categories.first().category if task.task_categories.first() else None
-            subtasks_data = [{
-                "id": s.subtask_id,
-                "content": s.text,
-                "is_done": s.is_completed
-            } for s in task.subtasks.all()]
-
-            response_data = {
-                "id": task.task_id,
-                "content": task.title,
-                "is_done": False,
-                "dpc": {
-                    "deadline": task.deadline.replace(tzinfo=None).isoformat(timespec='seconds') if task.deadline else None,
-                    "priority": task.priority,
-                    "category_id": category.category_id if category else 0,
-                    "category_name": category.name if category else ""
-                },
-                "subtasks": subtasks_data
-            }
-
-            return JsonResponse(response_data, status=201)
-
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-        except Exception as e:
+            return task_response(create_task(token=token, data=data), 201)
+        except AuthenticationError as e:
+            return JsonResponse({'error': str(e)}, status=401)
+        except ValidationError as e:
             return JsonResponse({'error': str(e)}, status=400)
 
 
-
 # /tasks/{task_id} - PATCH, DELETE
-#пример:DELETE http://127.0.0.1:8000/tasks/2/
-#PATCH http://127.0.0.1:8000/tasks/1/
+# пример:DELETE http://127.0.0.1:8000/tasks/2/
+# PATCH http://127.0.0.1:8000/tasks/1/
 # {
 #   "content": "Подготовить отчетфыфыфыф",
 #   "dpc": {
@@ -177,7 +109,8 @@ class TaskDetailView(APIView):
                 "content": task.title,
                 "is_done": True,
                 "dpc": {
-                    "deadline": task.deadline.replace(tzinfo=None).isoformat(timespec='seconds') if task.deadline else None,
+                    "deadline": task.deadline.replace(tzinfo=None).isoformat(
+                        timespec='seconds') if task.deadline else None,
                     "priority": task.priority,
                     "category_id": category.category_id if category else 0,
                     "category_name": category.name if category else ""
@@ -241,7 +174,8 @@ class TaskDetailView(APIView):
                 "content": task.title,
                 "is_done": task.is_completed,
                 "dpc": {
-                    "deadline": task.deadline.replace(tzinfo=None).isoformat(timespec='seconds') if task.deadline else None,
+                    "deadline": task.deadline.replace(tzinfo=None).isoformat(
+                        timespec='seconds') if task.deadline else None,
                     "priority": task.priority,
                     "category_id": category.category_id if category else 0,
                     "category_name": category.name if category else ""
@@ -262,8 +196,8 @@ class TaskDetailView(APIView):
 
 
 # /subtasks - POST
-#http://127.0.0.1:8000/subtasks/?task_id=3
-#{
+# http://127.0.0.1:8000/subtasks/?task_id=3
+# {
 #   "content": "Новая подзадача2",
 #   "is_done": false
 # }
@@ -319,15 +253,15 @@ class SubtaskCreateView(APIView):
             return JsonResponse({'error': str(e)}, status=500)
 
 
-#PATCH (/subtasks/{subtask_id})
-#http://127.0.0.1:8000/subtasks/4/
-#{
+# PATCH (/subtasks/{subtask_id})
+# http://127.0.0.1:8000/subtasks/4/
+# {
 #   "content": "Обновленный текст подзадачи",
 #   "is_done": true
 # }
-#DELETE
-#http://127.0.0.1:8000/subtasks/4/
-#/subtasks/{subtask_id}
+# DELETE
+# http://127.0.0.1:8000/subtasks/4/
+# /subtasks/{subtask_id}
 class SubtaskDetailView(APIView):
     def get_subtask(self, subtask_id, user):
         try:

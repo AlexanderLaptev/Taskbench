@@ -1,7 +1,8 @@
+from django.utils.dateparse import parse_datetime
 from rest_framework.exceptions import ValidationError
 
-from taskbench.models.models import Task
-from taskbench.serializers.task_serializers import TaskSearchParametersSerializer, Sort
+from taskbench.models.models import Task, Category, TaskCategory, Subtask
+from taskbench.serializers.task_serializers import TaskSearchParametersSerializer, Sort, TaskDPCtoFlatSerializer
 from taskbench.serializers.user_serializers import JwtSerializer
 from taskbench.services.user_service import AuthenticationError
 
@@ -41,3 +42,44 @@ def get_task_list(token, params):
     tasks = tasks[offset:offset + limit]
 
     return tasks
+
+
+def create_task(token, data):
+    user_serializer = JwtSerializer(data=token)
+
+    if not user_serializer.is_valid():
+        raise AuthenticationError('Invalid token')
+
+    user = user_serializer.validated_data['user']
+    content = data.get('content')
+    dpc = data.get('dpc', {})
+    subtasks = data.get('subtasks', [])
+
+    if not content:
+        raise ValidationError('Missing required field: content')
+
+    task = Task.objects.create(
+        title=content,
+        deadline=parse_datetime(dpc.get('deadline')) if dpc.get('deadline') else None,
+        priority=dpc.get('priority', 0),
+        user=user,
+        is_completed=False
+    )
+    if 'category_id' in dpc:
+        category = get_category(user=user, category_id=dpc['category_id'])
+        TaskCategory.objects.create(task=task, category=category)
+
+    for subtask_data in subtasks:
+        Subtask.objects.create(
+            text=subtask_data['content'],
+            task=task,
+            is_completed=False
+        )
+
+    return task
+
+def get_category(user, category_id):
+    try:
+        return Category.objects.get(category_id=category_id, user=user)
+    except Category.DoesNotExist:
+        raise ValidationError('Category not found or access denied')
