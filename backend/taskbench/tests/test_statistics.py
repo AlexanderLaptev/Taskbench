@@ -136,3 +136,8 @@ class StatisticsAPITests(TestCase):
         self.assertEqual(data2['max_done'], 2)
         self.assertAlmostEqual(data1['weekly'][0], 1.0)
         self.assertAlmostEqual(data2['weekly'][0], 1.0)
+
+    def test_invalid_token(self):
+        url = reverse('statistics')
+        response = self.client.get(url, HTTP_AUTHORIZATION='Bearer invalid_token')
+        self.assertEqual(response.status_code, 401)
