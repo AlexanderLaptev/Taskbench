@@ -85,7 +85,7 @@
     <string name="menu_settings_logout">Выйти из аккаунта</string>
     <string name="menu_settings_change_password">Сменить пароль</string>
     <string name="menu_settings_subscription">Управление подпиской</string>
-    <string name="version_number">v1.0.0-alpha1</string>
+    <string name="version_number">v1.0.0</string>
     <string name="button_back">Назад</string>
     <string name="placeholder_old_password">Старый пароль</string>
     <string name="dialog_logout_text">Вы действительно хотите выйти из аккаунта?</string>
