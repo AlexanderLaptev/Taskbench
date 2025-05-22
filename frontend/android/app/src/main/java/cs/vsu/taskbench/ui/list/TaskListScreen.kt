@@ -83,6 +83,8 @@ private val SORT_OPTIONS = listOf(
     R.string.label_sort_by_priority,
 )
 
+private const val TODAY_INDEX = Int.MAX_VALUE / 2
+
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
 fun TaskListScreen(
@@ -138,20 +140,31 @@ fun TaskListScreen(
         }
     }
 
+    val taskListState = rememberLazyListState()
+    val dateRowListState = rememberLazyListState(TODAY_INDEX)
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = { NavigationBar(navController) }
+        bottomBar = {
+            NavigationBar(
+                navController = navController,
+                onReset = {
+                    scope.launch { taskListState.animateScrollToItem(0) }
+                    scope.launch { dateRowListState.animateScrollToItem(TODAY_INDEX) }
+                    true // prevent default action (navigation)
+                }
+            )
+        }
     ) { padding ->
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(padding),
         ) {
-            val listState = rememberLazyListState()
-
             Spacer(Modifier.height(4.dp))
             SortModeRow(
                 viewModel = screenViewModel,
-                listState = listState,
+                listState = taskListState,
                 modifier = Modifier
                     .zIndex(2.0f)
                     .padding(horizontal = 16.dp),
@@ -162,15 +175,16 @@ fun TaskListScreen(
                 onDateSelected = {
                     screenViewModel.selectedDate =
                         if (screenViewModel.selectedDate == it) null else it
-                    listState.requestScrollToItem(0)
+                    taskListState.requestScrollToItem(0)
                 },
+                listState = dateRowListState,
                 modifier = Modifier
                     .zIndex(2.0f)
                     .padding(horizontal = 16.dp),
             )
 
             LazyColumn(
-                state = listState,
+                state = taskListState,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.clipToBounds(),
             ) {
@@ -181,7 +195,7 @@ fun TaskListScreen(
                         bodyText = task.content,
                         subtasks = task.subtasks,
                         onDismiss = { screenViewModel.deleteTask(task) },
-                        swipeEnabled = !listState.isScrollInProgress,
+                        swipeEnabled = !taskListState.isScrollInProgress,
 
                         onClick = {
                             dialogViewModel.editTask = task
@@ -359,10 +373,9 @@ private fun SortModeRow(
 private fun DateRow(
     selectedDate: LocalDate?,
     onDateSelected: (LocalDate) -> Unit,
+    listState: LazyListState,
     modifier: Modifier = Modifier,
 ) {
-    val todayIndex = Int.MAX_VALUE / 2
-    val listState = rememberLazyListState(todayIndex)
     val today = LocalDate.now()
 
     val monthFormatter = remember { DateTimeFormatter.ofPattern("MMM", Locales.RU) }
@@ -375,7 +388,7 @@ private fun DateRow(
         modifier = modifier,
     ) {
         items(Int.MAX_VALUE) {
-            val difference = it - todayIndex
+            val difference = it - TODAY_INDEX
             val date = today.plusDays(difference.toLong())
             DateTile(
                 topLabel = monthFormatter.format(date),
