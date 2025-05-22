@@ -3,9 +3,15 @@ services:
     build: .
     image: taskbench/taskbench-backend:dev
     restart: no
+    ports:
+      - "8000:8000"
 
   database:
     restart: no
+
+  nginx:
+    profiles:
+      - disabled
 
 #  test:
 #    image: alpine:latest

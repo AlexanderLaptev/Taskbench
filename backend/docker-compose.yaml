@@ -12,19 +12,18 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "5432:5432"
+      - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
       - .env
 
   taskbench-backend:
-#    build: .
     image: taskbench/taskbench-backend:latest
     container_name: taskbench-backend
     restart: always
     ports:
-      - "8000:8000"
+      - "8000"
     depends_on:
       database:
         condition: service_healthy
@@ -39,6 +38,19 @@ services:
       timeout: 2s
       retries: 10
 
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "8443:8443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./taskbench.crt:/etc/ssl/certs/taskbench.crt:ro
+      - ./taskbench.key:/etc/ssl/private/taskbench.key:ro
+      - ./nginx-logs:/var/log/nginx
+    depends_on:
+      - taskbench-backend1
 
 volumes:
   postgres_data:
