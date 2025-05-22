@@ -89,6 +89,7 @@
     <string name="button_back">Назад</string>
     <string name="placeholder_old_password">Старый пароль</string>
     <string name="dialog_logout_text">Вы действительно хотите выйти из аккаунта?</string>
+    <string name="dialog_cancel_premium_text">Вы действительно хотите отменить подписку?</string>
     <string name="error_timeout">Нет ответа от сервера</string>
 
 </resources>
