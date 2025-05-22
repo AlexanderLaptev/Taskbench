@@ -43,6 +43,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -259,7 +260,10 @@ private fun SortModeRow(
             },
 
             titleColor = Black,
-            onClick = { categoriesExpanded = true },
+            onClick = {
+                viewModel.categorySearchQuery = ""
+                categoriesExpanded = true
+            },
             modifier = Modifier.weight(1.0f),
         )
 
@@ -290,6 +294,7 @@ private fun SortModeRow(
                     onClick = {
                         sortModesExpanded = false
                         viewModel.sortByMode = SortByMode.Priority
+                        scope.launch { listState.animateScrollToItem(0) }
                     },
                 )
                 DropdownMenuItem(
@@ -302,6 +307,7 @@ private fun SortModeRow(
                     onClick = {
                         sortModesExpanded = false
                         viewModel.sortByMode = SortByMode.Deadline
+                        scope.launch { listState.animateScrollToItem(0) }
                     },
                 )
             }
@@ -369,13 +375,14 @@ private fun DateRow(
         modifier = modifier,
     ) {
         items(Int.MAX_VALUE) {
-            val offset = it - todayIndex
-            val date = today.plusDays(offset.toLong())
+            val difference = it - todayIndex
+            val date = today.plusDays(difference.toLong())
             DateTile(
                 topLabel = monthFormatter.format(date),
                 middleLabel = dayFormatter.format(date),
                 bottomLabel = weekdayFormatter.format(date),
                 selected = date == selectedDate,
+                today = difference == 0,
                 onClick = { onDateSelected(date) },
             )
         }
@@ -390,6 +397,7 @@ private fun DateTile(
     middleLabel: String,
     bottomLabel: String,
     selected: Boolean,
+    today: Boolean,
     onClick: () -> Unit,
 ) {
     Column(
@@ -412,6 +420,8 @@ private fun DateTile(
         Text(
             text = middleLabel,
             fontSize = 24.sp,
+//            fontWeight = if (today) FontWeight.Medium else FontWeight.Normal,
+            textDecoration = if (today) TextDecoration.Underline else null,
         )
         Text(
             text = bottomLabel,

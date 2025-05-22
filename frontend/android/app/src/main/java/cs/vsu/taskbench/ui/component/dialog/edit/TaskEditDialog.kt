@@ -237,7 +237,7 @@ private fun DeadlineDialog(
 
     if (showTimeDialog) {
         TimePickerDialog(
-            initialTime = stateHolder.deadline?.toLocalTime() ?: LocalTime.now(),
+            initialTime = newDeadline?.toLocalTime() ?: LocalTime.now(),
             onComplete = { hour, minute ->
                 val time = LocalTime.of(hour, minute)
                 newDeadline = LocalDateTime.of(
