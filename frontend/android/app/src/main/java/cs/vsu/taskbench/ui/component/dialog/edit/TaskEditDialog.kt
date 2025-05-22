@@ -164,7 +164,7 @@ fun TaskEditDialog(
                         color = sectionLabelColor,
                     )
                 }
-                items(subtasks, key = { it.content }) { subtask ->
+                items(subtasks, key = { it.id ?: it.content }) { subtask ->
                     AddedSubtask(
                         text = subtask.content,
                         onRemove = { stateHolder.onRemoveSubtask(subtask) },

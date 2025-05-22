@@ -95,6 +95,9 @@ fun TaskListScreen(
     val resources = LocalContext.current.resources
 
     var showEditDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(showEditDialog) {
+        if (!showEditDialog) screenViewModel.refresh()
+    }
 
     LaunchedEffect(Unit) {
         launch {
@@ -130,7 +133,6 @@ fun TaskListScreen(
         launch {
             dialogViewModel.submitEventFlow.collect {
                 showEditDialog = false
-                screenViewModel.refresh()
             }
         }
     }

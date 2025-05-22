@@ -166,15 +166,16 @@ class FakeTaskRepository(
     }
 
     override suspend fun createSubtask(owner: Task, subtask: Subtask): Subtask {
-        // TODO!
-        return saveSubtask(subtask)
+        val saved = subtask.copy(id = subtaskId)
+        subtaskId++
+
+        val updated = owner.subtasks.toMutableList()
+        updated += saved
+        index[owner.id!!] = owner.copy(subtasks = updated)
+        return saved
     }
 
     override suspend fun updateSubtask(subtask: Subtask): Subtask {
-        return saveSubtask(subtask)
-    }
-
-    private fun saveSubtask(subtask: Subtask): Subtask {
         index.forEachKey { taskId ->
             val task = index[taskId]!!
             val index = task.subtasks.indexOfFirst { subtask.id == it.id }
@@ -182,11 +183,11 @@ class FakeTaskRepository(
                 val updated = task.subtasks.toMutableList()
                 updated[index] = subtask
                 this.index[taskId] = task.copy(subtasks = updated)
-                Log.d(TAG, "saveSubtask: success")
+                Log.d(TAG, "updateSubtask: success")
                 return subtask
             }
         }
-        error("Could not find subtask ID ${subtask.id}")
+        error("Could not find subtask with ID ${subtask.id}")
     }
 
     override suspend fun deleteSubtask(subtask: Subtask) {

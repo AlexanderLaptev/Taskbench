@@ -163,13 +163,14 @@ class TaskEditDialogViewModel(
     }
 
     override fun onEditSubtask(subtask: Subtask, newText: String) {
+        val updated = subtask.copy(content = newText)
         val result = subtasks.toMutableList()
         val index = subtasks.indexOf(subtask)
-        result[index] = subtask.copy(content = newText)
+        result[index] = updated
         subtasks = result
 
         catchErrorsAsync {
-            if (subtask.id != null) taskRepository.updateSubtask(subtask)
+            if (subtask.id != null) taskRepository.updateSubtask(updated)
         }
 
         Log.d(TAG, "onEditSubtask: success")

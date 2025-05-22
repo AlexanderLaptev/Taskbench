@@ -88,22 +88,22 @@ val dataModule = module {
     single { Moshi.Builder().build() }
     single {
         Retrofit.Builder()
-            .baseUrl("http://193.135.137.154:8000/")
+            .baseUrl("https://193.135.137.154/")
             .addConverterFactory(MoshiConverterFactory.create(get()))
             .build()
     }
 
-//    fakeAuth()
+    fakeAuth()
     fakeUser()
-//    fakeCategories()
+    fakeCategories()
     fakeSuggestions()
-//    fakeTasks()
-//    fakeStatistics()
+    fakeTasks()
+    fakeStatistics()
 
-    netAuth()
+//    netAuth()
 //    netUser()
-    netCategories()
+//    netCategories()
 //    netSuggestions()
-    netTasks()
-    netStatistics()
+//    netTasks()
+//    netStatistics()
 }
