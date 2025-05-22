@@ -8,7 +8,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 GIGACHAT_KEY = os.environ.get("GIGACHAT_AUTH_KEY")
 DEBUG = bool(os.environ.get("DEBUG", default=True))
 SERVER_HOST = os.environ.get("SERVER_HOST", default="127.0.0.1")
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",").append(SERVER_HOST)
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
