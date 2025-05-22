@@ -93,10 +93,17 @@ val dataModule = module {
             .build()
     }
 
+//    fakeAuth()
+    fakeUser()
+//    fakeCategories()
+    fakeSuggestions()
+//    fakeTasks()
+//    fakeStatistics()
+
     netAuth()
-    fakeUser() // TODO!
-    netSuggestions()
+//    netUser()
     netCategories()
-    netStatistics()
+//    netSuggestions()
     netTasks()
+    netStatistics()
 }

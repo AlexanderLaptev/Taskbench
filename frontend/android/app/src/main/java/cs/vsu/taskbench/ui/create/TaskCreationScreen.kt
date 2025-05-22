@@ -20,14 +20,15 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.NavigationBar
-import cs.vsu.taskbench.ui.component.dialog.TaskEditDialog
-import cs.vsu.taskbench.ui.create.TaskCreationScreenViewModel.Error
+import cs.vsu.taskbench.ui.component.dialog.edit.TaskEditDialog
+import cs.vsu.taskbench.ui.component.dialog.edit.TaskEditDialogViewModel
+import cs.vsu.taskbench.ui.component.dialog.edit.TaskEditDialogViewModel.Error
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 @Destination<RootGraph>(style = ScreenTransitions::class)
 fun TaskCreationScreen(navController: NavController) {
-    val viewModel = koinViewModel<TaskCreationScreenViewModel>()
+    val viewModel = koinViewModel<TaskEditDialogViewModel>()
     val snackbarHostState = remember { SnackbarHostState() }
     val resources = LocalContext.current.resources
 

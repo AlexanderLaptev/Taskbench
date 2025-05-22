@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -38,11 +39,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -60,7 +64,8 @@ import cs.vsu.taskbench.ui.component.TaskCard
 import cs.vsu.taskbench.ui.component.dialog.BottomSheetCategoryDialog
 import cs.vsu.taskbench.ui.component.dialog.CategoryDialogActions
 import cs.vsu.taskbench.ui.component.dialog.CategoryDialogMode
-import cs.vsu.taskbench.ui.list.TaskListScreenViewModel.Error
+import cs.vsu.taskbench.ui.component.dialog.edit.TaskEditDialog
+import cs.vsu.taskbench.ui.component.dialog.edit.TaskEditDialogViewModel
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.White
@@ -82,22 +87,51 @@ private val SORT_OPTIONS = listOf(
 fun TaskListScreen(
     navController: NavController,
 ) {
-    val viewModel = koinViewModel<TaskListScreenViewModel>()
+    val screenViewModel = koinViewModel<TaskListScreenViewModel>()
+    val dialogViewModel = koinViewModel<TaskEditDialogViewModel>()
+
     val snackbarHostState = remember { SnackbarHostState() }
-    val tasks by viewModel.tasks.collectAsStateWithLifecycle()
+    val tasks by screenViewModel.tasks.collectAsStateWithLifecycle()
     val resources = LocalContext.current.resources
 
+    var showEditDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
-        viewModel.errorFlow.collect {
-            val message = when (it) {
-                Error.CouldNotConnect -> R.string.error_could_not_connect
-                Error.Unknown -> R.string.error_unknown
+        launch {
+            screenViewModel.errorFlow.collect {
+                val message = when (it) {
+                    TaskListScreenViewModel.Error.CouldNotConnect -> R.string.error_could_not_connect
+                    TaskListScreenViewModel.Error.Unknown -> R.string.error_unknown
+                }
+                snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.showSnackbar(
+                    message = resources.getString(message),
+                    withDismissAction = true,
+                )
             }
-            snackbarHostState.currentSnackbarData?.dismiss()
-            snackbarHostState.showSnackbar(
-                message = resources.getString(message),
-                withDismissAction = true,
-            )
+        }
+
+        launch {
+            dialogViewModel.errorFlow.collect {
+                val message = when (it) {
+                    TaskEditDialogViewModel.Error.CouldNotConnect -> R.string.error_could_not_connect
+                    TaskEditDialogViewModel.Error.Timeout -> R.string.error_timeout
+                    TaskEditDialogViewModel.Error.Unknown -> R.string.error_unknown
+                }
+                showEditDialog = false
+                snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.showSnackbar(
+                    message = resources.getString(message),
+                    withDismissAction = true,
+                )
+            }
+        }
+
+        launch {
+            dialogViewModel.submitEventFlow.collect {
+                showEditDialog = false
+                screenViewModel.refresh()
+            }
         }
     }
 
@@ -113,7 +147,7 @@ fun TaskListScreen(
 
             Spacer(Modifier.height(4.dp))
             SortModeRow(
-                viewModel = viewModel,
+                viewModel = screenViewModel,
                 listState = listState,
                 modifier = Modifier
                     .zIndex(2.0f)
@@ -121,9 +155,10 @@ fun TaskListScreen(
             )
 
             DateRow(
-                selectedDate = viewModel.selectedDate,
+                selectedDate = screenViewModel.selectedDate,
                 onDateSelected = {
-                    viewModel.selectedDate = if (viewModel.selectedDate == it) null else it
+                    screenViewModel.selectedDate =
+                        if (screenViewModel.selectedDate == it) null else it
                     listState.requestScrollToItem(0)
                 },
                 modifier = Modifier
@@ -142,22 +177,52 @@ fun TaskListScreen(
                         deadlineText = deadline,
                         bodyText = task.content,
                         subtasks = task.subtasks,
-                        onClick = {},
-                        onDismiss = { viewModel.deleteTask(task) },
+                        onDismiss = { screenViewModel.deleteTask(task) },
                         swipeEnabled = !listState.isScrollInProgress,
+
+                        onClick = {
+                            dialogViewModel.editTask = task
+                            showEditDialog = true
+                        },
+
+                        onSubtaskCheckedChange = { subtask, checked ->
+                            screenViewModel.setSubtaskChecked(subtask, checked)
+                        },
 
                         modifier = Modifier
                             .animateItem()
                             .fillParentMaxWidth()
                             .padding(horizontal = 16.dp),
-
-                        onSubtaskCheckedChange = { subtask, checked ->
-                            viewModel.setSubtaskChecked(subtask, checked)
-                        },
                     )
                 }
                 item { Spacer(Modifier) }
             }
+        }
+    }
+
+    if (showEditDialog) {
+        Dialog(
+            onDismissRequest = { showEditDialog = false },
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = false,
+                usePlatformDefaultWidth = false,
+            ),
+        ) {
+            TaskEditDialog(
+                stateHolder = dialogViewModel,
+                sectionLabelColor = White,
+                submitButtonIcon = painterResource(R.drawable.ic_ok_circle_filled),
+                inactiveSubmitButtonIcon = painterResource(R.drawable.ic_ok_circle_outline),
+                modifier = Modifier
+                    .systemBarsPadding()
+                    .padding(
+                        start = 16.dp,
+                        top = 8.dp,
+                        end = 16.dp,
+                        bottom = 16.dp,
+                    )
+            )
         }
     }
 }

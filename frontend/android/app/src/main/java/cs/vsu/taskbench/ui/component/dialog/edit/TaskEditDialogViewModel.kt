@@ -1,4 +1,4 @@
-package cs.vsu.taskbench.ui.create
+package cs.vsu.taskbench.ui.component.dialog.edit
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -13,7 +13,6 @@ import cs.vsu.taskbench.data.task.suggestions.SuggestionRepository
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
-import cs.vsu.taskbench.ui.component.dialog.TaskEditDialogStateHolder
 import cs.vsu.taskbench.util.mutableEventFlow
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -24,13 +23,13 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 
-class TaskCreationScreenViewModel(
+class TaskEditDialogViewModel(
     private val taskRepository: TaskRepository,
     private val categoryRepository: CategoryRepository,
     private val suggestionRepository: SuggestionRepository,
 ) : ViewModel(), TaskEditDialogStateHolder {
     companion object {
-        private val TAG = TaskCreationScreenViewModel::class.simpleName
+        private val TAG = TaskEditDialogViewModel::class.simpleName
     }
 
     enum class Error {
@@ -41,6 +40,9 @@ class TaskCreationScreenViewModel(
 
     private val _errorFlow = mutableEventFlow<Error>()
     val errorFlow = _errorFlow.asSharedFlow()
+
+    private val _submitEventFlow = mutableEventFlow<Unit>()
+    val submitEventFlow = _submitEventFlow.asSharedFlow()
 
     private var _taskInput by mutableStateOf("")
     override var taskInput
@@ -126,10 +128,27 @@ class TaskCreationScreenViewModel(
         _showCategoryDialog = false
     }
 
+    override var editTask: Task? = null
+        set(task) {
+            field = task
+
+            _taskInput = task?.content ?: ""
+            _deadline = task?.deadline
+            _isHighPriority = task?.isHighPriority ?: false
+
+            _selectedCategory = if (task == null) null
+            else categories.find { it.id == task.categoryId }
+
+            subtasks = task?.subtasks ?: emptyList()
+            suggestions = emptyList()
+            subtaskInput = ""
+            isDeadlineSetManually = false
+        }
+
     override fun onSubmitTask() {
         catchErrorsAsync {
             val task = Task(
-                id = null,
+                id = editTask?.id,
                 content = taskInput,
                 deadline = deadline,
                 isHighPriority = isHighPriority,
@@ -137,21 +156,10 @@ class TaskCreationScreenViewModel(
                 categoryId = selectedCategory?.id,
             )
             taskRepository.saveTask(task)
-            clearInput()
+            if (editTask == null) editTask = null // clear input
+            _submitEventFlow.tryEmit(Unit)
             Log.d(TAG, "onSubmitTask: success")
         }
-    }
-
-    private fun clearInput() {
-        _taskInput = ""
-        _deadline = null
-        _isHighPriority = false
-        _selectedCategory = null
-
-        subtaskInput = ""
-        subtasks = emptyList()
-        suggestions = emptyList()
-        isDeadlineSetManually = false
     }
 
     override fun onEditSubtask(subtask: Subtask, newText: String) {
@@ -159,6 +167,11 @@ class TaskCreationScreenViewModel(
         val index = subtasks.indexOf(subtask)
         result[index] = subtask.copy(content = newText)
         subtasks = result
+
+        catchErrorsAsync {
+            if (subtask.id != null) taskRepository.updateSubtask(subtask)
+        }
+
         Log.d(TAG, "onEditSubtask: success")
     }
 
@@ -169,14 +182,16 @@ class TaskCreationScreenViewModel(
 
     override fun onRemoveSubtask(subtask: Subtask) {
         subtasks = subtasks - subtask
+        catchErrorsAsync {
+            if (subtask.id != null) taskRepository.deleteSubtask(subtask)
+        }
         Log.d(TAG, "onRemoveSubtask: success")
     }
 
     override fun onAddSubtask() {
-        if (addSubtask(subtaskInput)) {
-            subtaskInput = ""
-            Log.d(TAG, "onAddSubtask: success")
-        }
+        addSubtask(subtaskInput)
+        subtaskInput = ""
+        Log.d(TAG, "onAddSubtask: success")
     }
 
     override fun onAddSuggestion(suggestion: String) {
@@ -194,14 +209,16 @@ class TaskCreationScreenViewModel(
         }
     }
 
-    private fun addSubtask(text: String): Boolean {
-        val subtask = Subtask(
-            id = null,
-            content = text,
-            isDone = false,
-        )
-        subtasks = subtasks + subtask
-        return true
+    private fun addSubtask(text: String) {
+        catchErrorsAsync {
+            var subtask = Subtask(
+                id = null,
+                content = text,
+                isDone = false,
+            )
+            if (editTask != null) subtask = taskRepository.createSubtask(editTask!!, subtask)
+            subtasks = subtasks + subtask
+        }
     }
 
     private fun updateCategories() {
