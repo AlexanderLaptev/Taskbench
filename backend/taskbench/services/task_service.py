@@ -19,7 +19,7 @@ def get_category(user, category_id):
     try:
         return Category.objects.get(category_id=category_id, user=user)
     except Category.DoesNotExist:
-        raise ValidationError('Category not found or access denied')
+        raise NotFound('Category not found or access denied')
 
 
 def get_task_list(token, params):
@@ -123,10 +123,10 @@ def update_task(token, task_id, data):
     if 'category_id' in dpc:
         try:
             category = get_category(user=user, category_id=dpc['category_id'])
-            TaskCategory.objects.filter(task=task, category=category).delete()
-            # task.task_categories.all().delete()  # предыдущие категории
+            task.task_categories.all().delete()  # предыдущие категории
+            # TaskCategory.objects.filter(task=task, category=category).delete()
             TaskCategory.objects.create(task=task, category=category)
-        except Category.DoesNotExist:
+        except NotFound:
             raise ValidationError('Category not found or access denied')
     task.save()
     return task
