@@ -20,7 +20,7 @@ Android: [v1.0.0-alpha1](https://github.com/AlexanderLaptev/Taskbench/releases/t
 
 ## Панель администрирования
 
-[Админ-панель](http://193.135.137.154:8000/admin/login/)  
+[Админ-панель](https://193.135.137.154/admin/login/)  
 
 > **Учётные данные**  
 > - **Пользователь**: `taskbench-admin`  
