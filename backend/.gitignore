@@ -1,5 +1,6 @@
 .idea
 .env
 **/__pycache__/
-./taskbench.crt
-./taskbench.key
+**.crt
+**.key
+**/nginx-logs/
