@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from taskbench.views.category_views import CategoryListView
-from taskbench.views.statisctics_views import StatisticsView
+from taskbench.views.statistics_views import StatisticsView
 from taskbench.views.subtask_views import (
     SubtaskCreateView,
     SubtaskDetailView

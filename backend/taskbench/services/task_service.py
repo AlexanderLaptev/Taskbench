@@ -1,5 +1,6 @@
 from django.utils.dateparse import parse_datetime
 from rest_framework.exceptions import ValidationError
+from django.utils import timezone
 
 from taskbench.models.models import Task, Category, TaskCategory, Subtask
 from taskbench.serializers.task_serializers import TaskSearchParametersSerializer, Sort
@@ -91,6 +92,7 @@ def complete_task(token, task_id):
     if task.is_completed:
         raise ValidationError('Task already completed')
     task.is_completed = True
+    task.completed_at = timezone.now()  # Устанавливаем текущую дату и время
     task.save()
     return task
 
