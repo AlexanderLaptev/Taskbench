@@ -8,6 +8,8 @@ services:
 
   database:
     restart: no
+    ports:
+      - "5432:5432"
 
   nginx:
     profiles:
