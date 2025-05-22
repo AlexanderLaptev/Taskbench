@@ -1,6 +1,7 @@
 import json
 from django.http import JsonResponse, HttpResponse
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from taskbench.serializers.subtask_serializers import subtask_response
@@ -66,7 +67,7 @@ class SubtaskDetailView(APIView):
         try:
             token = get_token(request)
             delete_subtask(token=token, subtask_id=subtask_id)
-            return HttpResponse('deleted', status=204)
+            return Response(status=204)
         except ValidationError as e:
             return JsonResponse({'error': str(e)}, status=400)
         except AuthenticationError as e:
