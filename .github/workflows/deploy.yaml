@@ -104,10 +104,7 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
         password: ${{ secrets.SERVER_PASSWORD }}
-        source: |
-          backend/docker-compose.yaml 
-          backend/.env
-          backend/nginx.conf
+        source: backend/docker-compose.yaml, backend/.env, backend/nginx.conf
         target: /home/${{ secrets.SERVER_USER }}/app/
 
     - name: Deploy
@@ -128,9 +125,9 @@ jobs:
       run: |
         echo "Waiting for server to be reachable..."
         for i in {1..10}; do
-          nc -zv ${{ secrets.SERVER_HOST }} 443 && echo "OK: Port is open!" && exit 0
+          nc -zv ${{ secrets.SERVER_HOST }} 80 && echo "OK: Port is open!" && exit 0
           echo "Attempt $i: Server not ready yet..."
           sleep 10
         done
-        echo "ERROR: Server is not responding on port 443"
+        echo "ERROR: Server is not responding on port 80"
         exit 1
