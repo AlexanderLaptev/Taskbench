@@ -92,7 +92,6 @@ class SuggestionService:
         self.update_token()
         payload = "Выбери из списка категорию, которая больше всего подходит тексту. Напиши только выбранное. Список:" +', '.join(category_names) + " Текст:" + text
         result = self.giga.chat(payload).choices[0].message.content
-        print("Название выбранной категории", result)
 
         for i in range(len(category_names)):
             if self._equal_ignore_space_case(category_names[i], result):

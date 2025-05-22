@@ -8,7 +8,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 GIGACHAT_KEY = os.environ.get("GIGACHAT_AUTH_KEY")
 DEBUG = bool(os.environ.get("DEBUG", default=True))
 SERVER_HOST = os.environ.get("SERVER_HOST", default="127.0.0.1")
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",").append(SERVER_HOST)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -51,7 +51,8 @@ TEMPLATES = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://" + SERVER_HOST + ":8443",
+    "https://" + SERVER_HOST,
+    "https://" + SERVER_HOST + ":443",
 ]
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

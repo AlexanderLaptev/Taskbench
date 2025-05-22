@@ -50,7 +50,7 @@ services:
       - ./taskbench.key:/etc/ssl/private/taskbench.key:ro
       - ./nginx-logs:/var/log/nginx
     depends_on:
-      - taskbench-backend1
+      - taskbench-backend
 
 volumes:
   postgres_data:
