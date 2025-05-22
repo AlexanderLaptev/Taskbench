@@ -92,4 +92,10 @@
     <string name="dialog_cancel_premium_text">Вы действительно хотите отменить подписку?</string>
     <string name="error_timeout">Нет ответа от сервера</string>
 
+    <string name="button_cancel_premium">Отменить подписку на премиум</string>
+    <string name="label_advantage_of_premium_1">Автоматическое выделение подзадач</string>
+    <string name="label_advantage_of_premium_2">Автоматическое определение приоритетов</string>
+    <string name="label_advantage_of_premium_3">Умное назначение  дедлайнов</string>
+    <string name="label_advantage_of_premium_4">Автоматическое выделение категорий</string>
+
 </resources>

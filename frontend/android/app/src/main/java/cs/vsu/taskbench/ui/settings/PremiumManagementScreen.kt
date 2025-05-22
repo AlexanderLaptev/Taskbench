@@ -189,7 +189,7 @@ private fun WithPremium(
     }
 
     Button(
-        text = "Отменить подписку на премиум",
+        text = stringResource(R.string.button_cancel_premium),
         color = White,
         onClick = { showCancelPremiumConfirmDialog = true},
         textStyle = TextStyle(
@@ -204,11 +204,11 @@ private fun WithoutPremium() {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Title(
-            text = "Автоматическое выделение подзадач",
+            text = stringResource(R.string.label_advantage_of_premium_1),
             icon = R.drawable.img_task,
         )
         Title(
-            text = "Автоматическое определение приоритетов",
+            text = stringResource(R.string.label_advantage_of_premium_2),
             icon = R.drawable.img_priority,
         )
     }
@@ -216,11 +216,11 @@ private fun WithoutPremium() {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Title(
-            text = "Умное назначение  дедлайнов",
+            text = stringResource(R.string.label_advantage_of_premium_3),
             icon = R.drawable.img_deadline,
         )
         Title(
-            text = "Автоматическое выделение категорий",
+            text = stringResource(R.string.label_advantage_of_premium_4),
             icon = R.drawable.img_priority,
         )
     }
