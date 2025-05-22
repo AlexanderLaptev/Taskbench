@@ -3,26 +3,17 @@ from __future__ import annotations
 import logging
 import os
 import re
-from logging import Logger, INFO
+from datetime import datetime, timezone
+from typing import Union
 
 import dateparser.search
-from datetime import datetime, timezone
 from gigachat import GigaChat
-from typing import Union
+
+from taskbench.utils.decorators import singleton
 
 GIGACHAT_API_SAFETY_GAP = 60
 
 logger = logging.getLogger(__name__)
-
-def singleton(cls):
-    _instance = None
-
-    def wrapper(*args, **kwargs):
-        nonlocal _instance
-        if _instance is None:
-            _instance = cls(*args, **kwargs)
-        return _instance
-    return wrapper
 
 @singleton
 class SuggestionService:

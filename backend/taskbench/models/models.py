@@ -1,6 +1,8 @@
+from dateutil.relativedelta import relativedelta
+from django.contrib.auth.hashers import make_password, check_password
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.hashers import make_password, check_password
+
 
 class User(models.Model):
     user_id = models.AutoField(primary_key=True)
@@ -77,12 +79,34 @@ class TaskCategory(models.Model):
 
 class Subscription(models.Model):
     subscription_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False, related_name='subscriptions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
     start_date = models.DateTimeField(default=timezone.now)
-    end_date = models.DateTimeField(null=False)
-    is_active = models.BooleanField(default=True)
-    transaction_id = models.CharField(max_length=100, blank=True, null=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=False)
+    latest_yookassa_payment_id = models.CharField(max_length=100, blank=True, null=True)
+    yookassa_payment_method_id = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
-        return f"Subscription for {self.user.username} from {self.start_date.date()} to {self.end_date.date()}"
+        return f"Subscription for {self.user.email} from {self.start_date.date()} to {self.end_date.date()}"
 
+    def activate(self, yk_payment_id, yk_payment_method_id_from_payment=None):
+        """Активирует подписку после первого успешного платежа."""
+        self.is_active = True
+        self.start_date = timezone.now()
+        self.end_date = timezone.now() + relativedelta(months=1)
+        self.latest_yookassa_payment_id = yk_payment_id
+        if yk_payment_method_id_from_payment:
+            self.yookassa_payment_method_id = yk_payment_method_id_from_payment
+        self.save()
+
+    def renew_subscription(self, yk_renewal_payment_id):
+        """Продлевает подписку после успешного автосписания."""
+        self.is_active = True
+        self.end_date += relativedelta(months=1)
+        self.latest_yookassa_payment_id = yk_renewal_payment_id
+        self.save()
+
+    def deactivate(self):
+        """Деактивирует подписку."""
+        self.is_active = False
+        self.save()
