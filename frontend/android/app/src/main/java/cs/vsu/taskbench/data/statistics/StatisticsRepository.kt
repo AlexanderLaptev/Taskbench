@@ -5,5 +5,6 @@ import cs.vsu.taskbench.domain.model.Statistics
 import java.time.LocalDate
 
 interface StatisticsRepository : PreloadRepository {
-    suspend fun getStatistics(date: LocalDate): Statistics
+    suspend fun getActual(date: LocalDate): Statistics
+    fun getCached(): Statistics?
 }
