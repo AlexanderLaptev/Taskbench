@@ -85,6 +85,7 @@ jobs:
         DATABASE_HOST=database
         DATABASE_PORT=5432
         GIGACHAT_AUTH_KEY=${{ secrets.GIGACHAT_AUTH_KEY }}
+        SERVER_HOST=${{ secrets.SERVER_HOST }}
         EOF
 
     - name: Log in to Docker hub
