@@ -25,6 +25,7 @@ import cs.vsu.taskbench.data.task.suggestions.network.NetworkSuggestionDataSourc
 import cs.vsu.taskbench.data.task.suggestions.network.NetworkSuggestionRepository
 import cs.vsu.taskbench.data.user.FakeUserRepository
 import cs.vsu.taskbench.data.user.UserRepository
+import okhttp3.OkHttpClient
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -83,27 +84,37 @@ private fun Module.netTasks() {
     singleOf(::NetworkTaskRepository) bind TaskRepository::class
 }
 
+private const val SERVER_ADDRESS = "193.135.137.154"
+
 val dataModule = module {
     single { get<Context>().dataStore }
     single { Moshi.Builder().build() }
     single {
+        OkHttpClient.Builder()
+            .hostnameVerifier { hostname, _ ->
+                hostname == SERVER_ADDRESS
+            }
+            .build()
+    }
+    single {
         Retrofit.Builder()
-            .baseUrl("https://193.135.137.154/")
+            .client(get())
+            .baseUrl("https://$SERVER_ADDRESS/")
             .addConverterFactory(MoshiConverterFactory.create(get()))
             .build()
     }
 
-    fakeAuth()
+//    fakeAuth()
     fakeUser()
-    fakeCategories()
-    fakeSuggestions()
-    fakeTasks()
-    fakeStatistics()
+//    fakeCategories()
+//    fakeSuggestions()
+//    fakeTasks()
+//    fakeStatistics()
 
-//    netAuth()
+    netAuth()
 //    netUser()
-//    netCategories()
-//    netSuggestions()
-//    netTasks()
-//    netStatistics()
+    netCategories()
+    netSuggestions()
+    netTasks()
+    netStatistics()
 }
