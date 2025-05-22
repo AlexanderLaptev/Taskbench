@@ -43,7 +43,7 @@ services:
     restart: always
     ports:
       - "80:80"
-      - "8443:8443"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./taskbench.crt:/etc/ssl/certs/taskbench.crt:ro
