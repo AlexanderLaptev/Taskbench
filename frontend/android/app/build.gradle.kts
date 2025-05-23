@@ -1,9 +1,19 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+val appMetricaApiKey = localProperties.getProperty("APPMETRICA_API_KEY") ?: ""
+
 
 android {
     namespace = "cs.vsu.taskbench"
@@ -19,6 +29,12 @@ android {
         setProperty("archivesBaseName", "$applicationName-v$versionName")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField(
+            type = "String",
+            name = "APPMETRICA_API_KEY",
+            value = "\"${appMetricaApiKey}\""
+        )
+
     }
 
     buildTypes {
@@ -42,6 +58,7 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
@@ -80,4 +97,6 @@ dependencies {
     implementation(libs.composeDestinations.core)
     implementation(libs.composeDestinations.bottomSheet)
     ksp(libs.composeDestinations.ksp)
+
+    implementation("io.appmetrica.analytics:analytics:7.9.0")
 }

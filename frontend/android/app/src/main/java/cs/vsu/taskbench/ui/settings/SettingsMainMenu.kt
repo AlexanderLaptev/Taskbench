@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +26,7 @@ import com.ramcosta.composedestinations.generated.destinations.PasswordChangeScr
 import com.ramcosta.composedestinations.generated.destinations.PremiumManagementScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.ui.component.dialog.ConfirmationDialog
 import cs.vsu.taskbench.ui.theme.DarkGray
@@ -38,6 +40,10 @@ fun SettingsMainMenu(
     settingsNavigator: DestinationsNavigator,
     modifier: Modifier = Modifier,
 ) {
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("SettingsMainMenu")
+    }
+
     val scope = rememberCoroutineScope()
     val authService = koinInject<AuthService>()
 

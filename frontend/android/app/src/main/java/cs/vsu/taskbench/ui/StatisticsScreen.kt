@@ -38,6 +38,7 @@ import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.data.user.UserRepository
 import cs.vsu.taskbench.domain.model.Statistics
@@ -69,6 +70,10 @@ fun StatisticsScreen(
     var statistics by remember { mutableStateOf<Statistics?>(null) }
     val userRepo = koinInject<UserRepository>()
     val user = userRepo.user!!
+
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("StatisticsScreen")
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },

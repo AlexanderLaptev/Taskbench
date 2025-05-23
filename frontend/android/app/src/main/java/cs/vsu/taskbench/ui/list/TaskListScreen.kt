@@ -54,6 +54,7 @@ import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.task.CategoryFilterState
 import cs.vsu.taskbench.data.task.TaskRepository.SortByMode
 import cs.vsu.taskbench.domain.model.Category
@@ -100,6 +101,10 @@ fun TaskListScreen(
     var showEditDialog by remember { mutableStateOf(false) }
     LaunchedEffect(showEditDialog) {
         if (!showEditDialog) screenViewModel.refresh()
+    }
+
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("TaskList")
     }
 
     LaunchedEffect(Unit) {
@@ -152,6 +157,7 @@ fun TaskListScreen(
                 onReset = {
                     scope.launch { taskListState.animateScrollToItem(0) }
                     scope.launch { dateRowListState.animateScrollToItem(TODAY_INDEX) }
+                    AnalyticsFacade.logEvent("tasklist_reset_scroll")
                     true // prevent default action (navigation)
                 }
             )
@@ -194,15 +200,22 @@ fun TaskListScreen(
                         deadlineText = deadline,
                         bodyText = task.content,
                         subtasks = task.subtasks,
-                        onDismiss = { screenViewModel.deleteTask(task) },
+                        onDismiss = {
+                            AnalyticsFacade.logEvent("task_swiped_delete", mapOf("task_id" to task.id))
+                            screenViewModel.deleteTask(task) },
                         swipeEnabled = !taskListState.isScrollInProgress,
 
                         onClick = {
+                            AnalyticsFacade.logEvent("task_clicked", mapOf("task_id" to task.id))
                             dialogViewModel.editTask = task
                             showEditDialog = true
                         },
 
                         onSubtaskCheckedChange = { subtask, checked ->
+                            AnalyticsFacade.logEvent(
+                                "subtask_checked_changed",
+                                mapOf("subtask_id" to subtask.id, "checked" to checked)
+                            )
                             screenViewModel.setSubtaskChecked(subtask, checked)
                         },
 
@@ -308,6 +321,7 @@ private fun SortModeRow(
                     onClick = {
                         sortModesExpanded = false
                         viewModel.sortByMode = SortByMode.Priority
+                        AnalyticsFacade.logEvent("tasklist_sort_changed", mapOf("sort_by" to "priority"))
                         scope.launch { listState.animateScrollToItem(0) }
                     },
                 )
@@ -321,6 +335,7 @@ private fun SortModeRow(
                     onClick = {
                         sortModesExpanded = false
                         viewModel.sortByMode = SortByMode.Deadline
+                        AnalyticsFacade.logEvent("tasklist_sort_changed", mapOf("sort_by" to "deadline"))
                         scope.launch { listState.animateScrollToItem(0) }
                     },
                 )
@@ -341,6 +356,13 @@ private fun SortModeRow(
                     }
 
                     override fun onSelect(category: Category) {
+                        AnalyticsFacade.logEvent(
+                            "category_filter_selected",
+                            mapOf(
+                                "category_id" to (category.id ?: "unknown"),
+                                "category_name" to (category.name ?: "unnamed")
+                            )
+                        )
                         viewModel.categoryFilterState = CategoryFilterState.Enabled(category)
                         postSelect()
                     }
@@ -350,11 +372,13 @@ private fun SortModeRow(
                     }
 
                     override fun onDeselect() {
+                        AnalyticsFacade.logEvent("category_filter_deselected")
                         viewModel.categoryFilterState = CategoryFilterState.Enabled(null)
                         postSelect()
                     }
 
                     override fun onSelectAll() {
+                        AnalyticsFacade.logEvent("category_filter_all_selected")
                         viewModel.categoryFilterState = CategoryFilterState.Disabled
                         postSelect()
                     }

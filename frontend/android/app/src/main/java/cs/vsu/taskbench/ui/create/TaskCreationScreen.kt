@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.dialog.edit.TaskEditDialog
@@ -31,6 +32,10 @@ fun TaskCreationScreen(navController: NavController) {
     val viewModel = koinViewModel<TaskEditDialogViewModel>()
     val snackbarHostState = remember { SnackbarHostState() }
     val resources = LocalContext.current.resources
+
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("TaskCreation")
+    }
 
     LaunchedEffect(Unit) {
         viewModel.errorFlow.collect {
