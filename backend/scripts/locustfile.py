@@ -2,6 +2,8 @@ import json
 import random
 from locust import HttpUser, task, between, SequentialTaskSet
 
+#locust -f locustfile.py
+
 class UserBehavior(SequentialTaskSet):
     def on_start(self):
         self.client.verify = False  # Игнорировать SSL
@@ -24,7 +26,7 @@ class UserBehavior(SequentialTaskSet):
         self.token = response.json().get("access")
         self.task_id = None
 
-    @task(3)  # Статистика чаще всего запрашивается
+    @task(3)
     def get_statistics(self):
         self.client.get(
             "/statistics/",
@@ -91,5 +93,5 @@ class UserBehavior(SequentialTaskSet):
 
 class TaskbenchUser(HttpUser):
     tasks = [UserBehavior]
-    wait_time = between(1, 5)  # Задержка 1–5 сек
-    host = "https://193.135.137.154/"  # Замени на свою HTTPS-ссылку
+    wait_time = between(1, 5)
+    host = "https://193.135.137.154/"
