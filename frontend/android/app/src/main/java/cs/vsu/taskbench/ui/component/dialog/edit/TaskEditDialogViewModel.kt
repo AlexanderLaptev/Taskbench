@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.util.fastDistinctBy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.data.task.suggestions.SuggestionRepository
@@ -111,6 +112,10 @@ class TaskEditDialogViewModel(
 
     override fun onPriorityChipClick() {
         _isHighPriority = !_isHighPriority
+        AnalyticsFacade.logEvent(
+            "priority_toggled",
+            mapOf("isHighPriority" to _isHighPriority)
+        )
     }
 
     override fun onDeadlineChipClick() {
@@ -126,6 +131,7 @@ class TaskEditDialogViewModel(
     override fun onCategoryClick(category: Category) {
         _selectedCategory = category
         _showCategoryDialog = false
+        AnalyticsFacade.logCategorySelected(category.name)
     }
 
     override var editTask: Task? = null
@@ -156,7 +162,15 @@ class TaskEditDialogViewModel(
                 categoryId = selectedCategory?.id,
             )
             taskRepository.saveTask(task)
-            if (editTask == null) editTask = null // clear input
+            if (editTask == null) {
+                AnalyticsFacade.logTaskCreated(task.id?.toLong())
+            } else {
+                AnalyticsFacade.logEvent(
+                    "task_edited",
+                    mapOf("task_id" to (task.id ?: "new"))
+                )
+            }
+            editTask = null // clear input
             _submitEventFlow.tryEmit(Unit)
             Log.d(TAG, "onSubmitTask: success")
         }
@@ -171,6 +185,7 @@ class TaskEditDialogViewModel(
 
         catchErrorsAsync {
             if (subtask.id != null) taskRepository.updateSubtask(updated)
+            AnalyticsFacade.logEvent("subtask_edited", mapOf("subtask_id" to subtask.id, "new_content" to newText))
         }
 
         Log.d(TAG, "onEditSubtask: success")
@@ -185,12 +200,14 @@ class TaskEditDialogViewModel(
         subtasks = subtasks - subtask
         catchErrorsAsync {
             if (subtask.id != null) taskRepository.deleteSubtask(subtask)
+            AnalyticsFacade.logEvent("subtask_removed", mapOf("subtask_id" to subtask.id))
         }
         Log.d(TAG, "onRemoveSubtask: success")
     }
 
     override fun onAddSubtask() {
         addSubtask(subtaskInput)
+        AnalyticsFacade.logEvent("subtask_added", mapOf("content" to subtaskInput))
         subtaskInput = ""
         Log.d(TAG, "onAddSubtask: success")
     }
@@ -198,6 +215,7 @@ class TaskEditDialogViewModel(
     override fun onAddSuggestion(suggestion: String) {
         suggestions = suggestions - suggestion
         addSubtask(suggestion)
+        AnalyticsFacade.logEvent("suggestion_added", mapOf("suggestion" to suggestion))
         Log.d(TAG, "onAddSuggestion: success")
     }
 
@@ -206,6 +224,7 @@ class TaskEditDialogViewModel(
             val category = Category(id = null, name = _categoryInput)
             _selectedCategory = categoryRepository.saveCategory(category)
             showCategoryDialog = false
+            AnalyticsFacade.logEvent("category_created", mapOf("category_name" to _categoryInput))
             Log.d(TAG, "onAddCategory: success")
         }
     }
@@ -237,12 +256,15 @@ class TaskEditDialogViewModel(
                 // TODO: figure out the root cause
                 // ignoring for now
             } catch (e: SocketTimeoutException) {
+                AnalyticsFacade.logError("taskedit_timeout", e)
                 Log.e(TAG, "catchErrorsAsync: socket timeout", e)
                 _errorFlow.tryEmit(Error.CouldNotConnect)
             } catch (e: ConnectException) {
+                AnalyticsFacade.logError("taskedit_connect_error", e)
                 Log.e(TAG, "catchErrors: connection error", e)
                 _errorFlow.tryEmit(Error.Timeout)
             } catch (e: Exception) {
+                AnalyticsFacade.logError("taskedit_unknown_error", e)
                 Log.e(TAG, "catchErrors: unknown error", e)
                 _errorFlow.tryEmit(Error.Unknown)
             }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -18,6 +19,7 @@ import com.ramcosta.composedestinations.generated.destinations.SettingsMainMenuD
 import com.ramcosta.composedestinations.generated.navgraphs.SettingsNavGraph
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.theme.White
@@ -28,6 +30,10 @@ import cs.vsu.taskbench.ui.theme.White
 fun SettingsScreen(
     navController: NavController,
 ) {
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("SettingsScreen")
+    }
+
     Scaffold(
         bottomBar = { NavigationBar(navController) }
     ) { scaffoldPadding ->

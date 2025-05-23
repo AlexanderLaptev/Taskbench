@@ -28,6 +28,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.PremiumManagementScreenDestination
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.data.user.UserRepository
 import cs.vsu.taskbench.domain.model.Statistics
@@ -56,6 +57,10 @@ fun StatisticsScreen(
     val userRepo = koinInject<UserRepository>()
     val user = userRepo.user!!
     val destinationsNavigator = navController.rememberDestinationsNavigator()
+
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("StatisticsScreen")
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },

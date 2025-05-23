@@ -56,6 +56,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.TaskCreationScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.TextField
@@ -97,6 +98,11 @@ fun LoginScreen(
 
     val scope = rememberCoroutineScope()
     val resources = LocalContext.current.resources
+
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("LoginScreen")
+    }
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
