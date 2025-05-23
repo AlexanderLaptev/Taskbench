@@ -13,7 +13,6 @@ import cs.vsu.taskbench.data.task.TaskRepository.SortByMode
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
-import cs.vsu.taskbench.ui.create.TaskCreationScreenViewModel.Error
 import cs.vsu.taskbench.util.mutableEventFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -79,8 +78,7 @@ class TaskListScreenViewModel(
 
     init {
         catchErrorsAsync {
-            refreshCategories()
-            refreshTasks()
+            refresh()
             Log.d(TAG, "init: success")
         }
     }
@@ -96,10 +94,15 @@ class TaskListScreenViewModel(
     fun setSubtaskChecked(subtask: Subtask, isChecked: Boolean) {
         catchErrorsAsync {
             val changed = subtask.copy(isDone = isChecked)
-            taskRepository.saveSubtask(changed)
+            taskRepository.updateSubtask(changed)
             Log.d(TAG, "setSubtaskChecked: saved task")
             refreshTasks()
         }
+    }
+
+    fun refresh() {
+        refreshCategories()
+        refreshTasks()
     }
 
     private fun refreshTasks() {

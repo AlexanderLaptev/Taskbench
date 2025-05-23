@@ -38,6 +38,7 @@ import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.data.user.UserRepository
 import cs.vsu.taskbench.domain.model.Statistics
@@ -51,6 +52,7 @@ import cs.vsu.taskbench.ui.theme.Active
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.White
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import java.net.ConnectException
 import java.time.LocalDate
@@ -69,6 +71,10 @@ fun StatisticsScreen(
     val userRepo = koinInject<UserRepository>()
     val user = userRepo.user!!
 
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("StatisticsScreen")
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = { NavigationBar(navController) },
@@ -76,7 +82,10 @@ fun StatisticsScreen(
         val resources = LocalContext.current.resources
         LaunchedEffect(Unit) {
             try {
-                statistics = statisticsRepository.getStatistics(LocalDate.now())
+                statistics = statisticsRepository.getCached()
+                launch {
+                    statistics = statisticsRepository.getActual(LocalDate.now())
+                }
             } catch (e: ConnectException) {
                 Log.e(TAG, "connection error", e)
                 snackbarHostState.showSnackbar(resources.getString(R.string.error_could_not_connect))

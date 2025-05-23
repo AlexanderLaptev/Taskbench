@@ -5,8 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -73,7 +73,7 @@ fun TextField(
             ) { focusRequester.requestFocus() }
             .background(color, shape)
             .padding(start = 16.dp)
-            .height(52.dp)
+            .defaultMinSize(minHeight = 52.dp)
             .fillMaxWidth(),
     ) {
         BasicTextField(

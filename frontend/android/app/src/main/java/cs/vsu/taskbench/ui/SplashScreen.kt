@@ -33,6 +33,9 @@ import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
+import java.net.ConnectException
+
+private class NoConnectionException : RuntimeException()
 
 @Destination<RootGraph>(start = true, style = ScreenTransitions::class)
 @Composable
@@ -40,7 +43,6 @@ fun SplashScreen(navigator: DestinationsNavigator) {
     val bootstrapUseCase = koinInject<BootstrapUseCase>()
     var exception: Exception? by remember { mutableStateOf(null) }
 
-    val noInternetErrorMessage = stringResource(R.string.error_no_internet)
     LaunchedEffect(Unit) {
         delay(300) // a little delay so the splash screen doesn't disappear instantly
         try {
@@ -48,7 +50,7 @@ fun SplashScreen(navigator: DestinationsNavigator) {
             val direction = when (result) {
                 Result.Success -> TaskCreationScreenDestination
                 Result.LoginRequired -> LoginScreenDestination
-                Result.NoInternet -> throw RuntimeException(noInternetErrorMessage)
+                Result.NoInternet -> throw NoConnectionException()
             }
             with(navigator) {
                 popBackStack()
@@ -61,6 +63,12 @@ fun SplashScreen(navigator: DestinationsNavigator) {
     }
 
     if (exception != null) {
+        val errorMessage = when (exception) {
+            is ConnectException -> stringResource(R.string.error_could_not_connect)
+            is NoConnectionException -> stringResource(R.string.error_no_internet)
+            else -> "N/A"
+        }
+
         val activity = LocalActivity.current
         AlertDialog(
             onDismissRequest = { activity!!.finishAffinity() },
@@ -68,14 +76,7 @@ fun SplashScreen(navigator: DestinationsNavigator) {
             textContentColor = DarkGray,
             titleContentColor = Black,
             title = { Text(text = stringResource(R.string.dialog_title_error)) },
-            text = {
-                Text(
-                    text = stringResource(
-                        R.string.error_bootstrap_failed,
-                        exception!!.message ?: "N/A",
-                    ),
-                )
-            },
+            text = { Text(text = stringResource(R.string.error_bootstrap_failed, errorMessage)) },
             confirmButton = {
                 TextButton(
                     onClick = { activity!!.finishAffinity() }

@@ -16,7 +16,15 @@ object FakeStatisticsRepository : StatisticsRepository {
         generate()
     }
 
-    override suspend fun getStatistics(date: LocalDate): Statistics {
+    override suspend fun getActual(date: LocalDate): Statistics {
+        return getStatistics(LocalDate.now())
+    }
+
+    override fun getCached(): Statistics {
+        return getStatistics(LocalDate.now())
+    }
+
+    private fun getStatistics(date: LocalDate): Statistics {
         Log.d(TAG, "requested statistics")
         return cached ?: let {
             generate()

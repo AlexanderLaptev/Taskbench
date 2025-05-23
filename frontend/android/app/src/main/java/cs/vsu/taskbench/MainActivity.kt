@@ -18,10 +18,19 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.compose.KoinApplication
 import org.koin.core.logger.Level
+import io.appmetrica.analytics.AppMetrica
+import io.appmetrica.analytics.AppMetricaConfig
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
+import cs.vsu.taskbench.BuildConfig
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val config = AppMetricaConfig.newConfigBuilder(BuildConfig.APPMETRICA_API_KEY).build()
+        AppMetrica.activate(applicationContext, config)
+        AppMetrica.enableActivityAutoTracking(application)
+
 
         val style = SystemBarStyle.light(
             scrim = Color.TRANSPARENT,

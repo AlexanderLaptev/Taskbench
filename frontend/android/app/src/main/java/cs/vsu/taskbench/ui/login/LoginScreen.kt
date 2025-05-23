@@ -56,6 +56,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.TaskCreationScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.TextField
@@ -97,6 +98,11 @@ fun LoginScreen(
 
     val scope = rememberCoroutineScope()
     val resources = LocalContext.current.resources
+
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("LoginScreen")
+    }
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -241,7 +247,7 @@ private fun LoginControls(
         TextField(
             value = screenState.password,
             color = Beige,
-            placeholder = stringResource(R.string.label_password),
+            placeholder = stringResource(R.string.placeholder_password),
             password = true,
             onValueChange = screenState.onPasswordChange,
         )
@@ -254,7 +260,7 @@ private fun LoginControls(
                 TextField(
                     value = screenState.confirmPassword,
                     color = Beige,
-                    placeholder = stringResource(R.string.label_confirm_password),
+                    placeholder = stringResource(R.string.placeholder_confirm_password),
                     password = true,
                     onValueChange = screenState.onConfirmPasswordChange,
                 )

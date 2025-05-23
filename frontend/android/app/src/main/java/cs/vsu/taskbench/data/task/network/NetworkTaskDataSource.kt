@@ -88,11 +88,13 @@ interface NetworkTaskDataSource {
     suspend fun editTask(
         @Header(HttpHeaders.AUTHORIZATION) auth: String,
         @Path("taskId") taskId: Int,
+        @Body editTaskRequest: EditTaskRequest,
     ): TaskResponse
 
     @POST("subtasks/")
     suspend fun addSubtask(
         @Header(HttpHeaders.AUTHORIZATION) auth: String,
+        @Query("task_id") taskId: Int,
         @Body request: AddSubtaskRequest,
     ): SubtaskResponse
 

@@ -19,6 +19,15 @@ class NetworkStatisticsRepository(
     private var cache: Statistics? = null
 
     override suspend fun preload() {
+        getActual(LocalDate.now())
+        Log.d(TAG, "preload: loaded statistics $cache")
+    }
+
+    override fun getCached(): Statistics? {
+        return cache
+    }
+
+    override suspend fun getActual(date: LocalDate): Statistics {
         authService.withAuth {
             val response = dataSource.getStatistics(it)
             val graphData = buildFloatList(7) {
@@ -29,11 +38,8 @@ class NetworkStatisticsRepository(
                 doneAllTimeHigh = response.max_done,
                 graphData = graphData,
             )
+            return cache!!
         }
-        Log.d(TAG, "preload: loaded statistics $cache")
-    }
-
-    override suspend fun getStatistics(date: LocalDate): Statistics {
-        return cache!!
+        error("")
     }
 }

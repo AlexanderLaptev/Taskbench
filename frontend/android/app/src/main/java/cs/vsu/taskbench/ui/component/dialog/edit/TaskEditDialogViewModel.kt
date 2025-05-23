@@ -1,4 +1,4 @@
-package cs.vsu.taskbench.ui.create
+package cs.vsu.taskbench.ui.component.dialog.edit
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -7,41 +7,43 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.util.fastDistinctBy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.category.CategoryRepository
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.data.task.suggestions.SuggestionRepository
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
-import cs.vsu.taskbench.ui.component.dialog.TaskEditDialogStateHolder
 import cs.vsu.taskbench.util.mutableEventFlow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.net.ConnectException
-import java.time.Instant
-import java.time.LocalDate
+import java.net.SocketTimeoutException
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
 
-class TaskCreationScreenViewModel(
+class TaskEditDialogViewModel(
     private val taskRepository: TaskRepository,
     private val categoryRepository: CategoryRepository,
     private val suggestionRepository: SuggestionRepository,
 ) : ViewModel(), TaskEditDialogStateHolder {
     companion object {
-        private val TAG = TaskCreationScreenViewModel::class.simpleName
+        private val TAG = TaskEditDialogViewModel::class.simpleName
     }
 
     enum class Error {
         CouldNotConnect,
         Unknown,
+        Timeout,
     }
 
     private val _errorFlow = mutableEventFlow<Error>()
     val errorFlow = _errorFlow.asSharedFlow()
+
+    private val _submitEventFlow = mutableEventFlow<Unit>()
+    val submitEventFlow = _submitEventFlow.asSharedFlow()
 
     private var _taskInput by mutableStateOf("")
     override var taskInput
@@ -85,6 +87,8 @@ class TaskCreationScreenViewModel(
             _deadline = value
         }
 
+    override var isDeadlineSetManually: Boolean = false
+
     private var _isHighPriority by mutableStateOf(false)
     override var isHighPriority: Boolean
         get() = _isHighPriority
@@ -108,6 +112,10 @@ class TaskCreationScreenViewModel(
 
     override fun onPriorityChipClick() {
         _isHighPriority = !_isHighPriority
+        AnalyticsFacade.logEvent(
+            "priority_toggled",
+            mapOf("isHighPriority" to _isHighPriority)
+        )
     }
 
     override fun onDeadlineChipClick() {
@@ -123,31 +131,30 @@ class TaskCreationScreenViewModel(
     override fun onCategoryClick(category: Category) {
         _selectedCategory = category
         _showCategoryDialog = false
+        AnalyticsFacade.logCategorySelected(category.name)
     }
 
-    override fun onSetDeadlineDate(epochMilli: Long) {
-        val instant = Instant.ofEpochMilli(epochMilli)
-        val date = LocalDate.ofInstant(instant, ZoneId.systemDefault())
-        val time = _deadline?.toLocalTime() ?: LocalTime.now()
-        val newDeadline = LocalDateTime.of(date, time).let {
-            if (_deadline == null) it.plusHours(1) else it
+    override var editTask: Task? = null
+        set(task) {
+            field = task
+
+            _taskInput = task?.content ?: ""
+            _deadline = task?.deadline
+            _isHighPriority = task?.isHighPriority ?: false
+
+            _selectedCategory = if (task == null) null
+            else categories.find { it.id == task.categoryId }
+
+            subtasks = task?.subtasks ?: emptyList()
+            suggestions = emptyList()
+            subtaskInput = ""
+            isDeadlineSetManually = false
         }
-        _deadline = newDeadline
-    }
-
-    override fun onSetDeadlineTime(hour: Int, minute: Int) {
-        val date = _deadline?.toLocalDate() ?: LocalDate.now()
-        _deadline = LocalDateTime.of(date, LocalTime.of(hour, minute))
-    }
-
-    override fun onClearDeadline() {
-        _deadline = null
-    }
 
     override fun onSubmitTask() {
         catchErrorsAsync {
             val task = Task(
-                id = null,
+                id = editTask?.id,
                 content = taskInput,
                 deadline = deadline,
                 isHighPriority = isHighPriority,
@@ -155,27 +162,32 @@ class TaskCreationScreenViewModel(
                 categoryId = selectedCategory?.id,
             )
             taskRepository.saveTask(task)
-            clearInput()
+            if (editTask == null) {
+                AnalyticsFacade.logTaskCreated(task.id?.toLong())
+            } else {
+                AnalyticsFacade.logEvent(
+                    "task_edited",
+                    mapOf("task_id" to (task.id ?: "new"))
+                )
+            }
+            editTask = null // clear input
+            _submitEventFlow.tryEmit(Unit)
             Log.d(TAG, "onSubmitTask: success")
         }
     }
 
-    private fun clearInput() {
-        _taskInput = ""
-        _deadline = null
-        _isHighPriority = false
-        _selectedCategory = null
-
-        subtaskInput = ""
-        subtasks = emptyList()
-        suggestions = emptyList()
-    }
-
     override fun onEditSubtask(subtask: Subtask, newText: String) {
+        val updated = subtask.copy(content = newText)
         val result = subtasks.toMutableList()
         val index = subtasks.indexOf(subtask)
-        result[index] = subtask.copy(content = newText)
+        result[index] = updated
         subtasks = result
+
+        catchErrorsAsync {
+            if (subtask.id != null) taskRepository.updateSubtask(updated)
+            AnalyticsFacade.logEvent("subtask_edited", mapOf("subtask_id" to subtask.id, "new_content" to newText))
+        }
+
         Log.d(TAG, "onEditSubtask: success")
     }
 
@@ -186,19 +198,24 @@ class TaskCreationScreenViewModel(
 
     override fun onRemoveSubtask(subtask: Subtask) {
         subtasks = subtasks - subtask
+        catchErrorsAsync {
+            if (subtask.id != null) taskRepository.deleteSubtask(subtask)
+            AnalyticsFacade.logEvent("subtask_removed", mapOf("subtask_id" to subtask.id))
+        }
         Log.d(TAG, "onRemoveSubtask: success")
     }
 
     override fun onAddSubtask() {
-        if (addSubtask(subtaskInput)) {
-            subtaskInput = ""
-            Log.d(TAG, "onAddSubtask: success")
-        }
+        addSubtask(subtaskInput)
+        AnalyticsFacade.logEvent("subtask_added", mapOf("content" to subtaskInput))
+        subtaskInput = ""
+        Log.d(TAG, "onAddSubtask: success")
     }
 
     override fun onAddSuggestion(suggestion: String) {
         suggestions = suggestions - suggestion
         addSubtask(suggestion)
+        AnalyticsFacade.logEvent("suggestion_added", mapOf("suggestion" to suggestion))
         Log.d(TAG, "onAddSuggestion: success")
     }
 
@@ -207,18 +224,21 @@ class TaskCreationScreenViewModel(
             val category = Category(id = null, name = _categoryInput)
             _selectedCategory = categoryRepository.saveCategory(category)
             showCategoryDialog = false
+            AnalyticsFacade.logEvent("category_created", mapOf("category_name" to _categoryInput))
             Log.d(TAG, "onAddCategory: success")
         }
     }
 
-    private fun addSubtask(text: String): Boolean {
-        val subtask = Subtask(
-            id = null,
-            content = text,
-            isDone = false,
-        )
-        subtasks = subtasks + subtask
-        return true
+    private fun addSubtask(text: String) {
+        catchErrorsAsync {
+            var subtask = Subtask(
+                id = null,
+                content = text,
+                isDone = false,
+            )
+            if (editTask != null) subtask = taskRepository.createSubtask(editTask!!, subtask)
+            subtasks = subtasks + subtask
+        }
     }
 
     private fun updateCategories() {
@@ -228,14 +248,23 @@ class TaskCreationScreenViewModel(
         }
     }
 
-    private inline fun catchErrorsAsync(crossinline block: suspend () -> Unit) {
-        viewModelScope.launch {
+    private inline fun catchErrorsAsync(crossinline block: suspend () -> Unit): Job {
+        return viewModelScope.launch {
             try {
                 block()
-            } catch (e: ConnectException) {
-                Log.e(TAG, "catchErrors: connection error", e)
+            } catch (e: CancellationException) {
+                // TODO: figure out the root cause
+                // ignoring for now
+            } catch (e: SocketTimeoutException) {
+                AnalyticsFacade.logError("taskedit_timeout", e)
+                Log.e(TAG, "catchErrorsAsync: socket timeout", e)
                 _errorFlow.tryEmit(Error.CouldNotConnect)
+            } catch (e: ConnectException) {
+                AnalyticsFacade.logError("taskedit_connect_error", e)
+                Log.e(TAG, "catchErrors: connection error", e)
+                _errorFlow.tryEmit(Error.Timeout)
             } catch (e: Exception) {
+                AnalyticsFacade.logError("taskedit_unknown_error", e)
                 Log.e(TAG, "catchErrors: unknown error", e)
                 _errorFlow.tryEmit(Error.Unknown)
             }
@@ -245,35 +274,32 @@ class TaskCreationScreenViewModel(
     private var pendingUpdate: Job? = null
 
     private fun updateSuggestions() {
-        suggestions = emptyList()
-        if (_taskInput.length < 8) return
-        pendingUpdate?.cancel()
-        pendingUpdate = viewModelScope.launch {
+        suggestions = emptyList() // clear the current suggestions
+        pendingUpdate?.cancel() // cancel the previous request
+        pendingUpdate = catchErrorsAsync {
             delay(1200)
-            try {
-                val response = suggestionRepository.getSuggestions(
-                    prompt = taskInput,
-                    deadline = _deadline,
-                    isHighPriority = _isHighPriority,
-                    category = _selectedCategory,
-                )
+            Log.d(TAG, "updateSuggestions: updating suggestions")
+            // Do not send empty requests (the server will return HTTP 400 anyway).
+            if (_taskInput.length < 8) return@catchErrorsAsync
+            val response = suggestionRepository.getSuggestions(
+                prompt = taskInput,
+                deadline = if (isDeadlineSetManually) _deadline else null,
+                isHighPriority = _isHighPriority,
+                category = _selectedCategory,
+            )
 
-                // TODO: refactor
-                val contents = subtasks.map { it.content }
-                val newSuggestions = response.subtasks.fastDistinctBy { it }.toMutableList()
-                newSuggestions.removeAll { it in contents }
+            // Remove duplicates as those will crash the UI.
+            val contents = subtasks.map { it.content }
+            val newSuggestions = response.subtasks.fastDistinctBy { it }.toMutableList()
+            newSuggestions.removeAll { it in contents }
 
-                suggestions = newSuggestions
-                if (_deadline == null) _deadline = response.deadline
-                if (_selectedCategory == null) _selectedCategory = response.category
-                Log.d(TAG, "updateSuggestions: success")
-            } catch (e: ConnectException) {
-                Log.e(TAG, "updateSuggestions: connection error", e)
-                _errorFlow.tryEmit(Error.CouldNotConnect)
-            } catch (e: Exception) {
-                Log.e(TAG, "updateSuggestions: error during fetch", e)
-                _errorFlow.tryEmit(Error.Unknown)
+            // Update the suggestions and DPC.
+            suggestions = newSuggestions
+            if (!isDeadlineSetManually) {
+                Log.d(TAG, "updateSuggestions: updating deadline")
+                _deadline = response.deadline
             }
+            if (_selectedCategory == null) _selectedCategory = response.category
         }
     }
 }

@@ -93,7 +93,23 @@ class NetworkTaskRepository(
         error("")
     }
 
-    override suspend fun saveSubtask(subtask: Subtask): Subtask {
+    override suspend fun createSubtask(owner: Task, subtask: Subtask): Subtask {
+        authService.withAuth { access ->
+            val request = AddSubtaskRequest(
+                content = subtask.content,
+                is_done = subtask.isDone,
+            )
+            val response = dataSource.addSubtask(access, owner.id!!, request)
+            return Subtask(
+                id = response.id,
+                content = response.content,
+                isDone = response.is_done,
+            )
+        }
+        error("")
+    }
+
+    override suspend fun updateSubtask(subtask: Subtask): Subtask {
         authService.withAuth { access ->
             val request = EditSubtaskRequest(subtask.content, subtask.isDone)
             val response = dataSource.editSubtask(access, subtask.id!!, request)
@@ -106,9 +122,22 @@ class NetworkTaskRepository(
         error("")
     }
 
-    private fun updateTask(task: Task): Task {
-        Log.e(TAG, "updateTask: not implemented")
-        return task
+    override suspend fun deleteSubtask(subtask: Subtask) {
+        authService.withAuth { access ->
+            dataSource.deleteSubtask(access, subtask.id!!)
+        }
+    }
+
+    private suspend fun updateTask(task: Task): Task {
+        authService.withAuth { access ->
+            val taskRequest = EditTaskRequest(
+                text = task.content,
+                dpc = task.toDpc(),
+            )
+            val response = dataSource.editTask(access, task.id!!, taskRequest)
+            return response.toModel()
+        }
+        error("")
     }
 
     override suspend fun deleteTask(task: Task) {
