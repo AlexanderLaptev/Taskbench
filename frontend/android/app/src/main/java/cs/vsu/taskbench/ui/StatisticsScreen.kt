@@ -55,8 +55,7 @@ fun StatisticsScreen(
     var statistics by remember { mutableStateOf<Statistics?>(null) }
     val userRepo = koinInject<UserRepository>()
     val user = userRepo.user!!
-    val destinationsNavigator =
-        navController.rememberDestinationsNavigator() // <--- ПОЛУЧАЕМ DestinationsNavigator
+    val destinationsNavigator = navController.rememberDestinationsNavigator()
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },

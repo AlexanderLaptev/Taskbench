@@ -57,8 +57,8 @@
     <string name="button_buy_premium">Купите премиум, чтобы стать продуктивнее</string>
     <string name="label_premium_status">Статус премиума:</string>
     <string name="label_premium_active">активный</string>
-    <string name="label_premium_until">Действует до:</string>
-    <string name="pattern_date">dd MMMM YYYY \'г.\'</string>
+    <string name="label_premium_until">Следующий платеж:</string>
+    <string name="pattern_date">dd.MM.YYYY</string>
     <string name="error_category_too_long">Название категории должно быть короче 50 символов</string>
     <string name="error_category_already_exists">Категория уже существует</string>
     <string name="error_bootstrap_failed">Приложению не удалось запуститься.\n\nДетали:\n%s</string>

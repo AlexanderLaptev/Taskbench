@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -94,6 +97,14 @@ private fun Content(
         modifier = Modifier
             .fillMaxSize()
             .background(Beige)
+            .padding(
+                start = 16.dp,
+                top = 32.dp,
+                end = 16.dp,
+                bottom = 16.dp,
+            )
+            .fillMaxSize()
+            .background(color = Beige, shape = RoundedCornerShape(10.dp)),
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(
@@ -117,11 +128,21 @@ private fun Content(
                         onClick = { showCancelPremiumConfirmDialog = true },
                         textStyle = TextStyle(
                             fontSize = 18.sp,
+                            fontWeight = FontWeight.Black,
                         )
                     )
                 }
 
                 User.Status.Unpaid -> {
+                    Icon(
+                        painter = painterResource(R.drawable.logo_dark),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier
+                            .size(160.dp)
+                            .background(White, shape = RoundedCornerShape(30.dp)),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                     WithoutPremium(
                         onClick = {}
                     )
@@ -173,7 +194,7 @@ fun WithPremium(
             tint = Color.Unspecified,
             contentDescription = null,
             modifier = Modifier
-                .background(White, RoundedCornerShape(25.dp))
+                .background(White, RoundedCornerShape(16.dp))
                 .size(64.dp),
         )
         Column(
@@ -230,10 +251,16 @@ fun WithoutPremium(
         Title(
             text = stringResource(R.string.label_advantage_of_premium_1),
             icon = R.drawable.img_task,
+            modifier = Modifier
+                .weight(1f)
+                .aspectRatio(1f)
         )
         Title(
             text = stringResource(R.string.label_advantage_of_premium_2),
             icon = R.drawable.img_priority,
+            modifier = Modifier
+                .weight(1f)
+                .aspectRatio(1f)
         )
     }
     Row(
@@ -242,10 +269,16 @@ fun WithoutPremium(
         Title(
             text = stringResource(R.string.label_advantage_of_premium_3),
             icon = R.drawable.img_deadline,
+            modifier = Modifier
+                .weight(1f)
+                .aspectRatio(1f)
         )
         Title(
             text = stringResource(R.string.label_advantage_of_premium_4),
-            icon = R.drawable.img_priority,
+            icon = R.drawable.img_category,
+            modifier = Modifier
+                .weight(1f)
+                .aspectRatio(1f)
         )
     }
 }
