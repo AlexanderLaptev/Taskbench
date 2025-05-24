@@ -2,6 +2,7 @@ package cs.vsu.taskbench.ui.settings
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.generated.destinations.LoginScreenDestination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.user.UserRepository
@@ -47,7 +48,6 @@ import cs.vsu.taskbench.ui.theme.Active
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
-import cs.vsu.taskbench.ui.theme.ExtraLightGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.launch
@@ -56,11 +56,11 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-@Destination<SettingsGraph>(style = ScreenTransitions::class)
+@Destination<RootGraph>(style = ScreenTransitions::class)
 fun PremiumManagementScreen(navigator: DestinationsNavigator, modifier: Modifier = Modifier) {
     val userRepository = koinInject<UserRepository>()
     val user = userRepository.user!!
-    
+
     Content(
         userStatus = user.status,
         onBack = { navigator.navigateUp() },
@@ -74,6 +74,22 @@ private fun Content(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val scope = rememberCoroutineScope()
+    var showCancelPremiumConfirmDialog by remember { mutableStateOf(false) }
+    if (showCancelPremiumConfirmDialog) {
+        ConfirmationDialog(
+            text = stringResource(R.string.dialog_cancel_premium_text),
+            onComplete = { confirmed ->
+                showCancelPremiumConfirmDialog = false
+                if (confirmed) {
+                    scope.launch {
+                        //todo: изменение статуса
+                    }
+                }
+            },
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -91,10 +107,34 @@ private fun Content(
         ) {
             when (userStatus) {
                 is User.Status.Premium -> {
-                    WithPremium(userStatus.activeUntil)
+                    WithPremium(
+                        userStatus.activeUntil,
+                        onClick = {}
+                    )
+                    Button(
+                        text = stringResource(R.string.button_cancel_premium),
+                        color = White,
+                        onClick = { showCancelPremiumConfirmDialog = true },
+                        textStyle = TextStyle(
+                            fontSize = 18.sp,
+                        )
+                    )
                 }
+
                 User.Status.Unpaid -> {
-                    WithoutPremium()
+                    WithoutPremium(
+                        onClick = {}
+                    )
+                    Button(
+                        text = stringResource(R.string.button_buy_premium),
+                        color = AccentYellow,
+                        textStyle = TextStyle(
+                            fontSize = 18.sp,
+                            color = DarkGray,
+                            fontWeight = FontWeight.Black,
+                        ),
+                        onClick = {},
+                    )
                 }
             }
         }
@@ -114,26 +154,14 @@ private fun Content(
 }
 
 @Composable
-private fun WithPremium(
+fun WithPremium(
     activeUntil: LocalDate,
-    ) {
-    val scope = rememberCoroutineScope()
-    var  showCancelPremiumConfirmDialog by remember { mutableStateOf(false) }
-    if (showCancelPremiumConfirmDialog) {
-        ConfirmationDialog(
-            text = stringResource(R.string.dialog_cancel_premium_text),
-            onComplete = { confirmed ->
-                showCancelPremiumConfirmDialog = false
-                if (confirmed) {
-                    scope.launch {
-                        //todo: изменение статуса
-                    }
-                }
-            },
-        )
-    }
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
+            .clickable(onClick = onClick)
             .background(AccentYellow, RoundedCornerShape(10.dp))
             .padding(16.dp)
             .fillMaxWidth(),
@@ -187,21 +215,17 @@ private fun WithPremium(
             )
         }
     }
-
-    Button(
-        text = stringResource(R.string.button_cancel_premium),
-        color = White,
-        onClick = { showCancelPremiumConfirmDialog = true},
-        textStyle = TextStyle(
-            fontSize = 18.sp,
-        )
-    )
 }
 
 @Composable
-private fun WithoutPremium() {
+fun WithoutPremium(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+            .clickable(onClick = onClick)
     ) {
         Title(
             text = stringResource(R.string.label_advantage_of_premium_1),
@@ -224,17 +248,6 @@ private fun WithoutPremium() {
             icon = R.drawable.img_priority,
         )
     }
-
-    Button(
-        text = stringResource(R.string.button_buy_premium),
-        color = AccentYellow,
-        textStyle = TextStyle(
-            fontSize = 18.sp,
-            color = DarkGray,
-            fontWeight = FontWeight.Black,
-        ),
-        onClick = {},
-    )
 }
 
 @Preview

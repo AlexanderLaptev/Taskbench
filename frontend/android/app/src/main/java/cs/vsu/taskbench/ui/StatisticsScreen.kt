@@ -8,54 +8,40 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.PremiumManagementScreenDestination
+import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.data.user.UserRepository
 import cs.vsu.taskbench.domain.model.Statistics
 import cs.vsu.taskbench.domain.model.User
-import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.TitleDailyStats
 import cs.vsu.taskbench.ui.component.WeekStatistics
-import cs.vsu.taskbench.ui.theme.AccentYellow
-import cs.vsu.taskbench.ui.theme.Active
-import cs.vsu.taskbench.ui.theme.Black
-import cs.vsu.taskbench.ui.theme.DarkGray
+import cs.vsu.taskbench.ui.settings.WithPremium
+import cs.vsu.taskbench.ui.settings.WithoutPremium
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import java.net.ConnectException
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 private const val TAG = "StatisticsScreen"
 
@@ -69,6 +55,8 @@ fun StatisticsScreen(
     var statistics by remember { mutableStateOf<Statistics?>(null) }
     val userRepo = koinInject<UserRepository>()
     val user = userRepo.user!!
+    val destinationsNavigator =
+        navController.rememberDestinationsNavigator() // <--- ПОЛУЧАЕМ DestinationsNavigator
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -123,6 +111,29 @@ fun StatisticsScreen(
                     modifier = Modifier.weight(1f),
                 )
             }
+            when (user.status) {
+                is User.Status.Premium -> {
+                    WithPremium(
+                        user.status.activeUntil,
+                        onClick = {
+                            destinationsNavigator.navigate(
+                                PremiumManagementScreenDestination
+                            )
+                        }
+                    )
+                }
+
+                User.Status.Unpaid -> {
+                    WithoutPremium(
+                        onClick = {
+                            destinationsNavigator.navigate(
+                                PremiumManagementScreenDestination
+                            )
+                        }
+                    )
+                }
+            }
         }
+
     }
 }

@@ -93,7 +93,7 @@ fun SettingsMainMenu(
         SettingsMenuOption(
             text = stringResource(R.string.menu_settings_subscription),
             icon = painterResource(R.drawable.ic_gear),
-            onClick = { settingsNavigator.navigate(PremiumManagementScreenDestination) },
+            onClick = { globalNavigator.navigate(PremiumManagementScreenDestination) },
         )
         HorizontalDivider()
         SettingsMenuOption(
