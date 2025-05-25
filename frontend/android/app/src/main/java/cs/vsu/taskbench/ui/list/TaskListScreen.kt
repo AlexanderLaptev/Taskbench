@@ -70,7 +70,6 @@ import cs.vsu.taskbench.ui.component.dialog.edit.TaskEditDialogViewModel
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.White
-import cs.vsu.taskbench.ui.util.formatDeadline
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
@@ -189,9 +188,8 @@ fun TaskListScreen(
                 modifier = Modifier.clipToBounds(),
             ) {
                 items(tasks, key = { it.id!! }) { task ->
-                    val deadline = formatDeadline(task.deadline)
                     TaskCard(
-                        deadlineText = deadline,
+                        deadlineText = task.deadline,
                         bodyText = task.content,
                         subtasks = task.subtasks,
                         onDismiss = { screenViewModel.deleteTask(task) },
