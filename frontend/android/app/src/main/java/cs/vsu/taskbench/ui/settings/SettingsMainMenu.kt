@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.ui.settings
 
+import android.content.pm.PackageManager.NameNotFoundException
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -70,8 +72,18 @@ fun SettingsMainMenu(
             contentDescription = null,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
+
+        val context = LocalContext.current
+        var versionName = ""
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            versionName = if (packageInfo.versionName != null) "v" + packageInfo.versionName else ""
+        } catch (_: NameNotFoundException) {
+            // ignore
+        }
+
         Text(
-            text = stringResource(R.string.version_number),
+            text = versionName,
             color = DarkGray,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
