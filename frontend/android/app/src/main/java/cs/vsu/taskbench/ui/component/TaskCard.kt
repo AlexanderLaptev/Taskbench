@@ -97,7 +97,7 @@ fun LazyItemScope.TaskCard(
                             colorFilter = null,
                         )
                         Text(
-                            text = formatDeadlineForTaskCard(deadlineText),
+                            text = formatDeadlineOriginal(deadlineText),
                             fontSize = 16.sp,
                             color = if (formatDeadlineOriginal(deadlineText) == stringResource(
                                     R.string.label_deadline_missing
