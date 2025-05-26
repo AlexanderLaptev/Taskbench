@@ -71,7 +71,7 @@ Android: [v1.0.0-alpha1](https://github.com/AlexanderLaptev/Taskbench/releases/t
 
 6.1 [репозиторий](https://gitlab.usr0.ru/tailoredtastes) [чеклист 1 этап](https://gitlab.usr0.ru/tailoredtastes/tailoredtastes-documentation/-/tree/master/%D0%9A%D1%80%D0%BE%D1%81%D1%81-%D0%BF%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%BA%D0%B0?ref_type=heads) [чеклист 2 этап](https://gitlab.usr0.ru/tailoredtastes/tailoredtastes-documentation/-/blob/master/Кросс-проверка/Кросс-проверка%20ТП%206.1%202%20этап.pdf)
 
-5.1 [репозиторий](https://github.com/capti/Cardly) [чеклист 1 этап](https://github.com/capti/Cardly/blob/main/Documentation/%D0%A4%D0%B8%D0%B4%D0%B1%D1%8D%D0%BA.pdf) [чеклист 2 этап](https://github.com/capti/Cardly/blob/main/Documentation/%D0%A2%D0%9F.%20%D0%A7%D0%B5%D0%BA%D0%BB%D0%B8%D1%81%D1%82%202%20%D1%8D%D1%82%D0%B0%D0%BF.pdf)
+5.1 [репозиторий](https://github.com/capti/Cardly) [чеклист 1 этап](https://github.com/capti/Cardly/blob/main/Documentation/%D0%A4%D0%B8%D0%B4%D0%B1%D1%8D%D0%BA.pdf) [чеклист 2 этап](https://github.com/capti/Cardly/blob/main/Documentation/%D0%A7%D0%B5%D0%BA%D0%BB%D0%B8%D1%81%D1%82%202%20%D1%8D%D1%82%D0%B0%D0%BF.pdf)
 
 3.3 [репозиторий](https://github.com/qudest/voyago) [чеклист 1 этап](https://github.com/qudest/voyago/blob/main/Documentation/Check-list.pdf) [чеклист 2 этап](https://github.com/qudest/voyago/blob/main/Documentation/check-list-2.pdf)
 
