@@ -43,7 +43,7 @@ def get_subscription(subscription_id):
 
 
 def is_user_subscribed(user):
-    return Subscription.objects.filter(user=user, end_date__gt=today).exists()
+    return Subscription.objects.filter(user=user, end_date__gt=timezone.now()).exists()
 
 
 def get_user_subscription(user):
@@ -76,7 +76,7 @@ def create_subscription_payment(user):
 def recreate_subscription_payment(user, subscription):
     payment_description = f"Продление ежемесячной подписки для {user.email}"
 
-    if not subscription.end_date or subscription.end_date >= timezone.now():
+    if not subscription.end_date or subscription.end_date <= timezone.now():
         payment = create_payment(subscription, payment_description)
         return payment, subscription
     else:
