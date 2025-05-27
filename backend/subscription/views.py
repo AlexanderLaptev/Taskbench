@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from subscription.serializers import payment_response, status_response
 from subscription.service import handle_message_from_yookassa, is_user_subscribed, \
-    cancel_subscription, activate_subscription
+    cancel_subscription, activate_subscription, get_user_subscription
 from taskbench.services.user_service import get_token, get_user
 from taskbench.utils.exceptions import YooKassaError, AuthenticationError, NotFound
 
@@ -70,7 +70,11 @@ class UserSubscriptionStatus(APIView):
 
         try:
             user = get_user(token)
-            return status_response(user=user, is_subscribed=is_user_subscribed(user))
+            try:
+                subscription = get_user_subscription(user)
+            except NotFound as e:
+                subscription = None
+            return status_response(user=user, is_subscribed=is_user_subscribed(user), subscription=subscription, status=200)
         except NotFound as e:
             return Response(status=404)
         except AuthenticationError as e:
