@@ -1,6 +1,5 @@
 import json
 import logging
-from ipaddress import ip_network
 
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response

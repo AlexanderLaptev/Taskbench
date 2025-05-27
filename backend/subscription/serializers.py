@@ -7,6 +7,9 @@ def payment_response(payment, subscription, status):
             'confirmation_url': payment.confirmation.confirmation_url,
             'yookassa_payment_id': payment.id,
             'subscription_id': subscription.subscription_id
+        } if payment is not None else {
+            'yookassa_payment_id': subscription.yookassa_payment_method_id,
+            'subscription_id': subscription.subscription_id
         }, status=status
     )
 
