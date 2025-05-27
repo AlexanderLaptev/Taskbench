@@ -76,12 +76,11 @@ def create_subscription_payment(user):
 def recreate_subscription_payment(user, subscription):
     payment_description = f"Продление ежемесячной подписки для {user.email}"
 
-    if subscription.end_date >= timezone.now():
+    if not subscription.end_date or subscription.end_date >= timezone.now():
         payment = create_payment(subscription, payment_description)
         return payment, subscription
     else:
         subscription.activate(subscription.yookassa_payment_method_id)
-        # payment = create_payment_without_confirmation(subscription, payment_description)
         return None, subscription
 
 def cancel_subscription(token):
