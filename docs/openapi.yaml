@@ -421,6 +421,8 @@ paths:
   /categories:
     get:
       summary: Get user's categories
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: List of user's categories
@@ -430,9 +432,17 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Category'
-                  
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
     post:
       summary: Create new category
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -443,6 +453,8 @@ paths:
                 name:
                   type: string
                   maxLength: 50
+              required:
+                - name
       responses:
         '201':
           description: Category created
@@ -452,8 +464,111 @@ paths:
                 $ref: '#/components/schemas/Category'
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '409':
           description: Category already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /categories/{category_id}:
+    patch:
+      summary: Update category name
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: category_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 50
+              required:
+                - name
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Category with this name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a category
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: category_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Category deleted successfully"
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   
   /user/subscription/status/:
     get:
