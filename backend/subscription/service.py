@@ -23,12 +23,12 @@ Configuration.secret_key = YOOKASSA_AUTH_KEY
 logger = logging.getLogger(__name__)
 
 def get_subscription_from_webhook(response_object):
-    metadata = response_object.get('metadata', {})
+    metadata = response_object.metadata
     subscription_internal_id_str = metadata.get('subscription_internal_id')
     if not subscription_internal_id_str:
         logger.warning(
             f"YooKassa webhook has no subscription_internal_id ): "
-            f"'subscription_internal_id' not found in metadata. Payout ID: {response_object.get('id')}"
+            f"'subscription_internal_id' not found in metadata. Payout ID: {response_object.id}"
         )
         raise YooKassaError("No subscription_internal_id found in metadata")
     subscription_internal_id = int(subscription_internal_id_str)
@@ -108,7 +108,7 @@ def handle_message_from_yookassa(data):
 
 def handle_success(response_object):
     subscription = get_subscription_from_webhook(response_object)
-    metadata = response_object.get('metadata', {})
+    metadata = response_object.metadata
     if metadata.get('payment_type') == "initial_subscription":
         subscription.activate(response_object.id)
         logger.info(f"Initial subscription {subscription.subscription_id} activated")
@@ -120,7 +120,7 @@ def handle_success(response_object):
 
 def handle_cancel(response_object):
     subscription = get_subscription_from_webhook(response_object)
-    metadata = response_object.get('metadata', {})
+    metadata = response_object.metadata
     if metadata.get('payment_type') == "initial_subscription":
         subscription.delete()
         logger.info(f"Initial subscription {subscription.subscription_id} deleted, initial payment canceled")
