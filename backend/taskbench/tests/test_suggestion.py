@@ -2,7 +2,7 @@ from datetime import datetime, timezone, UTC
 from django.test import SimpleTestCase, TestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from ..models.models import User, Category
+from taskbench.models.models import User, Category
 from ..services.suggestion_service import SuggestionService
 from rest_framework.test import APIClient
 from django.urls import reverse
