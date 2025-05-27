@@ -15,3 +15,6 @@ class NotFound(BaseError):
 
 class AlreadyExists(BaseError):
     pass
+
+class YooKassaError(BaseError):
+    pass

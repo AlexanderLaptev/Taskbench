@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_apscheduler',
     'taskbench.apps.TaskbenchConfig',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -140,9 +141,17 @@ LOGGING = {
     }
 }
 
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+APSCHEDULER_RUN_NOW_TIMEOUT = 25
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SUBSCRIPTION_PRICE = 149.00
+SUBSCRIPTION_CURRENCY = "RUB"
+YOOKASSA_STORE_ID = os.environ.get("YOOKASSA_STORE_ID")
+YOOKASSA_AUTH_KEY = os.environ.get("YOOKASSA_AUTH_KEY")
