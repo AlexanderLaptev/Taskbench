@@ -27,6 +27,8 @@ jobs:
           DATABASE_HOST=database
           DATABASE_PORT=5432
           GIGACHAT_AUTH_KEY=${{ secrets.GIGACHAT_AUTH_KEY }}
+          YOOKASSA_AUTH_KEY=${{ secrets.YOOKASSA_AUTH_KEY }}
+          YOOKASSA_STORE_ID=${{ secrets.YOOKASSA_STORE_ID }}
           EOF
 
       - name: Local deploy for test
@@ -85,6 +87,8 @@ jobs:
         DATABASE_HOST=database
         DATABASE_PORT=5432
         GIGACHAT_AUTH_KEY=${{ secrets.GIGACHAT_AUTH_KEY }}
+        YOOKASSA_AUTH_KEY=${{ secrets.YOOKASSA_AUTH_KEY }}
+        YOOKASSA_STORE_ID=${{ secrets.YOOKASSA_STORE_ID }}
         SERVER_HOST=${{ secrets.SERVER_HOST }}
         EOF
 
