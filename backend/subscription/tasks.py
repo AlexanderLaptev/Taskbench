@@ -1,6 +1,8 @@
+import uuid
+
+from celery import shared_task
 from django.utils import timezone
 from yookassa import Payment, Configuration
-import uuid
 
 from backend.settings import YOOKASSA_STORE_ID, YOOKASSA_AUTH_KEY, SUBSCRIPTION_PRICE, SUBSCRIPTION_CURRENCY
 from taskbench.models.models import Subscription
