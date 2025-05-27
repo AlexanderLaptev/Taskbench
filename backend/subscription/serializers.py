@@ -18,12 +18,12 @@ def status_response(is_subscribed, subscription, user, status):
     return JsonResponse(
         {
             'is_subscribed': is_subscribed,
-            'user': user.id,
+            'user_id': user.user_id,
             'next_payment': subscription.end_date,
             'is_active': subscription.is_active,
             'subscription_id': subscription.subscription_id
         } if subscription is not None else
         {
             'is_subscribed': is_subscribed,
-            'user': user.id
+            'user_id': user.user_id
         }, status=status)
