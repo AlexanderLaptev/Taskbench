@@ -32,12 +32,12 @@ def get_subscription_from_webhook(response_object):
         )
         raise YooKassaError("No subscription_internal_id found in metadata")
     subscription_internal_id = int(subscription_internal_id_str)
-    return Subscription.objects.get(id=subscription_internal_id)
+    return Subscription.objects.get(subsctiption_id=subscription_internal_id)
 
 
 def get_subscription(subscription_id):
     try:
-        return Subscription.objects.get(id=subscription_id)
+        return Subscription.objects.get(subsctiption_id=subscription_id)
     except Subscription.DoesNotExist:
         raise NotFound("Subscription does not exist")
 
