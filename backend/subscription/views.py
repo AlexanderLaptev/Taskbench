@@ -1,28 +1,40 @@
 import json
-from ipaddress import ip_network
+import logging
 
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from subscription.serializers import payment_response
-from subscription.service import create_subscription_payment, handle_message_from_yookassa
-from taskbench.services.user_service import get_token
+from subscription.serializers import payment_response, status_response
+from subscription.service import handle_message_from_yookassa, is_user_subscribed, \
+    cancel_subscription, activate_subscription
+from taskbench.services.user_service import get_token, get_user
 from taskbench.utils.exceptions import YooKassaError, AuthenticationError, NotFound
 
+logger = logging.getLogger(__name__)
 
 class SubscriptionView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             token = get_token(request)
-            payment, subscription = create_subscription_payment(token=token)
+            payment, subscription = activate_subscription(token=token)
             return payment_response(payment=payment, subscription=subscription, status=201)
         except AuthenticationError as e:
             return Response({'error': e.message}, status=401)
         except YooKassaError as e:
             return Response({'error': e.message}, status=500)
 
-
+    def delete(self, request, *args, **kwargs):
+        try:
+            token = get_token(request)
+            cancel_subscription(token)
+            return Response(status=200)
+        except NotFound as e:
+            return Response({'error': e.message}, status=400)
+        except AuthenticationError as e:
+            return Response({'error': e.message}, status=401)
+        except Exception as e:
+            return Response({'error': e.args[0]}, status=500)
 
 
 class WebhookHandler(APIView):
@@ -39,10 +51,27 @@ class WebhookHandler(APIView):
             handle_message_from_yookassa(data=event_json)
             Response(status=200)
         except ValidationError as e:
+            logger.error(e.args[0])
             return Response(status=200)
         except NotFound as e:
+            logger.error(e.message)
             return Response(status=200)
         except json.decoder.JSONDecodeError as e:
-            return Response(status=400)
-        except Exception as e:
+            logger.error(e.args[0])
             return Response(status=200)
+        except Exception as e:
+            logger.error(e.args[0])
+            return Response(status=200)
+
+
+class UserSubscriptionStatus(APIView):
+    def get(self, request, *args, **kwargs):
+        token = get_token(request)
+
+        try:
+            user = get_user(token)
+            return status_response(user=user, is_subscribed=is_user_subscribed(user))
+        except NotFound as e:
+            return Response(status=404)
+        except AuthenticationError as e:
+            return Response(status=401)
