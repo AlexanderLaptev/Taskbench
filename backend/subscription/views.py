@@ -42,7 +42,7 @@ class WebhookHandler(APIView):
     def post(self, request, *args, **kwargs):
         event_json = json.loads(request.body)
 
-        yookassa_ips = ['185.71.76.0/27', '185.71.77.0/27', '77.75.153.0/25', '77.75.156.35', '77.75.156.11', '77.75.154.128/25', '2a02:5180::/32']
+        yookassa_ips = ['185.71.76.0/27', '185.71.77.0/27', '77.75.153.0/25', '77.75.156.35', '77.75.156.11', '77.75.154.128/25']
         client_ip = request.META.get('REMOTE_ADDR')
         if not any(ip_network(client_ip).subnet_of(ip_network(net)) for net in yookassa_ips):
             print(f"Webhook from untrusted IP: {client_ip}")
