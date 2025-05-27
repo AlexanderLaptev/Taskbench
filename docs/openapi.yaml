@@ -15,8 +15,6 @@ paths:
   /ai/suggestions:
     post:
       summary: Get AI suggestions for task DPC
-      security:
-        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -47,18 +45,10 @@ paths:
                     type: array
                     items:
                       type: string
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
   /tasks:
     post:
       summary: Submit a new task
-      security:
-        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -72,23 +62,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
     get:
       summary: Get list of tasks
-      security:
-        - BearerAuth: []
       parameters:
         - in: query
           name: category_id
@@ -98,7 +74,7 @@ paths:
           name: sort_by
           schema:
             type: string
-            enum: [priority, deadline, default]
+            enum: [priority, deadline]
         - in: query
           name: date
           schema:
@@ -141,19 +117,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
+                    
 
   /tasks/{task_id}:
     delete:
       summary: Remove a task
-      security:
-        - BearerAuth: []
       parameters:
         - in: path
           name: task_id
@@ -163,23 +135,9 @@ paths:
       responses:
         '204':
           description: Task removed successfully
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Task not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
     patch:
       summary: Edit a task
-      security:
-        - BearerAuth: []
       parameters:
         - in: path
           name: task_id
@@ -193,7 +151,7 @@ paths:
             schema:
               type: object
               properties:
-                content:
+                text:
                   type: string
                 dpc:
                   $ref: '#/components/schemas/DPC'
@@ -204,30 +162,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Task not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
   /subtasks:
     post:
       summary: Add a subtask
-      security:
-        - BearerAuth: []
       parameters:
         - in: query
           name: task_id
@@ -252,24 +190,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Subtask'
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
+  
   /subtasks/{subtask_id}:
     patch:
       summary: Edit or toggle a subtask
-      security:
-        - BearerAuth: []
       parameters:
         - in: path
           name: subtask_id
@@ -294,29 +218,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Subtask'
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Subtask not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
     delete:
       summary: Remove a subtask
-      security:
-        - BearerAuth: []
       parameters:
         - in: path
           name: subtask_id
@@ -326,18 +230,6 @@ paths:
       responses:
         '204':
           description: Subtask removed successfully
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Subtask not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
   /user/register:
     post:
@@ -388,7 +280,7 @@ paths:
                     type: string
                     example: Email already exists
       security: []
-
+       
   /user/login/:
     post:
       summary: Login an existing user
@@ -440,12 +332,10 @@ paths:
                     type: string
                     example: Invalid email or password
       security: []
-
+      
   /user/password:
     patch:
       summary: Change user password
-      security:
-        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -460,34 +350,20 @@ paths:
       responses:
         '204':
           description: Password changed successfully
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
   /user/delete:
     delete:
       summary: Delete an existing user
       description: Delete the current authenticated user.
-      security:
-        - BearerAuth: []
       responses:
         '200':
           description: Successfully deleted user
         '401':
           description: Unauthorized — invalid or missing token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '404':
           description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
 
   /token/refresh/:
     post:
@@ -518,16 +394,10 @@ paths:
                     example: eyJ0eXAiOiJKV1QiLCJhbGci...
         '401':
           description: Invalid or expired refresh token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
   /statistics:
     get:
       summary: Get user statistics
-      security:
-        - BearerAuth: []
       responses:
         '200':
           description: Statistics retrieved
@@ -547,13 +417,7 @@ paths:
                       format: float
                     maxItems: 7
                     minItems: 7
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
+                    
   /categories:
     get:
       summary: Get user's categories
@@ -705,13 +569,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
+  
   /user/subscription/status/:
     get:
       summary: Get user's subscription status
       description: Check if user has active subscription
-      security:
-        - BearerAuth: []
       responses:
         '200':
           description: Subscription status retrieved
@@ -740,13 +602,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
 
   /user/subscription/:
     post:
       summary: Create test subscription
       description: Create a test subscription for 1 month
-      security:
-        - BearerAuth: []
       responses:
         '201':
           description: Subscription created
@@ -770,14 +632,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
 
 components:
+
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
+      
   schemas:
     DPC:
       type: object
@@ -836,7 +701,7 @@ components:
           type: string
         is_done:
           type: boolean
-
+          
     Category:
       type: object
       properties:
@@ -847,7 +712,7 @@ components:
           maxLength: 50
       required:
         - name
-
+    
     Subscription:
       type: object
       properties:
