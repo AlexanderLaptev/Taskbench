@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from taskbench.views.category_views import CategoryListView
+from taskbench.views.category_views import CategoryListView, CategoryDetailView
 from taskbench.views.statistics_views import StatisticsView
 from taskbench.views.subtask_views import (
     SubtaskCreateView,
@@ -21,6 +21,7 @@ from taskbench.views.user_views import (
     CreateSubscriptionView
 )
 
+
 urlpatterns = [
     path("", include("dashboard.urls")),
     path('tasks/', TaskListView.as_view(), name='task_list'),
@@ -28,6 +29,7 @@ urlpatterns = [
     path('subtasks/', SubtaskCreateView.as_view(), name='subtask_create'),
     path('subtasks/<int:subtask_id>/', SubtaskDetailView.as_view(), name='subtask_detail'),
     path('categories/', CategoryListView.as_view(), name='categories'),
+    path('categories/<int:category_id>/', CategoryDetailView.as_view(), name='category_detail'),
     path('user/register/', RegisterView.as_view(), name='register'), # POST - создание пользователя
     path('user/login/', LoginView.as_view(), name='login'), # POST - валидация пользователя, возвращение jwt
     path('user/delete/', DeleteUserView.as_view(), name='delete_user'), # POST - валидация пользователя, возвращение jwt
