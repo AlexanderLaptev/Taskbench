@@ -9,13 +9,11 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,74 +57,69 @@ fun LazyItemScope.TaskCard(
         gesturesEnabled = swipeEnabled || state.targetValue == SwipeToDismissBoxValue.EndToStart,
         modifier = Modifier.animateItem()
     ) {
-        // TODO: re-enable ripple once we have card expansion ?????
-        CompositionLocalProvider(
-            LocalRippleConfiguration provides null,
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = White,
+                contentColor = Black,
+            ),
+            shape = RoundedCornerShape(10.dp),
+            onClick = onClick,
+            modifier = modifier,
         ) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = White,
-                    contentColor = Black,
-                ),
-                shape = RoundedCornerShape(10.dp),
-                onClick = onClick,
-                modifier = modifier,
+            Column(
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(16.dp),
             ) {
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(16.dp),
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = modifier.padding(
-                            start = 24.dp,
-                            end = 8.dp,
-                            top = 8.dp,
-                            bottom = 8.dp
-                        )
-                    ) {
-                        Image(
-                            painter = if (formatDeadlineForTaskCard(deadlineText) == stringResource(
-                                    R.string.label_overdue
-                                )
-                            ) painterResource(R.drawable.ic_clock_overdue)
-                            else painterResource(R.drawable.ic_clock),
-                            contentDescription = null,
-                            colorFilter = null,
-                        )
-                        Text(
-                            text = formatDeadlineOriginal(deadlineText),
-                            fontSize = 16.sp,
-                            color = if (formatDeadlineOriginal(deadlineText) == stringResource(
-                                    R.string.label_deadline_missing
-                                )
-                            ) LightGray else Black,
-                        )
-                    }
-
-                    Text(
-                        text = bodyText,
-                        fontSize = 20.sp,
-                        modifier = modifier.padding(
-                            start = 24.dp,
-                            end = 8.dp,
-                        ),
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = modifier.padding(
+                        start = 24.dp,
+                        end = 8.dp,
+                        top = 8.dp,
+                        bottom = 8.dp
                     )
-
-                    Column() {
-                        for (subtask in subtasks) {
-                            var checked by remember { mutableStateOf(subtask.isDone) }
-                            SubtaskComposable(
-                                content = subtask.content,
-                                checked = checked,
-                                onCheckedChange = {
-                                    checked = !checked
-                                    onSubtaskCheckedChange(subtask, it)
-                                },
+                ) {
+                    Image(
+                        painter = if (formatDeadlineForTaskCard(deadlineText) == stringResource(
+                                R.string.label_overdue
                             )
-                        }
+                        ) painterResource(R.drawable.ic_clock_overdue)
+                        else painterResource(R.drawable.ic_clock),
+                        contentDescription = null,
+                        colorFilter = null,
+                    )
+                    Text(
+                        text = formatDeadlineOriginal(deadlineText),
+                        fontSize = 16.sp,
+                        color = if (formatDeadlineOriginal(deadlineText) == stringResource(
+                                R.string.label_deadline_missing
+                            )
+                        ) LightGray else Black,
+                    )
+                }
+
+                Text(
+                    text = bodyText,
+                    fontSize = 20.sp,
+                    modifier = modifier.padding(
+                        start = 24.dp,
+                        end = 8.dp,
+                    ),
+                )
+
+                Column {
+                    for (subtask in subtasks) {
+                        var checked by remember { mutableStateOf(subtask.isDone) }
+                        SubtaskComposable(
+                            content = subtask.content,
+                            checked = checked,
+                            onCheckedChange = {
+                                checked = !checked
+                                onSubtaskCheckedChange(subtask, it)
+                            },
+                        )
                     }
                 }
             }
@@ -144,7 +137,7 @@ private fun SubtaskComposable(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(checked, onCheckedChange)
-        var color = if (!checked) Black else LightGray
+        val color = if (!checked) Black else LightGray
         Text(
             text = content,
             fontSize = 16.sp,
