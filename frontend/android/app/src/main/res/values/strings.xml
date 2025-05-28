@@ -25,10 +25,10 @@
     <string name="error_timeout">Нет ответа от сервера</string>
     <string name="error_unknown">Неизвестная ошибка</string>
     <string name="friday_short">пт</string>
-    <string name="label_advantage_of_premium_1">Автоматическое выделение подзадач</string>
-    <string name="label_advantage_of_premium_2">Автоматическое определение приоритетов</string>
-    <string name="label_advantage_of_premium_3">Умное назначение  дедлайнов</string>
-    <string name="label_advantage_of_premium_4">Автоматическое выделение категорий</string>
+    <string name="label_premium_advantage1">Разбивать задачи на подзадачи</string>
+    <string name="label_premium_advantage2">Определять приоритеты задач</string>
+    <string name="label_premium_advantage3">Назначать дедлайны задачам</string>
+    <string name="label_premium_advantage4">Выделять категории задач</string>
     <string name="label_back">Назад</string>
     <string name="label_deadline_missing">Без дедлайна</string>
     <string name="label_done_all_time_high">Рекорд:</string>
@@ -71,10 +71,11 @@
     <string name="sunday_short">вс</string>
     <string name="text_stats_premium_part1">Хотите стать ещё более продуктивными?</string>
     <string name="text_stats_premium_part2">"Станьте премиум-пользователем всего за "</string>
-    <string name="text_stats_premium_part3">149 ₽/месяц</string>
-    <string name="text_stats_premium_part4">" и получите доступ к дополнительным функциям!"</string>
+    <string name="text_stats_premium_part3">" и получите доступ к дополнительным функциям!"</string>
+    <string name="text_subscription_cost">149 ₽/месяц</string>
     <string name="thursday_short">чт</string>
     <string name="time_not_set">--:--</string>
     <string name="tuesday_short">вт</string>
     <string name="wednesday_short">ср</string>
+    <string name="text_buy_premium_last">, чтобы автоматически:</string>
 </resources>

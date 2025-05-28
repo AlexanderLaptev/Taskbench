@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.BuyPremiumScreenDestination
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.analytics.AnalyticsFacade
@@ -109,6 +110,7 @@ fun StatisticsScreen(
             doneToday = statistics.doneToday,
             allTimeHigh = statistics.doneAllTimeHigh,
             userStatus = User.Status.Unpaid,
+            onBuy = { destinationsNavigator.navigate(BuyPremiumScreenDestination) },
             modifier = Modifier
                 .padding(16.dp)
                 .padding(padding),
@@ -122,6 +124,7 @@ private fun Content(
     doneToday: Int,
     allTimeHigh: Int,
     userStatus: User.Status,
+    onBuy: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -180,7 +183,7 @@ private fun Content(
         }
 
         when (userStatus) {
-            User.Status.Unpaid -> WhenUnpaid()
+            User.Status.Unpaid -> WhenUnpaid(onBuy = onBuy)
             is User.Status.Premium -> WhenPaid(userStatus)
         }
     }
@@ -230,7 +233,10 @@ private fun StatsTile(
 }
 
 @Composable
-private fun WhenUnpaid(modifier: Modifier = Modifier) {
+private fun WhenUnpaid(
+    onBuy: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
@@ -250,9 +256,9 @@ private fun WhenUnpaid(modifier: Modifier = Modifier) {
             text = buildAnnotatedString {
                 append(stringResource(R.string.text_stats_premium_part2))
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Medium)) {
-                    append(stringResource(R.string.text_stats_premium_part3))
+                    append(stringResource(R.string.text_subscription_cost))
                 }
-                append(stringResource(R.string.text_stats_premium_part4))
+                append(stringResource(R.string.text_stats_premium_part3))
             },
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
@@ -260,7 +266,7 @@ private fun WhenUnpaid(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(8.dp))
         Button(
             text = stringResource(R.string.button_stats_premium),
-            onClick = {},
+            onClick = onBuy,
             color = White,
         )
     }
@@ -308,6 +314,7 @@ private fun PreviewUnpaid() {
             doneToday = PREVIEW_DONE_TODAY,
             allTimeHigh = PREVIEW_DONE_MAX,
             userStatus = User.Status.Unpaid,
+            onBuy = {},
         )
     }
 }
@@ -321,6 +328,7 @@ private fun PreviewPremium() {
             doneToday = PREVIEW_DONE_TODAY,
             allTimeHigh = PREVIEW_DONE_MAX,
             userStatus = User.Status.Premium(LocalDate.of(2025, 5, 30)),
+            onBuy = {},
         )
     }
 }
