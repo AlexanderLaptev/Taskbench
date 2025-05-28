@@ -98,5 +98,5 @@ dependencies {
     implementation(libs.composeDestinations.bottomSheet)
     ksp(libs.composeDestinations.ksp)
 
-    implementation("io.appmetrica.analytics:analytics:7.9.0")
+    implementation(libs.analytics)
 }
