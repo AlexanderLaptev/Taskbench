@@ -43,7 +43,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -70,6 +69,7 @@ import cs.vsu.taskbench.ui.component.dialog.edit.TaskEditDialog
 import cs.vsu.taskbench.ui.component.dialog.edit.TaskEditDialogViewModel
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
+import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -442,25 +442,27 @@ private fun DateTile(
             .clip(DATE_TILE_SHAPE)
             .clickable(onClick = onClick)
             .background(
-                color = if (selected) AccentYellow else White,
+                color = if (selected) AccentYellow else if (today) LightYellow else White,
                 shape = DATE_TILE_SHAPE,
             )
             .padding(horizontal = 8.dp, vertical = 8.dp)
             .defaultMinSize(minWidth = 40.dp),
     ) {
+        val fontStyle = if (today) FontStyle.Italic else FontStyle.Normal
         Text(
             text = topLabel,
             fontSize = 16.sp,
+            fontStyle = fontStyle,
         )
         Text(
             text = middleLabel,
             fontSize = 24.sp,
-//            fontWeight = if (today) FontWeight.Medium else FontWeight.Normal,
-            textDecoration = if (today) TextDecoration.Underline else null,
+            fontStyle = fontStyle,
         )
         Text(
             text = bottomLabel,
             fontSize = 16.sp,
+            fontStyle = fontStyle,
         )
     }
 }
