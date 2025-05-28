@@ -180,7 +180,7 @@ fun TaskListScreen(
                 onDateSelected = {
                     screenViewModel.selectedDate =
                         if (screenViewModel.selectedDate == it) null else it
-                    taskListState.requestScrollToItem(0)
+                    scope.launch { taskListState.animateScrollToItem(0) }
                 },
                 listState = dateRowListState,
                 modifier = Modifier
@@ -195,7 +195,7 @@ fun TaskListScreen(
             ) {
                 items(tasks, key = { it.id!! }) { task ->
                     TaskCard(
-                        deadlineText = task.deadline,
+                        deadline = task.deadline,
                         bodyText = task.content,
                         subtasks = task.subtasks,
                         onDismiss = {
@@ -358,7 +358,7 @@ private fun SortModeRow(
                             "category_filter_selected",
                             mapOf(
                                 "category_id" to (category.id ?: "unknown"),
-                                "category_name" to (category.name ?: "unnamed")
+                                "category_name" to category.name,
                             )
                         )
                         viewModel.categoryFilterState = CategoryFilterState.Enabled(category)
