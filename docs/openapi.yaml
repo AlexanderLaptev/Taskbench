@@ -570,70 +570,86 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   
-  /user/subscription/status/:
-    get:
-      summary: Get user's subscription status
-      description: Check if user has active subscription
-      responses:
-        '200':
-          description: Subscription status retrieved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  has_subscription:
-                    type: boolean
-                    description: Subscription active status
-                  start_date:
-                    type: string
-                    format: date-time
-                    nullable: true
-                  end_date:
-                    type: string
-                    format: date-time
-                    nullable: true
-                  transaction_id:
-                    type: string
-                    nullable: true
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+  /subscription/manage:
+    post:
+      summary: Create new user's subscription or activate an old one
       security:
         - BearerAuth: []
-
-  /user/subscription/:
-    post:
-      summary: Create test subscription
-      description: Create a test subscription for 1 month
       responses:
         '201':
-          description: Subscription created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Subscription'
-        '400':
-          description: Bad request
+          description: Subscription created or activated
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  error:
+                  confirmation_url:
                     type: string
-                    example: "User already has active subscription"
+                    nullable: true
+                    description: "If exists, open confirmation_url in browser and confirm payment"
+                  yookassa_payment_id:
+                    type: integer
+                    nullable: true
+                  subscription_id:
+                    type: integer
+                    description: "Subscription id in taskbench database"
         '401':
           description: Unauthorized
+        '500':
+          description: Yookassa error (unavailable or something)
+        
+    delete:
+      summary: Deactivate user's subscription
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Subscription deactivated. It will not be automatically updated, but user can use benefits till the end of paid time
+        '400':
+          description: User's subscription not found.
+        '401':
+          description: Unauthorized
+        '500':
+          description: I literally dont know what can happen here, I guess user will never unsubscribe
+  
+  /subscription/status:
+    get:
+      summary: Get user's subscription status
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Subscription created or activated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - BearerAuth: []
+                type: object
+                properties:
+                  is_subscribed:
+                    type: boolean
+                    description: "user can use benefits"
+                  user_id:
+                    type: integer
+                  next_payment:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    example: "2025-06-28T10:44:59.978Z"
+                    description: "End of subscription term"
+                  is_active:
+                    type: boolean
+                    nullable: true
+                    description: "True if the subscription is automatically updated at the end on the 'next_payment' and the money is taken"
+                  subscription_id:
+                    type: integer
+                    description: "Subscription id in taskbench database"
+                    
+  /subscription/webhook:
+    post:
+      summary: Used by Юkassa to deliver messages about payment success or cancel
+      responses:
+        '200':
+          description: Message delivered
 
 components:
 
@@ -712,27 +728,7 @@ components:
           maxLength: 50
       required:
         - name
-    
-    Subscription:
-      type: object
-      properties:
-        status:
-          type: string
-          example: "success"
-        subscription_id:
-          type: integer
-          example: 1
-        start_date:
-          type: string
-          format: date-time
-          example: "2023-05-20T10:00:00Z"
-        end_date:
-          type: string
-          format: date-time
-          example: "2023-06-20T10:00:00Z"
-        transaction_id:
-          type: string
-          example: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+  
 
     Error:
       type: object
