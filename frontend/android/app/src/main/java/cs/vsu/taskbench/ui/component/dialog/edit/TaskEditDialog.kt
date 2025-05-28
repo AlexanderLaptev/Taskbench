@@ -70,7 +70,7 @@ import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
-import cs.vsu.taskbench.ui.util.formatDeadlineOriginal
+import cs.vsu.taskbench.ui.util.formatDeadline
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -399,7 +399,7 @@ private fun EditAreaChips(
         // Deadline chip
         val deadlineContentColor = if (stateHolder.deadline == null) LightGray else Black
         Chip(
-            text = formatDeadlineOriginal(stateHolder.deadline),
+            text = formatDeadline(stateHolder.deadline),
             icon = painterResource(R.drawable.ic_clock),
             textColor = deadlineContentColor,
             iconTint = deadlineContentColor,

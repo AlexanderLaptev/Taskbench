@@ -57,7 +57,7 @@
     <string name="menu_settings_logout">Выйти из аккаунта</string>
     <string name="menu_settings_subscription">Управление подпиской</string>
     <string name="monday_short">пн</string>
-    <string name="pattern_date">dd.MM.YYYY</string>
+    <string name="pattern_date">dd MMMM YYYY \'г.\'</string>
     <string name="pattern_time">HH:mm</string>
     <string name="placeholder_category">Введите категорию</string>
     <string name="placeholder_confirm_password">Подтвердите пароль</string>

@@ -1,6 +1,5 @@
 package cs.vsu.taskbench.ui.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -21,8 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,13 +31,13 @@ import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.White
-import cs.vsu.taskbench.ui.util.formatDeadlineForTaskCard
-import cs.vsu.taskbench.ui.util.formatDeadlineOriginal
+import cs.vsu.taskbench.ui.util.formatDeadline
 import java.time.LocalDateTime
+import java.time.chrono.ChronoLocalDateTime
 
 @Composable
 fun LazyItemScope.TaskCard(
-    deadlineText: LocalDateTime?,
+    deadline: LocalDateTime?,
     bodyText: String,
     subtasks: List<Subtask>,
     onClick: () -> Unit,
@@ -87,22 +87,23 @@ fun LazyItemScope.TaskCard(
                         bottom = 8.dp
                     )
                 ) {
-                    Image(
-                        painter = if (formatDeadlineForTaskCard(deadlineText) == stringResource(
-                                R.string.label_overdue
-                            )
-                        ) painterResource(R.drawable.ic_clock_overdue)
-                        else painterResource(R.drawable.ic_clock),
+                    val overdue = if (deadline != null) {
+                        deadline <= ChronoLocalDateTime.from(LocalDateTime.now())
+                    } else false
+
+                    Icon(
+                        painter = painterResource(
+                            if (overdue) {
+                                R.drawable.ic_clock_overdue
+                            } else R.drawable.ic_clock
+                        ),
                         contentDescription = null,
-                        colorFilter = null,
+                        tint = Color.Unspecified,
                     )
                     Text(
-                        text = formatDeadlineOriginal(deadlineText),
+                        text = formatDeadline(deadline),
                         fontSize = 16.sp,
-                        color = if (formatDeadlineOriginal(deadlineText) == stringResource(
-                                R.string.label_deadline_missing
-                            )
-                        ) LightGray else Black,
+                        color = if (deadline == null) LightGray else Black,
                     )
                 }
 
