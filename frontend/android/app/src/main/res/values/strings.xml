@@ -52,12 +52,11 @@
     <string name="error_blank_category">Категория не может быть пустой</string>
     <string name="label_no_category">Без категории</string>
 
-    <string name="label_done_today">Полезных дел сегодня сделано:</string>
-    <string name="label_done_all_time_high">Рекорд по количеству дел в день:</string>
+    <string name="label_done_today">Сегодня:</string>
+    <string name="label_done_all_time_high">Рекорд:</string>
     <string name="button_buy_premium">Купите премиум, чтобы стать продуктивнее</string>
     <string name="label_premium_status">Статус премиума:</string>
-    <string name="label_premium_active">активный</string>
-    <string name="label_premium_until">Следующий платеж:</string>
+    <string name="label_premium_active">Премиум-подписка активна!</string>
     <string name="pattern_date">dd.MM.YYYY</string>
     <string name="error_category_too_long">Название категории должно быть короче 50 символов</string>
     <string name="error_category_already_exists">Категория уже существует</string>
@@ -97,5 +96,14 @@
     <string name="label_advantage_of_premium_2">Автоматическое определение приоритетов</string>
     <string name="label_advantage_of_premium_3">Умное назначение  дедлайнов</string>
     <string name="label_advantage_of_premium_4">Автоматическое выделение категорий</string>
+    <string name="label_week_statistics">Еженедельная статистика</string>
+    <string name="label_good_job">Так держать!</string>
+    <string name="label_stats_tile_tasks">задач</string>
+    <string name="text_stats_premium_part1">Хотите стать ещё более продуктивными?</string>
+    <string name="text_stats_premium_part2">"Станьте премиум-пользователем всего за "</string>
+    <string name="text_stats_premium_part3">149 ₽/месяц</string>
+    <string name="text_stats_premium_part4">" и получите доступ к дополнительным функциям!"</string>
+    <string name="button_stats_premium">Перейти к оформлению</string>
+    <string name="label_premium_until">Действует до %1$s</string>
 
 </resources>
