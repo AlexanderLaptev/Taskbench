@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cs.vsu.taskbench.R
@@ -137,11 +138,13 @@ private fun SubtaskComposable(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(checked, onCheckedChange)
-        val color = if (!checked) Black else LightGray
+        val color = if (checked) LightGray else Black
+        val decoration = if (checked) TextDecoration.LineThrough else TextDecoration.None
         Text(
             text = content,
-            fontSize = 16.sp,
             color = color,
+            fontSize = 16.sp,
+            textDecoration = decoration,
         )
     }
 }
