@@ -28,7 +28,7 @@ class SubscriptionView(APIView):
         try:
             token = get_token(request)
             cancel_subscription(token)
-            return Response(status=200)
+            return Response(status=204)
         except NotFound as e:
             return Response({'error': e.message}, status=400)
         except AuthenticationError as e:
