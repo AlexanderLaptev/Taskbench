@@ -69,11 +69,16 @@ fun LazyItemScope.TaskCard(
         ) {
             Column(
                 horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    top = 8.dp,
+                    end = 16.dp,
+                    bottom = 8.dp
+                ),
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = modifier.padding(
                         start = 24.dp,
