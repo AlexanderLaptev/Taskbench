@@ -1,11 +1,14 @@
 import logging
 from datetime import timedelta
-from django.utils import timezone
+
 from django.db.models import Count
+from django.utils import timezone
+
 from taskbench.models.models import Task
-from taskbench.utils.exceptions import AuthenticationError
+from taskbench.services.user_service import get_user
 
 logger = logging.getLogger(__name__)
+
 
 def get_statistics(token):
     """
@@ -14,12 +17,8 @@ def get_statistics(token):
     - max_done: максимальное количество задач за день в текущей неделе
     - weekly: массив из 7 значений (float 0.0-1.0) с понедельника по воскресенье
     """
-    from taskbench.services.user_service import get_user
-    try:
-        user = get_user(token)
-    except AuthenticationError as e:
-        logger.error(f"Authentication failed: {str(e)}")
-        raise
+
+    user = get_user(token)
 
     # Определяем начало текущей недели (понедельник)
     today = timezone.now().date()

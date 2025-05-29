@@ -1,12 +1,14 @@
-from datetime import datetime, timezone, UTC
-from django.test import SimpleTestCase, TestCase
-from rest_framework_simplejwt.tokens import RefreshToken
+from datetime import datetime, timezone
 
-from taskbench.models.models import User, Category
-from ..services.suggestion_service import SuggestionService
-from rest_framework.test import APIClient
+from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from suggestion.service import SuggestionService
+from taskbench.models.models import User, Category
+
 
 class SuggestionServiceTestCase(SimpleTestCase):
     def __init__(self, method_name: str = "runTest"):
@@ -19,7 +21,7 @@ class SuggestionServiceTestCase(SimpleTestCase):
     def test_deadline_suggestion(self):
         text = 'Не забыть, что завтра в 3 часа дня созвон'
         now_time = datetime(2025, 4, 24, 12, 00, 0).replace(tzinfo=None)
-        supposed_time = datetime(2025,4,25,15,00,0).replace(tzinfo=None)
+        supposed_time = datetime(2025, 4, 25, 15, 00, 0).replace(tzinfo=None)
         result = SuggestionService().suggest_deadline(text, now=now_time)
         print(result)
         self.assertEqual(result, supposed_time)
@@ -102,7 +104,7 @@ class SuggestionApiTestCase(TestCase):
                                             "priority": None,
                                             "deadline": None,
                                         },
-                                        "title":  "Не забыть, что завтра в 3 часа дня созвон",
+                                        "title": "Не забыть, что завтра в 3 часа дня созвон",
                                         "timestamp": now_time,
                                     },
                                     HTTP_AUTHORIZATION=f'Bearer {token}',
@@ -118,4 +120,3 @@ class SuggestionApiTestCase(TestCase):
         # self.assertIsNotNone(category_id)
         self.assertIsNotNone(deadline)
         self.assertTrue(0 <= priority <= 1)
-

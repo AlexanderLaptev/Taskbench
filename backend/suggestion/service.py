@@ -15,6 +15,13 @@ GIGACHAT_API_SAFETY_GAP = 60
 
 logger = logging.getLogger(__name__)
 
+SUBTASK_SYSTEM_PROMPT = """
+Ты — специализированный декомпозитор задач. 
+Твоя ЕДИНСТВЕННАЯ функция — анализировать пользовательскую задачу и разбивать её на элементарные подзадачи.
+Каждая подзадача должна 
+"""
+
+
 @singleton
 class SuggestionService:
 

@@ -1,19 +1,14 @@
 import json
 
 from django.http import JsonResponse
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend import settings
-from backend.settings import DEBUG
+from suggestion.service import SuggestionService
 from taskbench.models.models import Category
 from taskbench.serializers.task_serializers import TaskDPCtoFlatSerializer
 from taskbench.serializers.user_serializers import JwtSerializer
 from taskbench.services.user_service import get_token
-# from taskbench.serializers.task_serializers import TaskSerializer
-from taskbench.services.suggestion_service import SuggestionService
-
 
 
 class SuggestionView(APIView):

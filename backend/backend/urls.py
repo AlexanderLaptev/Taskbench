@@ -6,7 +6,6 @@ from taskbench.views.subtask_views import (
     SubtaskCreateView,
     SubtaskDetailView
 )
-from taskbench.views.suggestion_views import SuggestionView
 from taskbench.views.task_views import (
     TaskListView,
     TaskDetailView,
@@ -23,6 +22,7 @@ from taskbench.views.user_views import (
 urlpatterns = [
     path("", include("dashboard.urls")),
     path("", include("subscription.urls")),
+    path("", include("suggestion.urls")),
     path('tasks/', TaskListView.as_view(), name='task_list'),
     path('tasks/<int:task_id>/', TaskDetailView.as_view(), name='task_detail'),
     path('subtasks/', SubtaskCreateView.as_view(), name='subtask_create'),
@@ -35,6 +35,5 @@ urlpatterns = [
     path('user/password/', ChangePasswordView.as_view(), name='change_password'),
     path('token/refresh/', TokenRefreshView.as_view(), name="token_refresh"),
     path('statistics/', StatisticsView.as_view(), name='statistics'),
-    path('ai/suggestions/', SuggestionView.as_view(), name="ai_suggestions"),
 ]
 
