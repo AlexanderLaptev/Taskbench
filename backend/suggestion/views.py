@@ -1,55 +1,19 @@
 import json
 
 from django.http import JsonResponse
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from suggestion.service import SuggestionService
-from taskbench.models.models import Category
-from taskbench.serializers.task_serializers import TaskDPCtoFlatSerializer
-from taskbench.serializers.user_serializers import JwtSerializer
+from suggestion.service import suggest
 from taskbench.services.user_service import get_token
 
 
 class SuggestionView(APIView):
 
     def post(self, request):
-
         data = json.loads(request.body)
-        serializer = TaskDPCtoFlatSerializer(data=data)
-        if not serializer.is_valid():
-            return JsonResponse(serializer.errors, status=400)
-        user_serializer = JwtSerializer(data=get_token(request))
-        if not user_serializer.is_valid():
-            return Response("Invalid token", status=401)
-        user_id = user_serializer.validated_data['user'].user_id
+        token = get_token(request)
 
-        input_data = serializer.validated_data
-        deadline = input_data.get('deadline')
-        title = input_data.get('title')
-        priority = input_data.get('priority')
-        category_id = input_data.get('category_id')
-        timestamp = input_data.get('timestamp')
-        service = SuggestionService(debug=False)
-
-        if deadline is None:
-            deadline = service.suggest_deadline(title, now=timestamp)
-        # priority = service.suggest_priority(title)
-
-        if category_id is None:
-            categories = Category.objects.filter(user_id = user_id)
-            category_names = [c.name for c in categories]
-            category_index = service.suggest_category(title, category_names)
-            category_name = ''
-            if category_index < 0 or category_index >= len(categories):
-                category_id = None
-            else:
-                category_id = categories[category_index].category_id
-                category_name = categories[category_index].name
-        else:
-            category_name = Category.objects.get(category_id=category_id).name
-
-        subtasks = service.suggest_subtasks(title)
+        subtasks, category_name, category_id, deadline = suggest(token, data)
 
         return JsonResponse({
             "suggested_dpc": {
@@ -58,5 +22,5 @@ class SuggestionView(APIView):
                 "category_id": category_id if category_name is not None else '',
                 "category_name": category_name if category_name is not None else '',
             },
-            "suggestions": subtasks
+            "suggestions": subtasks if subtasks is not None else [],
         })
