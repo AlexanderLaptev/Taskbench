@@ -21,6 +21,7 @@ import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.subscription.SubscriptionManager
 import cs.vsu.taskbench.domain.model.UserStatus
 import cs.vsu.taskbench.ui.component.Button
+import cs.vsu.taskbench.ui.component.dialog.ConfirmationDialog
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.ExtraLightGray
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +45,22 @@ fun ManageSubscriptionScreen(
             runBlocking {
                 subscriptionManager.getStatus() as UserStatus.Premium
             }
+        )
+    }
+
+    var showConfirmationDialog by remember { mutableStateOf(false) }
+    if (showConfirmationDialog) {
+        ConfirmationDialog(
+            text = stringResource(R.string.dialog_confirm_subscription_cancel),
+            onComplete = { confirm ->
+                if (confirm) {
+                    scope.handleErrors {
+                        subscriptionManager.deactivate()
+                        userStatus = subscriptionManager.updateStatus() as UserStatus.Premium
+                    }
+                }
+                showConfirmationDialog = false
+            },
         )
     }
 
@@ -79,12 +96,7 @@ fun ManageSubscriptionScreen(
             Button(
                 text = stringResource(R.string.button_cancel_premium),
                 color = ExtraLightGray,
-                onClick = {
-                    scope.handleErrors {
-                        subscriptionManager.deactivate()
-                        userStatus = subscriptionManager.updateStatus() as UserStatus.Premium
-                    }
-                },
+                onClick = { showConfirmationDialog = true },
             )
         } else {
             Button(

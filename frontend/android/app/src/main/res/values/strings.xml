@@ -13,6 +13,7 @@
     <string name="button_stats_premium">Перейти к оформлению</string>
     <string name="button_yes">Да</string>
     <string name="dialog_cancel_premium_text">Вы действительно хотите отменить подписку?</string>
+    <string name="dialog_confirm_subscription_cancel">Вы действительно хотите отменить премиум-подписку?\n\nПремиум-функции будут доступны до конца оплаченного периода.</string>
     <string name="dialog_logout_text">Вы действительно хотите выйти из аккаунта?</string>
     <string name="dialog_select_time">Выберите время</string>
     <string name="dialog_title_error">Ошибка</string>
