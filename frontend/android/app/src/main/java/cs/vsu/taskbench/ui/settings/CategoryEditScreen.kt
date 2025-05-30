@@ -51,9 +51,12 @@ import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
+import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 
 @Composable
 @Destination<SettingsGraph>(style = ScreenTransitions::class)
@@ -154,6 +157,15 @@ private fun CategoryItem(
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var categoryName by remember(category) { mutableStateOf(category.name) }
+    var initialCategoryName by remember(category) { mutableStateOf(category.name) }
+    val focusRequester = remember { FocusRequester() }
+    
+    // Запрашиваем фокус при активации режима редактирования
+    LaunchedEffect(isEditing) {
+        if (isEditing) {
+            focusRequester.requestFocus()
+        }
+    }
     
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -179,6 +191,7 @@ private fun CategoryItem(
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 8.dp)
+                    .focusRequester(focusRequester)
             )
         } else {
             Text(
@@ -196,29 +209,61 @@ private fun CategoryItem(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_edit),
-                contentDescription = null,
-                tint = DarkGray,
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable {
-                        if (isEditing) {
-                            // Сохраняем изменения
-                            onEdit(categoryName)
+            if (isEditing) {
+                // Кнопка отмены (крестик)
+                Icon(
+                    painter = painterResource(R.drawable.ic_remove_circle_outline),
+                    contentDescription = null,
+                    tint = DarkGray,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            // Отменяем редактирование
+                            categoryName = initialCategoryName
+                            isEditing = false
                         }
-                        isEditing = !isEditing
-                    }
-            )
-            
-            Icon(
-                painter = painterResource(R.drawable.ic_remove_circle_outline),
-                contentDescription = null,
-                tint = DarkGray,
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable { onDelete() }
-            )
+                )
+                
+                // Кнопка подтверждения (галочка) - меняет цвет в зависимости от того, были ли изменения
+                val isChanged = categoryName != initialCategoryName && categoryName.isNotBlank()
+                Icon(
+                    painter = painterResource(R.drawable.ic_ok_circle_outline),
+                    contentDescription = null,
+                    tint = if (isChanged) Black else LightGray,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable(enabled = isChanged) {
+                            if (isChanged) {
+                                // Сохраняем изменения
+                                onEdit(categoryName)
+                                initialCategoryName = categoryName
+                                isEditing = false
+                            }
+                        }
+                )
+            } else {
+                // Кнопка редактирования
+                Icon(
+                    painter = painterResource(R.drawable.ic_edit),
+                    contentDescription = null,
+                    tint = DarkGray,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            isEditing = true
+                        }
+                )
+                
+                // Кнопка удаления
+                Icon(
+                    painter = painterResource(R.drawable.ic_delete),
+                    contentDescription = null,
+                    tint = DarkGray,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable { onDelete() }
+                )
+            }
         }
     }
 } 
