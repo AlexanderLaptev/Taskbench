@@ -186,6 +186,14 @@ private fun CategoryItem(
         }
     }
     
+    // Создаем общий стиль текста для обеспечения идентичного отображения
+    val textStyle = androidx.compose.ui.text.TextStyle(
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Medium,
+        color = Black,
+        letterSpacing = 0.sp // Отключаем межбуквенное расстояние для одинакового отображения
+    )
+    
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -210,11 +218,7 @@ private fun CategoryItem(
                     onValueChange = { textFieldValue = it },
                     singleLine = true,
                     cursorBrush = SolidColor(Black),
-                    textStyle = androidx.compose.ui.text.TextStyle(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Black
-                    ),
+                    textStyle = textStyle,
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
@@ -222,9 +226,7 @@ private fun CategoryItem(
             } else {
                 Text(
                     text = displayedName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Black
+                    style = textStyle
                 )
             }
         }
