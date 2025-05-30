@@ -29,7 +29,7 @@ def charge_recurring_subscriptions():
 
         logger.info(f"Attempting to renew subscription {sub.subscription_id} for user {sub.user.email}")
         try:
-            create_payment_without_confirmation(sub, f"Продление ежемесячной подписки для {sub.user.email}")
+            create_payment_without_confirmation(sub, f"Продление ежемесячной подписки для {sub.user.email}", sub.yookassa_payment_method_id)
             logger.info(f"Renewal payment initiated for subscription {sub.subscription_id}.")
         except Exception as e:
             logger.info(f"Failed to initiate renewal payment for subscription {sub.subscription_id}: {e}")

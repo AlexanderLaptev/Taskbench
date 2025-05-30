@@ -1,7 +1,6 @@
 import logging
 import uuid
 
-from dateutil.utils import today
 from django.utils import timezone
 from yookassa import Configuration, Payment
 from yookassa.domain.notification import WebhookNotificationFactory, WebhookNotificationEventType
@@ -80,7 +79,10 @@ def recreate_subscription_payment(user, subscription):
         payment = create_payment(subscription, payment_description)
         return payment, subscription
     else:
-        subscription.activate(subscription.yookassa_payment_method_id)
+        # payment = create_payment_without_confirmation(subscription, payment_description, subscription.yookassa_payment_method_id)
+        # subscription.activate(subscription.latest_yookassa_payment_id)
+        subscription.is_active = True
+        subscription.save()
         return None, subscription
 
 def cancel_subscription(token):
@@ -109,11 +111,12 @@ def handle_message_from_yookassa(data):
 def handle_success(response_object):
     subscription = get_subscription_from_webhook(response_object)
     metadata = response_object.metadata
+    payment = Payment.find_one(payment_id=response_object.payment_id)
     if metadata.get('payment_type') == "initial_subscription":
-        subscription.activate(response_object.id)
+        subscription.activate(response_object.payment_id, payment.payment_method.id)
         logger.info(f"Initial subscription {subscription.subscription_id} activated")
     elif metadata.get('payment_type') == "reccurring_subscription":
-        subscription.renew_subscription(response_object.id)
+        subscription.renew_subscription(response_object.payment_id)
         logger.info(f"Initial subscription {subscription.subscription_id} updated")
     else:
         raise YooKassaError(f"Payment type {response_object.event} not supported")
@@ -122,7 +125,7 @@ def handle_cancel(response_object):
     subscription = get_subscription_from_webhook(response_object)
     metadata = response_object.metadata
     if metadata.get('payment_type') == "initial_subscription":
-        subscription.delete()
+        subscription.deactivate()
         logger.info(f"Initial subscription {subscription.subscription_id} deleted, initial payment canceled")
     elif metadata.get('payment_type') == "reccurring_subscription":
         subscription.deactivate()
@@ -148,7 +151,7 @@ def create_payment(subscription, description):
         }
     }, uuid.uuid4())
 
-def create_payment_without_confirmation(subscription, description):
+def create_payment_without_confirmation(subscription, description, payment_method_id):
     return Payment.create({
         "amount": {
             "value": SUBSCRIPTION_PRICE,
@@ -157,6 +160,7 @@ def create_payment_without_confirmation(subscription, description):
         "capture": True,
         "description": description,
         "save_payment_method": True,
+        "payment_method_id": payment_method_id,
         "metadata": {
             "subscription_internal_id": str(subscription.subscription_id),
             "payment_type": "recurring_subscription"
