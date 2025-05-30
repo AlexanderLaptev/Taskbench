@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.ui.settings
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
@@ -23,8 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,7 +60,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.graphics.SolidColor
-import android.util.Log
 
 @Composable
 @Destination<SettingsGraph>(style = ScreenTransitions::class)
@@ -92,89 +90,82 @@ fun CategoryEditScreen(
         loadCategories()
     }
     
-    Scaffold { scaffoldPadding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(scaffoldPadding)
-                .padding(16.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(White)
+    ) {
+        // Кнопка возврата назад
+        Spacer(modifier = Modifier.height(20.dp))
+        Icon(
+            painter = painterResource(R.drawable.ic_back),
+            contentDescription = stringResource(R.string.button_back),
+            modifier = Modifier
+                .padding(start = 16.dp)
+                .clickable { 
+                    scope.launch {
+                        categoryRepository.preload()
+                    }
+                    settingsNavigator.navigateUp() 
+                }
+                .size(32.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Список категорий
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Кнопка возврата назад
-            val buttonShape = RoundedCornerShape(100)
-            Icon(
-                painter = painterResource(R.drawable.ic_back),
-                contentDescription = stringResource(R.string.button_back),
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .clip(buttonShape)
-                    .clickable(onClick = { 
-                        // При возврате обновляем категории в других экранах
-                        scope.launch {
-                            categoryRepository.preload()
-                        }
-                        settingsNavigator.navigateUp() 
-                    })
-                    .background(color = White, shape = buttonShape)
-                    .padding(4.dp)
-                    .size(32.dp)
-            )
-            
-            // Список категорий
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(
-                    items = categories,
-                    key = { it.id ?: it.name }
-                ) { category ->
-                    val visibleState = remember { MutableTransitionState(true) }
-                    
-                    AnimatedVisibility(
-                        visibleState = visibleState,
-                        enter = fadeIn(),
-                        exit = slideOutHorizontally() + fadeOut()
-                    ) {
-                        CategoryItem(
-                            category = category,
-                            onEdit = { newName ->
-                                scope.launch {
-                                    Log.d("CategoryEditScreen", "Обновление категории: $category -> $newName")
-                                    val updatedCategory = category.copy(name = newName)
+            items(
+                items = categories,
+                key = { it.id ?: it.name }
+            ) { category ->
+                val visibleState = remember { MutableTransitionState(true) }
+                
+                AnimatedVisibility(
+                    visibleState = visibleState,
+                    enter = fadeIn(),
+                    exit = slideOutHorizontally() + fadeOut()
+                ) {
+                    CategoryItem(
+                        category = category,
+                        onEdit = { newName ->
+                            scope.launch {
+                                Log.d("CategoryEditScreen", "Обновление категории: $category -> $newName")
+                                val updatedCategory = category.copy(name = newName)
+                                
+                                try {
+                                    val result = categoryRepository.saveCategory(updatedCategory)
+                                    Log.d("CategoryEditScreen", "Категория успешно обновлена: $result")
                                     
-                                    try {
-                                        val result = categoryRepository.saveCategory(updatedCategory)
-                                        Log.d("CategoryEditScreen", "Категория успешно обновлена: $result")
-                                        
-                                        // Обновляем категорию в списке
-                                        val index = categories.indexOf(category)
-                                        if (index != -1) {
-                                            categories[index] = result
-                                        }
-                                    } catch (e: Exception) {
-                                        Log.e("CategoryEditScreen", "Ошибка при обновлении категории", e)
+                                    // Обновляем категорию в списке
+                                    val index = categories.indexOf(category)
+                                    if (index != -1) {
+                                        categories[index] = result
                                     }
-                                }
-                            },
-                            onDelete = {
-                                scope.launch {
-                                    visibleState.targetState = false
-                                    Log.d("CategoryEditScreen", "Удаление категории: $category")
-                                    
-                                    // Удаляем категорию
-                                    categoryRepository.deleteCategory(category)
-                                    
-                                    // Через небольшую паузу (для анимации) удаляем из списка
-                                    kotlinx.coroutines.delay(300)
-                                    categories.remove(category)
+                                } catch (e: Exception) {
+                                    Log.e("CategoryEditScreen", "Ошибка при обновлении категории", e)
                                 }
                             }
-                        )
-                    }
+                        },
+                        onDelete = {
+                            scope.launch {
+                                visibleState.targetState = false
+                                Log.d("CategoryEditScreen", "Удаление категории: $category")
+                                
+                                // Удаляем категорию
+                                categoryRepository.deleteCategory(category)
+                                
+                                // Через небольшую паузу (для анимации) удаляем из списка
+                                kotlinx.coroutines.delay(300)
+                                categories.remove(category)
+                            }
+                        }
+                    )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -223,15 +214,15 @@ private fun CategoryItem(
             .background(AccentYellow)
             .padding(horizontal = 16.dp)
     ) {
-        // Область для текста - используем одинаковое пространство вне зависимости от состояния редактирования
+        // Контейнер для текста
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
                 .weight(1f)
-                .padding(vertical = 12.dp)
                 .padding(end = 8.dp)
         ) {
             if (isEditing) {
+                // Используем BasicTextField, но с правильными настройками выравнивания
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = { textFieldValue = it },
@@ -244,18 +235,22 @@ private fun CategoryItem(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(vertical = 12.dp) // Важно: одинаковые отступы с текстом!
                         .focusRequester(focusRequester)
                 )
             } else {
+                // Обычный текст в режиме просмотра
                 Text(
                     text = displayedName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Black
+                    color = Black,
+                    modifier = Modifier.padding(vertical = 12.dp)
                 )
             }
         }
         
+        // Кнопки
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
