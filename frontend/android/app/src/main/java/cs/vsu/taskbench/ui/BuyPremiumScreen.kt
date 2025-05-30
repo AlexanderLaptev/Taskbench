@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.ui
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -64,6 +65,7 @@ import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+private const val TAG = "BuyPremiumScreen"
 
 @Composable
 @Destination<RootGraph>(style = ScreenTransitions::class)
@@ -89,6 +91,7 @@ fun BuyPremiumScreen(
                 val status = subscriptionManager.updateStatus()
                 if (status is UserStatus.Premium) navigator.navigateUp()
             } catch (e: Exception) {
+                Log.e(TAG, "error on resume", e)
                 snackbarHostState.showSnackbar(context.resources.getString(R.string.error_premium_not_bought))
             }
         }
@@ -100,9 +103,20 @@ fun BuyPremiumScreen(
 
         onBuy = {
             AnalyticsFacade.logSubscriptionButtonClick()
-            val intent = CustomTabsIntent.Builder().build()
-            isBuying = true
-            intent.launchUrl(context, "https://www.google.com/".toUri())
+
+            scope.launch {
+                try {
+                    val url = subscriptionManager.activate().paymentUrl
+                    if (url != null) {
+                        val intent = CustomTabsIntent.Builder().build()
+                        isBuying = true
+                        intent.launchUrl(context, url.toUri())
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "error on buy", e)
+                    snackbarHostState.showSnackbar(context.resources.getString(R.string.error_premium_not_bought))
+                }
+            }
         },
     )
 }

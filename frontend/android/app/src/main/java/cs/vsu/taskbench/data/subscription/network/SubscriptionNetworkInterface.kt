@@ -18,9 +18,10 @@ data class SubscriptionStatusResponse(
     val subscription_id: Int?,
 )
 
+@JsonClass(generateAdapter = true)
 data class SubscriptionActivateResponse(
     val confirmation_url: String?,
-    val yookassa_payment_id: Int?,
+    val yookassa_payment_id: String?,
     val subscription_id: Int,
 )
 
