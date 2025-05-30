@@ -1,5 +1,6 @@
 package cs.vsu.taskbench.ui.settings
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
@@ -23,8 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,7 +60,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.graphics.SolidColor
-import android.util.Log
 
 @Composable
 @Destination<SettingsGraph>(style = ScreenTransitions::class)
@@ -223,15 +221,15 @@ private fun CategoryItem(
             .background(AccentYellow)
             .padding(horizontal = 16.dp)
     ) {
-        // Область для текста - используем одинаковое пространство вне зависимости от состояния редактирования
+        // Контейнер для текста
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
                 .weight(1f)
-                .padding(vertical = 12.dp)
                 .padding(end = 8.dp)
         ) {
             if (isEditing) {
+                // Используем BasicTextField, но с правильными настройками выравнивания
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = { textFieldValue = it },
@@ -244,18 +242,22 @@ private fun CategoryItem(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(vertical = 12.dp) // Важно: одинаковые отступы с текстом!
                         .focusRequester(focusRequester)
                 )
             } else {
+                // Обычный текст в режиме просмотра
                 Text(
                     text = displayedName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Black
+                    color = Black,
+                    modifier = Modifier.padding(vertical = 12.dp)
                 )
             }
         }
         
+        // Кнопки
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
