@@ -16,6 +16,7 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.SettingsMainMenuDestination
+import com.ramcosta.composedestinations.generated.destinations.CategoryEditScreenDestination
 import com.ramcosta.composedestinations.generated.navgraphs.SettingsNavGraph
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
@@ -56,6 +57,12 @@ fun SettingsScreen(
             composable(SettingsMainMenuDestination) {
                 SettingsMainMenu(
                     globalNavigator = navController.rememberDestinationsNavigator(),
+                    settingsNavigator = settingsNavController.rememberDestinationsNavigator(),
+                )
+            }
+            
+            composable(CategoryEditScreenDestination) {
+                CategoryEditScreen(
                     settingsNavigator = settingsNavController.rememberDestinationsNavigator(),
                 )
             }

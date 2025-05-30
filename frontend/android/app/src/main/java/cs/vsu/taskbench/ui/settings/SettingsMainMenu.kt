@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.generated.destinations.LoginScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.PasswordChangeScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.CategoryEditScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.analytics.AnalyticsFacade
@@ -116,7 +117,7 @@ fun SettingsMainMenu(
         SettingsMenuOption(
             text = stringResource(R.string.menu_settings_categories),
             icon = painterResource(R.drawable.ic_list),
-            onClick = {},
+            onClick = { settingsNavigator.navigate(CategoryEditScreenDestination) },
         )
         HorizontalDivider()
         SettingsMenuOption(
