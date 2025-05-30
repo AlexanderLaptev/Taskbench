@@ -59,6 +59,8 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.graphics.SolidColor
 
 @Composable
 @Destination<SettingsGraph>(style = ScreenTransitions::class)
@@ -194,39 +196,37 @@ private fun CategoryItem(
             .background(AccentYellow)
             .padding(horizontal = 16.dp)
     ) {
-        if (isEditing) {
-            TextField(
-                value = textFieldValue,
-                onValueChange = { textFieldValue = it },
-                singleLine = true,
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = Black, // Черный цвет курсора
-                ),
-                textStyle = androidx.compose.ui.text.TextStyle(
+        // Область для текста - используем одинаковое пространство вне зависимости от состояния редактирования
+        Box(
+            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 12.dp)
+                .padding(end = 8.dp)
+        ) {
+            if (isEditing) {
+                BasicTextField(
+                    value = textFieldValue,
+                    onValueChange = { textFieldValue = it },
+                    singleLine = true,
+                    cursorBrush = SolidColor(Black),
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Black
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                )
+            } else {
+                Text(
+                    text = displayedName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = Black
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
-                    .focusRequester(focusRequester)
-            )
-        } else {
-            Text(
-                text = displayedName,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = Black,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
-            )
+                )
+            }
         }
         
         Row(
