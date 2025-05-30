@@ -78,10 +78,17 @@ fun CategoryEditScreen(
     // Состояние категорий
     val categories = remember { mutableStateListOf<Category>() }
     
-    // Загрузка категорий при запуске
+    // Функция для загрузки категорий
+    val loadCategories = {
+        scope.launch {
+            categories.clear()
+            categories.addAll(categoryRepository.getAllCategories())
+        }
+    }
+    
+    // Загрузка категорий при запуске и при фокусировке экрана
     LaunchedEffect(Unit) {
-        categories.clear()
-        categories.addAll(categoryRepository.getAllCategories())
+        loadCategories()
     }
     
     Scaffold { scaffoldPadding ->
@@ -99,7 +106,13 @@ fun CategoryEditScreen(
                 modifier = Modifier
                     .padding(bottom = 16.dp)
                     .clip(buttonShape)
-                    .clickable(onClick = { settingsNavigator.navigateUp() })
+                    .clickable(onClick = { 
+                        // При возврате обновляем категории в других экранах
+                        scope.launch {
+                            categoryRepository.preload()
+                        }
+                        settingsNavigator.navigateUp() 
+                    })
                     .background(color = White, shape = buttonShape)
                     .padding(4.dp)
                     .size(32.dp)
@@ -139,6 +152,8 @@ fun CategoryEditScreen(
                                 scope.launch {
                                     visibleState.targetState = false
                                     categoryRepository.deleteCategory(category)
+                                    // Через небольшую паузу (для анимации) удаляем из списка
+                                    kotlinx.coroutines.delay(300)
                                     categories.remove(category)
                                 }
                             }
@@ -186,14 +201,6 @@ private fun CategoryItem(
         }
     }
     
-    // Создаем общий стиль текста для обеспечения идентичного отображения
-    val textStyle = androidx.compose.ui.text.TextStyle(
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Medium,
-        color = Black,
-        letterSpacing = 0.sp // Отключаем межбуквенное расстояние для одинакового отображения
-    )
-    
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -218,7 +225,11 @@ private fun CategoryItem(
                     onValueChange = { textFieldValue = it },
                     singleLine = true,
                     cursorBrush = SolidColor(Black),
-                    textStyle = textStyle,
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Black
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
@@ -226,7 +237,9 @@ private fun CategoryItem(
             } else {
                 Text(
                     text = displayedName,
-                    style = textStyle
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Black
                 )
             }
         }
