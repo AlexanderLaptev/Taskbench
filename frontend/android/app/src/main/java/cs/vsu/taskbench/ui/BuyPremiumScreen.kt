@@ -171,10 +171,10 @@ fun Content(
                     text = stringResource(R.string.label_premium_advantage1),
                     icon = painterResource(R.drawable.img_task),
                 )
-                Option(
-                    text = stringResource(R.string.label_premium_advantage2),
-                    icon = painterResource(R.drawable.img_priority),
-                )
+//                Option(
+//                    text = stringResource(R.string.label_premium_advantage2),
+//                    icon = painterResource(R.drawable.img_priority),
+//                )
                 Option(
                     text = stringResource(R.string.label_premium_advantage3),
                     icon = painterResource(R.drawable.img_deadline),
@@ -197,7 +197,6 @@ fun Content(
                     text = stringResource(R.string.text_buy_premium_ready),
                     textAlign = TextAlign.Center,
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(8.dp))
@@ -205,13 +204,13 @@ fun Content(
                     text = stringResource(R.string.button_buy_subscription),
                     onClick = onBuy,
                 )
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.label_premium_link_hint),
                     color = DarkGray,
                     fontSize = 14.sp,
                 )
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(8.dp))
             }
         }
 
@@ -225,8 +224,8 @@ fun Content(
                 .clip(buttonShape)
                 .clickable(onClick = onBack)
                 .background(color = White, shape = buttonShape)
-                .padding(4.dp)
-                .size(32.dp)
+                .padding(8.dp)
+                .size(24.dp)
         )
     }
 }

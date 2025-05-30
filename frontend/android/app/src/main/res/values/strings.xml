@@ -2,7 +2,7 @@
     <string name="app_name">Taskbench</string>
     <string name="button_back">Назад</string>
     <string name="button_buy_premium">Купите премиум, чтобы стать продуктивнее</string>
-    <string name="button_buy_subscription"><![CDATA[Оформить подписку >]]></string>
+    <string name="button_buy_subscription">Оформить подписку</string>
     <string name="button_cancel">Отмена</string>
     <string name="button_cancel_premium">Отменить подписку</string>
     <string name="button_clear">Очистить</string>
@@ -47,7 +47,7 @@
     <string name="label_premium_advantage3">Назначать дедлайны задачам</string>
     <string name="label_premium_advantage4">Выделять категории задач</string>
     <string name="label_premium_inactive">Премиум-подписка отменена.</string>
-    <string name="label_premium_link_hint">(ссылка откроется в браузере)</string>
+    <string name="label_premium_link_hint">(ссылка откроется в отдельном окне)</string>
     <string name="label_premium_next_payment">Следующий платёж: %1$s</string>
     <string name="label_premium_status">Статус премиума:</string>
     <string name="label_premium_until">Действует до: %1$s</string>
