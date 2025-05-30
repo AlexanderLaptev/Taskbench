@@ -110,7 +110,7 @@ fun StatisticsScreen(
             doneToday = statistics.doneToday,
             allTimeHigh = statistics.doneAllTimeHigh,
             userStatus = User.Status.Unpaid,
-            onBuy = { destinationsNavigator.navigate(BuyPremiumScreenDestination) },
+            onBuy = { destinationsNavigator.navigate(BuyPremiumScreenDestination()) },
             modifier = Modifier
                 .padding(16.dp)
                 .padding(padding),
