@@ -134,6 +134,12 @@ fun SettingsMainMenu(
         )
         HorizontalDivider()
         SettingsMenuOption(
+            text = stringResource(R.string.menu_settings_categories),
+            icon = painterResource(R.drawable.ic_list),
+            onClick = {},
+        )
+        HorizontalDivider()
+        SettingsMenuOption(
             text = stringResource(R.string.menu_settings_logout),
             icon = painterResource(R.drawable.ic_exit),
             onClick = { showLogoutConfirmDialog = true },
