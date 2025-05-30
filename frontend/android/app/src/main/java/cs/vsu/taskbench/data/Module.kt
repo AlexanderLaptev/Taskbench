@@ -23,8 +23,6 @@ import cs.vsu.taskbench.data.task.suggestions.FakeSuggestionRepository
 import cs.vsu.taskbench.data.task.suggestions.SuggestionRepository
 import cs.vsu.taskbench.data.task.suggestions.network.NetworkSuggestionDataSource
 import cs.vsu.taskbench.data.task.suggestions.network.NetworkSuggestionRepository
-import cs.vsu.taskbench.data.user.FakeUserRepository
-import cs.vsu.taskbench.data.user.UserRepository
 import okhttp3.OkHttpClient
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -34,10 +32,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 private val Context.dataStore by preferencesDataStore("settings")
-
-private fun Module.fakeUser() {
-    singleOf(::FakeUserRepository) bind UserRepository::class
-}
 
 private fun Module.fakeAuth() {
     singleOf(::FakeAuthService) bind AuthService::class
@@ -105,14 +99,12 @@ val dataModule = module {
     }
 
 //    fakeAuth()
-    fakeUser()
 //    fakeCategories()
 //    fakeSuggestions()
 //    fakeTasks()
 //    fakeStatistics()
 
     netAuth()
-//    netUser()
     netCategories()
     netSuggestions()
     netTasks()
