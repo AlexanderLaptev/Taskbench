@@ -90,89 +90,82 @@ fun CategoryEditScreen(
         loadCategories()
     }
     
-    Scaffold { scaffoldPadding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(scaffoldPadding)
-                .padding(16.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(White)
+    ) {
+        // Кнопка возврата назад
+        Spacer(modifier = Modifier.height(20.dp))
+        Icon(
+            painter = painterResource(R.drawable.ic_back),
+            contentDescription = stringResource(R.string.button_back),
+            modifier = Modifier
+                .padding(start = 16.dp)
+                .clickable { 
+                    scope.launch {
+                        categoryRepository.preload()
+                    }
+                    settingsNavigator.navigateUp() 
+                }
+                .size(32.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Список категорий
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Кнопка возврата назад
-            val buttonShape = RoundedCornerShape(100)
-            Icon(
-                painter = painterResource(R.drawable.ic_back),
-                contentDescription = stringResource(R.string.button_back),
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .clip(buttonShape)
-                    .clickable(onClick = { 
-                        // При возврате обновляем категории в других экранах
-                        scope.launch {
-                            categoryRepository.preload()
-                        }
-                        settingsNavigator.navigateUp() 
-                    })
-                    .background(color = White, shape = buttonShape)
-                    .padding(4.dp)
-                    .size(32.dp)
-            )
-            
-            // Список категорий
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(
-                    items = categories,
-                    key = { it.id ?: it.name }
-                ) { category ->
-                    val visibleState = remember { MutableTransitionState(true) }
-                    
-                    AnimatedVisibility(
-                        visibleState = visibleState,
-                        enter = fadeIn(),
-                        exit = slideOutHorizontally() + fadeOut()
-                    ) {
-                        CategoryItem(
-                            category = category,
-                            onEdit = { newName ->
-                                scope.launch {
-                                    Log.d("CategoryEditScreen", "Обновление категории: $category -> $newName")
-                                    val updatedCategory = category.copy(name = newName)
+            items(
+                items = categories,
+                key = { it.id ?: it.name }
+            ) { category ->
+                val visibleState = remember { MutableTransitionState(true) }
+                
+                AnimatedVisibility(
+                    visibleState = visibleState,
+                    enter = fadeIn(),
+                    exit = slideOutHorizontally() + fadeOut()
+                ) {
+                    CategoryItem(
+                        category = category,
+                        onEdit = { newName ->
+                            scope.launch {
+                                Log.d("CategoryEditScreen", "Обновление категории: $category -> $newName")
+                                val updatedCategory = category.copy(name = newName)
+                                
+                                try {
+                                    val result = categoryRepository.saveCategory(updatedCategory)
+                                    Log.d("CategoryEditScreen", "Категория успешно обновлена: $result")
                                     
-                                    try {
-                                        val result = categoryRepository.saveCategory(updatedCategory)
-                                        Log.d("CategoryEditScreen", "Категория успешно обновлена: $result")
-                                        
-                                        // Обновляем категорию в списке
-                                        val index = categories.indexOf(category)
-                                        if (index != -1) {
-                                            categories[index] = result
-                                        }
-                                    } catch (e: Exception) {
-                                        Log.e("CategoryEditScreen", "Ошибка при обновлении категории", e)
+                                    // Обновляем категорию в списке
+                                    val index = categories.indexOf(category)
+                                    if (index != -1) {
+                                        categories[index] = result
                                     }
-                                }
-                            },
-                            onDelete = {
-                                scope.launch {
-                                    visibleState.targetState = false
-                                    Log.d("CategoryEditScreen", "Удаление категории: $category")
-                                    
-                                    // Удаляем категорию
-                                    categoryRepository.deleteCategory(category)
-                                    
-                                    // Через небольшую паузу (для анимации) удаляем из списка
-                                    kotlinx.coroutines.delay(300)
-                                    categories.remove(category)
+                                } catch (e: Exception) {
+                                    Log.e("CategoryEditScreen", "Ошибка при обновлении категории", e)
                                 }
                             }
-                        )
-                    }
+                        },
+                        onDelete = {
+                            scope.launch {
+                                visibleState.targetState = false
+                                Log.d("CategoryEditScreen", "Удаление категории: $category")
+                                
+                                // Удаляем категорию
+                                categoryRepository.deleteCategory(category)
+                                
+                                // Через небольшую паузу (для анимации) удаляем из списка
+                                kotlinx.coroutines.delay(300)
+                                categories.remove(category)
+                            }
+                        }
+                    )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
