@@ -44,6 +44,21 @@ object AnalyticsFacade {
         reportEvent("navigate", mapOf("from" to from, "to" to to))
     }
 
+    fun logPremiumScreenView(source: String) {
+        reportEvent("premium_screen_view", mapOf("source" to source))
+    }
+
+    fun logSubscriptionButtonClick() {
+        reportEvent("subscription_button_click")
+    }
+
+    fun logSubscriptionError(errorType: String, errorMessage: String) {
+        reportEvent("subscription_error", mapOf(
+            "error_type" to errorType,
+            "error_message" to errorMessage
+        ))
+    }
+
     fun logError(tag: String, throwable: Throwable) {
         reportError(tag, throwable)
     }
