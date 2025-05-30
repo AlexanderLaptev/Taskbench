@@ -40,6 +40,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ramcosta.composedestinations.annotation.Destination
@@ -156,14 +158,28 @@ private fun CategoryItem(
     modifier: Modifier = Modifier,
 ) {
     var isEditing by remember { mutableStateOf(false) }
-    var categoryName by remember(category) { mutableStateOf(category.name) }
-    var initialCategoryName by remember(category) { mutableStateOf(category.name) }
     var displayedName by remember(category) { mutableStateOf(category.name) }
+    
+    // Используем TextFieldValue вместо String для контроля позиции курсора
+    var textFieldValue by remember(category) { 
+        mutableStateOf(
+            TextFieldValue(
+                text = category.name,
+                selection = TextRange(category.name.length) // Курсор в конце текста
+            )
+        ) 
+    }
+    
     val focusRequester = remember { FocusRequester() }
     
     // Запрашиваем фокус при активации режима редактирования
     LaunchedEffect(isEditing) {
         if (isEditing) {
+            // Обновляем TextFieldValue с позицией курсора в конце
+            textFieldValue = TextFieldValue(
+                text = textFieldValue.text,
+                selection = TextRange(textFieldValue.text.length)
+            )
             focusRequester.requestFocus()
         }
     }
@@ -173,14 +189,15 @@ private fun CategoryItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
             .fillMaxWidth()
+            .height(48.dp) // Фиксированная высота плашки для постоянства размеров
             .clip(RoundedCornerShape(10.dp))
             .background(AccentYellow)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp)
     ) {
         if (isEditing) {
             TextField(
-                value = categoryName,
-                onValueChange = { categoryName = it },
+                value = textFieldValue,
+                onValueChange = { textFieldValue = it },
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
@@ -188,6 +205,12 @@ private fun CategoryItem(
                     disabledContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = Black, // Черный цвет курсора
+                ),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Black
                 ),
                 modifier = Modifier
                     .weight(1f)
@@ -220,13 +243,17 @@ private fun CategoryItem(
                         .size(24.dp)
                         .clickable {
                             // Отменяем редактирование
-                            categoryName = initialCategoryName
+                            textFieldValue = TextFieldValue(
+                                text = displayedName,
+                                selection = TextRange(displayedName.length)
+                            )
                             isEditing = false
                         }
                 )
                 
                 // Кнопка подтверждения (галочка) - меняет цвет в зависимости от того, были ли изменения
-                val isChanged = categoryName != initialCategoryName && categoryName.isNotBlank()
+                val currentText = textFieldValue.text
+                val isChanged = currentText != displayedName && currentText.isNotBlank()
                 Icon(
                     painter = painterResource(R.drawable.ic_ok_circle_outline),
                     contentDescription = null,
@@ -236,12 +263,11 @@ private fun CategoryItem(
                         .clickable(enabled = isChanged) {
                             if (isChanged) {
                                 // Сразу обновляем отображаемое имя для мгновенной обратной связи
-                                displayedName = categoryName
-                                initialCategoryName = categoryName
+                                displayedName = currentText
                                 isEditing = false
                                 
                                 // Затем асинхронно сохраняем в репозиторий
-                                onEdit(categoryName)
+                                onEdit(currentText)
                             }
                         }
                 )
