@@ -281,6 +281,8 @@ private fun WhenUnpaid(
 
 @Composable
 fun WhenPaid(userStatus: UserStatus.Premium, modifier: Modifier = Modifier) {
+    if (!userStatus.isActive) return // TODO: add proper UI for inactive subscriptions
+
     val pattern = stringResource(R.string.pattern_date)
     val dateFormatter = remember { DateTimeFormatter.ofPattern(pattern) }
 
