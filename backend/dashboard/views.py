@@ -76,7 +76,7 @@ def subscription_list_api(request):
                 "start_date": sub.start_date.strftime("%Y-%m-%d") if sub.start_date else "N/A",
                 "end_date": sub.end_date.strftime("%Y-%m-%d") if sub.end_date else "N/A",
                 "is_active": sub.is_active,
-                "transaction_id": sub.yookassa_payment_method_id or "-",
+                "transaction_id": sub.latest_yookassa_payment_id or "-",
             }
             for sub in page.object_list
         ],
