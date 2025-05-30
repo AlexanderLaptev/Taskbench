@@ -158,6 +158,7 @@ private fun CategoryItem(
     var isEditing by remember { mutableStateOf(false) }
     var categoryName by remember(category) { mutableStateOf(category.name) }
     var initialCategoryName by remember(category) { mutableStateOf(category.name) }
+    var displayedName by remember(category) { mutableStateOf(category.name) }
     val focusRequester = remember { FocusRequester() }
     
     // Запрашиваем фокус при активации режима редактирования
@@ -195,7 +196,7 @@ private fun CategoryItem(
             )
         } else {
             Text(
-                text = category.name,
+                text = displayedName,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = Black,
@@ -234,10 +235,13 @@ private fun CategoryItem(
                         .size(24.dp)
                         .clickable(enabled = isChanged) {
                             if (isChanged) {
-                                // Сохраняем изменения
-                                onEdit(categoryName)
+                                // Сразу обновляем отображаемое имя для мгновенной обратной связи
+                                displayedName = categoryName
                                 initialCategoryName = categoryName
                                 isEditing = false
+                                
+                                // Затем асинхронно сохраняем в репозиторий
+                                onEdit(categoryName)
                             }
                         }
                 )
