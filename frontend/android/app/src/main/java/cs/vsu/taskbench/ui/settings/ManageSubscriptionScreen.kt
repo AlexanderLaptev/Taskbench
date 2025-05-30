@@ -63,11 +63,15 @@ fun ManageSubscriptionScreen(
 
         val pattern = stringResource(R.string.pattern_date)
         val formatter = remember { DateTimeFormatter.ofPattern(pattern) }
+        val label = stringResource(
+            if (userStatus.isActive) {
+                R.string.label_premium_next_payment
+            } else R.string.label_premium_until,
+            formatter.format(userStatus.nextPayment)
+        )
+
         Text(
-            text = stringResource(
-                R.string.label_premium_until,
-                formatter.format(userStatus.nextPayment)
-            ),
+            text = label,
             fontSize = 18.sp,
         )
 
@@ -77,7 +81,7 @@ fun ManageSubscriptionScreen(
                 color = ExtraLightGray,
                 onClick = {
                     scope.handleErrors {
-                        subscriptionManager.activate()
+                        subscriptionManager.deactivate()
                         userStatus = subscriptionManager.updateStatus() as UserStatus.Premium
                     }
                 },
@@ -88,7 +92,7 @@ fun ManageSubscriptionScreen(
                 color = AccentYellow,
                 onClick = {
                     scope.handleErrors {
-                        subscriptionManager.deactivate()
+                        subscriptionManager.activate()
                         userStatus = subscriptionManager.updateStatus() as UserStatus.Premium
                     }
                 },

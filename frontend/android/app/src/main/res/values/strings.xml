@@ -43,7 +43,8 @@
     <string name="label_overdue">Просрочено</string>
     <string name="label_premium_active">Премиум-подписка активна!</string>
     <string name="label_premium_status">Статус премиума:</string>
-    <string name="label_premium_until">Следующий платёж: %1$s</string>
+    <string name="label_premium_until">Действует до: %1$s</string>
+    <string name="label_premium_next_payment">Следующий платёж: %1$s</string>
     <string name="label_sign_up">Зарегистрироваться</string>
     <string name="label_sort_by_deadline">По сроку</string>
     <string name="label_sort_by_priority">По приоритету</string>
