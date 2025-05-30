@@ -40,13 +40,13 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
-import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 
 
 @Composable
@@ -137,7 +137,7 @@ fun Content(
             ) {
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    text = "Готовы стать ещё эффективнее?",
+                    text = stringResource(R.string.text_buy_premium_ready),
                     textAlign = TextAlign.Center,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
@@ -145,12 +145,12 @@ fun Content(
                 )
                 Spacer(Modifier.height(8.dp))
                 Button(
-                    text = "Оформить подписку >",
+                    text = stringResource(R.string.button_buy_subscription),
                     onClick = onBuy,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "(ссылка откроется в браузере)",
+                    text = stringResource(R.string.label_premium_link_hint),
                     color = DarkGray,
                     fontSize = 14.sp,
                 )
