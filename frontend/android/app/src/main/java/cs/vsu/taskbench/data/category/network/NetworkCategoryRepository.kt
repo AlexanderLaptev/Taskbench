@@ -53,12 +53,55 @@ class NetworkCategoryRepository(
 
     override suspend fun saveCategory(category: Category): Category {
         Log.d(TAG, "saveCategory: saving category $category")
+        
+        // Если у категории есть ID, используем метод обновления
+        if (category.id != null) {
+            return updateCategory(category)
+        }
+        
+        // Если ID нет, создаем новую категорию
         var saved: Category? = null
         authService.withAuth {
             saved = dataSource.createCategory(it, CategoryCreateRequest(category.name))
         }
         preload()
         return saved!!
+    }
+    
+    override suspend fun updateCategory(category: Category): Category {
+        if (category.id == null) {
+            Log.w(TAG, "updateCategory: cannot update category without ID, creating a new one instead")
+            return saveCategory(category)
+        }
+        
+        Log.d(TAG, "updateCategory: updating category $category")
+        var updated: Category? = null
+        
+        try {
+            authService.withAuth {
+                updated = dataSource.updateCategory(it, category.id, CategoryUpdateRequest(category.name))
+            }
+            
+            // Обновляем категорию в кэше
+            if (updated != null) {
+                val index = cache.indexOfFirst { it.id == category.id }
+                if (index != -1) {
+                    cache[index] = updated!!
+                    Log.d(TAG, "updateCategory: updated cache at index $index with $updated")
+                } else {
+                    // Если категории нет в кэше, добавляем её
+                    cache.add(updated!!)
+                    Log.d(TAG, "updateCategory: added updated category to cache: $updated")
+                }
+            }
+            
+            Log.d(TAG, "updateCategory: successfully updated category to $updated")
+        } catch (e: Exception) {
+            Log.e(TAG, "updateCategory: failed to update category", e)
+            throw e
+        }
+        
+        return updated!!
     }
 
     override suspend fun deleteCategory(category: Category) {
