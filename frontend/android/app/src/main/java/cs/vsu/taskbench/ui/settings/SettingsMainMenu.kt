@@ -29,6 +29,7 @@ import com.ramcosta.composedestinations.generated.destinations.BuyPremiumScreenD
 import com.ramcosta.composedestinations.generated.destinations.LoginScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ManageSubscriptionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.PasswordChangeScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.CategoryEditScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.BuildConfig
 import cs.vsu.taskbench.R
@@ -136,7 +137,7 @@ fun SettingsMainMenu(
         SettingsMenuOption(
             text = stringResource(R.string.menu_settings_categories),
             icon = painterResource(R.drawable.ic_list),
-            onClick = {},
+            onClick = { settingsNavigator.navigate(CategoryEditScreenDestination) },
         )
         HorizontalDivider()
         SettingsMenuOption(

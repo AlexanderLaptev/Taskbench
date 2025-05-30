@@ -20,6 +20,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.PasswordChangeScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsMainMenuDestination
+import com.ramcosta.composedestinations.generated.destinations.CategoryEditScreenDestination
 import com.ramcosta.composedestinations.generated.navgraphs.SettingsNavGraph
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
@@ -73,6 +74,12 @@ fun SettingsScreen(
                 PasswordChangeScreen(
                     navigator = settingsNavigator,
                     snackState = snackState,
+                )
+            }
+            
+            composable(CategoryEditScreenDestination) {
+                CategoryEditScreen(
+                    settingsNavigator = settingsNavController.rememberDestinationsNavigator(),
                 )
             }
         }
