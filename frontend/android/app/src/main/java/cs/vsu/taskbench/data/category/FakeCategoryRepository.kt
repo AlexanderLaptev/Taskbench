@@ -51,11 +51,27 @@ object FakeCategoryRepository : CategoryRepository {
             id++
             return copy
         } else {
-            Log.d(TAG, "saveCategory: modifying an existing one")
-            check(categories[category.id] == null) { "Attempted to modify a non-existent category" }
-            categories[category.id] = category
-            return category
+            return updateCategory(category)
         }
+    }
+
+    override suspend fun updateCategory(category: Category): Category {
+        if (category.id == null) {
+            Log.d(TAG, "updateCategory: cannot update category without ID, creating a new one instead")
+            return saveCategory(category)
+        }
+        
+        Log.d(TAG, "updateCategory: updating category $category")
+        
+        if (categories.containsKey(category.id)) {
+            categories[category.id] = category
+            Log.d(TAG, "updateCategory: successfully updated category to $category")
+        } else {
+            Log.w(TAG, "updateCategory: category with ID ${category.id} not found, creating a new one")
+            return saveCategory(category.copy(id = null))
+        }
+        
+        return category
     }
 
     override suspend fun deleteCategory(category: Category) {
@@ -64,3 +80,4 @@ object FakeCategoryRepository : CategoryRepository {
         categories.remove(category.id)
     }
 }
+
