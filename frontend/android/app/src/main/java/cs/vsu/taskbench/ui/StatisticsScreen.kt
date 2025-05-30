@@ -50,8 +50,9 @@ import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
+import cs.vsu.taskbench.data.subscription.SubscriptionManager
 import cs.vsu.taskbench.domain.model.Statistics
-import cs.vsu.taskbench.domain.model.User
+import cs.vsu.taskbench.domain.model.UserStatus
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.NavigationBar
 import cs.vsu.taskbench.ui.component.WeekStatistics
@@ -60,9 +61,11 @@ import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.koin.compose.koinInject
 import java.net.ConnectException
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 private const val TAG = "StatisticsScreen"
@@ -73,9 +76,13 @@ fun StatisticsScreen(
     navController: NavController,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val destinationsNavigator = navController.rememberDestinationsNavigator()
+
     val statisticsRepository = koinInject<StatisticsRepository>()
     var statistics by remember { mutableStateOf<Statistics?>(null) }
-    val destinationsNavigator = navController.rememberDestinationsNavigator()
+
+    val subscriptionManager = koinInject<SubscriptionManager>()
+    val userStatus = runBlocking { subscriptionManager.getStatus() }
 
     LaunchedEffect(Unit) {
         AnalyticsFacade.logScreen("StatisticsScreen")
@@ -109,7 +116,7 @@ fun StatisticsScreen(
             graphLevels = graphData,
             doneToday = statistics.doneToday,
             allTimeHigh = statistics.doneAllTimeHigh,
-            userStatus = User.Status.Unpaid,
+            userStatus = userStatus,
             onBuy = { destinationsNavigator.navigate(BuyPremiumScreenDestination()) },
             modifier = Modifier
                 .padding(16.dp)
@@ -123,7 +130,7 @@ private fun Content(
     graphLevels: FloatArray,
     doneToday: Int,
     allTimeHigh: Int,
-    userStatus: User.Status,
+    userStatus: UserStatus,
     onBuy: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -183,8 +190,8 @@ private fun Content(
         }
 
         when (userStatus) {
-            User.Status.Unpaid -> WhenUnpaid(onBuy = onBuy)
-            is User.Status.Premium -> WhenPaid(userStatus)
+            is UserStatus.Premium -> WhenPaid(userStatus = userStatus)
+            is UserStatus.Unpaid -> WhenUnpaid(onBuy = onBuy)
         }
     }
 }
@@ -273,7 +280,7 @@ private fun WhenUnpaid(
 }
 
 @Composable
-fun WhenPaid(userStatus: User.Status.Premium, modifier: Modifier = Modifier) {
+fun WhenPaid(userStatus: UserStatus.Premium, modifier: Modifier = Modifier) {
     val pattern = stringResource(R.string.pattern_date)
     val dateFormatter = remember { DateTimeFormatter.ofPattern(pattern) }
 
@@ -293,7 +300,7 @@ fun WhenPaid(userStatus: User.Status.Premium, modifier: Modifier = Modifier) {
         Text(
             text = stringResource(
                 R.string.label_premium_until,
-                dateFormatter.format(userStatus.activeUntil)
+                dateFormatter.format(userStatus.nextPayment)
             ),
             color = DarkGray,
             fontSize = 16.sp,
@@ -313,7 +320,7 @@ private fun PreviewUnpaid() {
             graphLevels = previewLevels,
             doneToday = PREVIEW_DONE_TODAY,
             allTimeHigh = PREVIEW_DONE_MAX,
-            userStatus = User.Status.Unpaid,
+            userStatus = UserStatus.Premium(0, LocalDateTime.now(), true, 0),
             onBuy = {},
         )
     }
@@ -327,7 +334,7 @@ private fun PreviewPremium() {
             graphLevels = previewLevels,
             doneToday = PREVIEW_DONE_TODAY,
             allTimeHigh = PREVIEW_DONE_MAX,
-            userStatus = User.Status.Premium(LocalDate.of(2025, 5, 30)),
+            userStatus = UserStatus.Unpaid(0),
             onBuy = {},
         )
     }

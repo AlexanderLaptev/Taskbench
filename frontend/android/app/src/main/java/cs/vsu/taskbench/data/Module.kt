@@ -15,6 +15,8 @@ import cs.vsu.taskbench.data.statistics.FakeStatisticsRepository
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsDataSource
 import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsRepository
+import cs.vsu.taskbench.data.subscription.FakeSubscriptionManager
+import cs.vsu.taskbench.data.subscription.SubscriptionManager
 import cs.vsu.taskbench.data.task.FakeTaskRepository
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.data.task.network.NetworkTaskDataSource
@@ -78,6 +80,10 @@ private fun Module.netTasks() {
     singleOf(::NetworkTaskRepository) bind TaskRepository::class
 }
 
+private fun Module.fakeSubscription() {
+    single { FakeSubscriptionManager } bind SubscriptionManager::class
+}
+
 private const val SERVER_ADDRESS = "193.135.137.154"
 
 val dataModule = module {
@@ -98,15 +104,16 @@ val dataModule = module {
             .build()
     }
 
-//    fakeAuth()
-//    fakeCategories()
-//    fakeSuggestions()
-//    fakeTasks()
-//    fakeStatistics()
+    fakeAuth()
+    fakeCategories()
+    fakeSuggestions()
+    fakeTasks()
+    fakeStatistics()
+    fakeSubscription()
 
-    netAuth()
-    netCategories()
-    netSuggestions()
-    netTasks()
-    netStatistics()
+//    netAuth()
+//    netCategories()
+//    netSuggestions()
+//    netTasks()
+//    netStatistics()
 }
