@@ -139,13 +139,20 @@ fun CategoryEditScreen(
                             category = category,
                             onEdit = { newName ->
                                 scope.launch {
+                                    Log.d("CategoryEditScreen", "Обновление категории: $category -> $newName")
                                     val updatedCategory = category.copy(name = newName)
-                                    val result = categoryRepository.saveCategory(updatedCategory)
                                     
-                                    // Обновляем категорию в списке
-                                    val index = categories.indexOf(category)
-                                    if (index != -1) {
-                                        categories[index] = result
+                                    try {
+                                        val result = categoryRepository.saveCategory(updatedCategory)
+                                        Log.d("CategoryEditScreen", "Категория успешно обновлена: $result")
+                                        
+                                        // Обновляем категорию в списке
+                                        val index = categories.indexOf(category)
+                                        if (index != -1) {
+                                            categories[index] = result
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e("CategoryEditScreen", "Ошибка при обновлении категории", e)
                                     }
                                 }
                             },
