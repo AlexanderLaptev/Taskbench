@@ -13,9 +13,10 @@ object FakeSubscriptionManager : SubscriptionManager {
     override suspend fun preload() {
     }
 
-    override suspend fun activate() {
+    override suspend fun activate(): SubscriptionManager.ActivateResult {
         delay(200)
         isPremium = true
+        return SubscriptionManager.ActivateResult("")
     }
 
     override suspend fun deactivate() {

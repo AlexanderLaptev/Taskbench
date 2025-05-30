@@ -17,6 +17,8 @@ import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsDataSource
 import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsRepository
 import cs.vsu.taskbench.data.subscription.FakeSubscriptionManager
 import cs.vsu.taskbench.data.subscription.SubscriptionManager
+import cs.vsu.taskbench.data.subscription.network.NetworkSubscriptionManager
+import cs.vsu.taskbench.data.subscription.network.SubscriptionNetworkInterface
 import cs.vsu.taskbench.data.task.FakeTaskRepository
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.data.task.network.NetworkTaskDataSource
@@ -84,6 +86,11 @@ private fun Module.fakeSubscription() {
     single { FakeSubscriptionManager } bind SubscriptionManager::class
 }
 
+private fun Module.netSubscription() {
+    single { get<Retrofit>().create(SubscriptionNetworkInterface::class.java) }
+    singleOf(::NetworkSubscriptionManager) bind SubscriptionManager::class
+}
+
 private const val SERVER_ADDRESS = "193.135.137.154"
 
 val dataModule = module {
@@ -116,4 +123,5 @@ val dataModule = module {
 //    netSuggestions()
 //    netTasks()
 //    netStatistics()
+//    netSubscription()
 }
