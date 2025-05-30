@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,13 +46,27 @@ import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
+
 
 @Composable
 @Destination<RootGraph>(style = ScreenTransitions::class)
-fun BuyPremiumScreen(navigator: DestinationsNavigator) {
+fun BuyPremiumScreen(
+    navigator: DestinationsNavigator,
+    source: String = "unknown"
+) {
+
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logPremiumScreenView(source)
+    }
+
     Content(
-        onBack = { navigator.navigateUp() },
-        onBuy = { },
+        onBack = {
+            navigator.navigateUp()
+        },
+        onBuy = {
+            AnalyticsFacade.logSubscriptionButtonClick()
+        }
     )
 }
 
