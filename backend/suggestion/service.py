@@ -86,9 +86,10 @@ def suggest(token, data):
     # subscribed = True
 
     if deadline is None:
-        deadline = service.suggest_deadline_local(
-            title, now=timestamp) if not subscribed else service.suggest_deadline(
-            title, now=timestamp)
+        if not subscribed:
+            deadline = service.suggest_deadline_local(title, now=timestamp)
+        else:
+            deadline = service.suggest_deadline(title, now=timestamp)
 
     """
         Проверка пользователя на подписку.
@@ -165,7 +166,6 @@ class SuggestionService:
                 ]
             )
         )
-        print(result.choices[0].message.content)
         return result
 
     def suggest_subtasks(self, text: str) -> list:
@@ -249,15 +249,12 @@ class SuggestionService:
 
         try:
             dt_object = datetime.strptime(cleaned_text, expected_format)
-            print(dt_object.isoformat())
             return dt_object
-        except ValueError:
+        except Exception as e:
             local_suggest = self.suggest_deadline_local(cleaned_text, now=now)
             if local_suggest is not None:
-                print(local_suggest.isoformat())
                 return local_suggest
             local_suggest = self.suggest_deadline_local(text, now=now)
-            print(local_suggest.isoformat())
             return local_suggest
 
     def suggest_deadline_local(self, text: str, *, now: datetime | None = None) -> datetime | None:
