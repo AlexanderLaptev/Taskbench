@@ -25,7 +25,7 @@ interface NetworkCategoryDataSource {
         @Body request: CategoryCreateRequest,
     ): Category
 
-    @DELETE("categories/{id}")
+    @DELETE("categories/{id}/")
     suspend fun deleteCategory(
         @Header(HttpHeaders.AUTHORIZATION) auth: String,
         @Path("id") id: Int

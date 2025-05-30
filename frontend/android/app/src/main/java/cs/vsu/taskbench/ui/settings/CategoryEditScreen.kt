@@ -61,6 +61,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.graphics.SolidColor
+import android.util.Log
 
 @Composable
 @Destination<SettingsGraph>(style = ScreenTransitions::class)
@@ -151,7 +152,11 @@ fun CategoryEditScreen(
                             onDelete = {
                                 scope.launch {
                                     visibleState.targetState = false
+                                    Log.d("CategoryEditScreen", "Удаление категории: $category")
+                                    
+                                    // Удаляем категорию
                                     categoryRepository.deleteCategory(category)
+                                    
                                     // Через небольшую паузу (для анимации) удаляем из списка
                                     kotlinx.coroutines.delay(300)
                                     categories.remove(category)
