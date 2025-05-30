@@ -11,7 +11,6 @@ object FakeSubscriptionManager : SubscriptionManager {
     private var isPremium = false
 
     override suspend fun preload() {
-        delay(500)
     }
 
     override suspend fun activate() {
@@ -33,5 +32,11 @@ object FakeSubscriptionManager : SubscriptionManager {
                 subscriptionId = SUBSCRIPTION_ID,
             )
         } else UserStatus.Unpaid(USER_ID)
+    }
+
+    override suspend fun updateStatus(): UserStatus {
+        delay(500)
+        isPremium = !isPremium
+        return getStatus()
     }
 }

@@ -81,4 +81,5 @@
     <string name="text_buy_premium_ready">Готовы стать ещё эффективнее?</string>
     <string name="button_buy_subscription"><![CDATA[Оформить подписку >]]></string>
     <string name="label_premium_link_hint">(ссылка откроется в браузере)</string>
+    <string name="error_premium_not_bought">Произошла ошибка. Деньги не были списаны.</string>
 </resources>

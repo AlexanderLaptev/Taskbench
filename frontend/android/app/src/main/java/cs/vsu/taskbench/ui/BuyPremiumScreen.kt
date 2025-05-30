@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.ui
 
 import android.annotation.SuppressLint
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,13 +20,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -36,37 +45,65 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.data.analytics.AnalyticsFacade
+import cs.vsu.taskbench.data.subscription.SubscriptionManager
+import cs.vsu.taskbench.domain.model.UserStatus
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 
 @Composable
 @Destination<RootGraph>(style = ScreenTransitions::class)
 fun BuyPremiumScreen(
     navigator: DestinationsNavigator,
-    source: String = "unknown"
+    source: String = "unknown",
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val subscriptionManager = koinInject<SubscriptionManager>()
+    var isBuying by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         AnalyticsFacade.logPremiumScreenView(source)
     }
 
+    LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
+        if (!isBuying) return@LifecycleEventEffect
+        isBuying = false
+        scope.launch {
+            try {
+                val status = subscriptionManager.updateStatus()
+                if (status is UserStatus.Premium) navigator.navigateUp()
+            } catch (e: Exception) {
+                snackbarHostState.showSnackbar(context.resources.getString(R.string.error_premium_not_bought))
+            }
+        }
+    }
+
     Content(
-        onBack = {
-            navigator.navigateUp()
-        },
+        snackbarHostState = snackbarHostState,
+        onBack = { navigator.navigateUp() },
+
         onBuy = {
             AnalyticsFacade.logSubscriptionButtonClick()
-        }
+            val intent = CustomTabsIntent.Builder().build()
+            isBuying = true
+            intent.launchUrl(context, "https://www.google.com/".toUri())
+        },
     )
 }
 
@@ -74,9 +111,12 @@ fun BuyPremiumScreen(
 fun Content(
     onBack: () -> Unit,
     onBuy: () -> Unit,
+    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
-    Scaffold { scaffoldPadding ->
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { scaffoldPadding ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
@@ -210,6 +250,7 @@ private fun Preview() {
             Content(
                 onBack = {},
                 onBuy = {},
+                snackbarHostState = remember { SnackbarHostState() },
             )
         }
     }

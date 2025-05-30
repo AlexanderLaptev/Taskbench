@@ -7,4 +7,5 @@ interface SubscriptionManager : PreloadRepository {
     suspend fun activate()
     suspend fun deactivate()
     suspend fun getStatus(): UserStatus
+    suspend fun updateStatus(): UserStatus
 }

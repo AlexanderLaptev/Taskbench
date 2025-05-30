@@ -64,6 +64,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.browser)
     coreLibraryDesugaring(libs.android.tools.desugar)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
