@@ -226,7 +226,7 @@ private fun StatsTile(
             Text(
                 text = value,
                 color = DarkGray,
-                fontSize = with(density) { 64.dp.toSp() },
+                fontSize = with(density) { 56.dp.toSp() },
                 modifier = Modifier
             )
             Text(
@@ -281,7 +281,7 @@ private fun WhenUnpaid(
 
 @Composable
 fun WhenPaid(userStatus: UserStatus.Premium, modifier: Modifier = Modifier) {
-    if (!userStatus.isActive) return // TODO: add proper UI for inactive subscriptions
+    if (!userStatus.isActive) return
 
     val pattern = stringResource(R.string.pattern_date)
     val dateFormatter = remember { DateTimeFormatter.ofPattern(pattern) }
