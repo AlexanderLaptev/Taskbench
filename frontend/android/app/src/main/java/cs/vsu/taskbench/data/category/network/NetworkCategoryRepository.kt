@@ -44,7 +44,20 @@ class NetworkCategoryRepository(
     }
 
     override suspend fun deleteCategory(category: Category) {
-        // TODO
-        Log.w(TAG, "deleteCategory: deleting categories is not implemented")
+        if (category.id == null) {
+            Log.w(TAG, "deleteCategory: cannot delete category without ID")
+            return
+        }
+        
+        try {
+            authService.withAuth {
+                dataSource.deleteCategory(it, category.id)
+            }
+            // Удаляем из кэша после успешного удаления на сервере
+            cache.removeAll { it.id == category.id }
+            Log.d(TAG, "deleteCategory: successfully deleted category $category")
+        } catch (e: Exception) {
+            Log.e(TAG, "deleteCategory: failed to delete category", e)
+        }
     }
 }
