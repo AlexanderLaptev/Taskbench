@@ -3,7 +3,7 @@
     <string name="button_back">Назад</string>
     <string name="button_buy_premium">Купите премиум, чтобы стать продуктивнее</string>
     <string name="button_cancel">Отмена</string>
-    <string name="button_cancel_premium">Отменить подписку на премиум</string>
+    <string name="button_cancel_premium">Отменить подписку</string>
     <string name="button_clear">Очистить</string>
     <string name="button_confirm">Подтвердить</string>
     <string name="button_no">Нет</string>
@@ -43,7 +43,7 @@
     <string name="label_overdue">Просрочено</string>
     <string name="label_premium_active">Премиум-подписка активна!</string>
     <string name="label_premium_status">Статус премиума:</string>
-    <string name="label_premium_until">Действует до %1$s</string>
+    <string name="label_premium_until">Следующий платёж: %1$s</string>
     <string name="label_sign_up">Зарегистрироваться</string>
     <string name="label_sort_by_deadline">По сроку</string>
     <string name="label_sort_by_priority">По приоритету</string>
@@ -57,7 +57,7 @@
     <string name="menu_settings_logout">Выйти из аккаунта</string>
     <string name="menu_settings_subscription">Управление подпиской</string>
     <string name="monday_short">пн</string>
-    <string name="pattern_date">dd MMMM YYYY \'г.\'</string>
+    <string name="pattern_date">d MMMM YYYY \'г.\'</string>
     <string name="pattern_time">HH:mm</string>
     <string name="placeholder_category">Введите категорию</string>
     <string name="placeholder_confirm_password">Подтвердите пароль</string>
@@ -82,4 +82,6 @@
     <string name="button_buy_subscription"><![CDATA[Оформить подписку >]]></string>
     <string name="label_premium_link_hint">(ссылка откроется в браузере)</string>
     <string name="error_premium_not_bought">Произошла ошибка. Деньги не были списаны.</string>
+    <string name="label_premium_inactive">Премиум-подписка отменена.</string>
+    <string name="button_reactivate_premium">Возобновить подписку</string>
 </resources>

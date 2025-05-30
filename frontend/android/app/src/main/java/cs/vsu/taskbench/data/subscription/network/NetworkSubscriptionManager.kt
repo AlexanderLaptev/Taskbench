@@ -44,12 +44,12 @@ class NetworkSubscriptionManager(
         updateStatus()
     }
 
-    private fun SubscriptionStatusResponse.toModel(): UserStatus = if (is_subscribed) {
+    private fun SubscriptionStatusResponse.toModel(): UserStatus = if (subscription_id != null) {
         UserStatus.Premium(
             userId = user_id,
             nextPayment = LocalDateTime.parse(next_payment, DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             isActive = is_active!!,
-            subscriptionId = subscription_id!!,
+            subscriptionId = subscription_id,
         )
     } else {
         UserStatus.Unpaid(userId = user_id)
