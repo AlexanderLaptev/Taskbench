@@ -1,0 +1,224 @@
+package cs.vsu.taskbench.ui.settings
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
+import cs.vsu.taskbench.data.category.CategoryRepository
+import cs.vsu.taskbench.domain.model.Category
+import cs.vsu.taskbench.ui.theme.AccentYellow
+import cs.vsu.taskbench.ui.theme.Black
+import cs.vsu.taskbench.ui.theme.DarkGray
+import cs.vsu.taskbench.ui.theme.White
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
+
+@Composable
+@Destination<SettingsGraph>(style = ScreenTransitions::class)
+fun CategoryEditScreen(
+    settingsNavigator: DestinationsNavigator,
+    modifier: Modifier = Modifier,
+) {
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("CategoryEditScreen")
+    }
+    
+    val categoryRepository = koinInject<CategoryRepository>()
+    val scope = rememberCoroutineScope()
+    
+    // Состояние категорий
+    val categories = remember { mutableStateListOf<Category>() }
+    
+    // Загрузка категорий при запуске
+    LaunchedEffect(Unit) {
+        categories.clear()
+        categories.addAll(categoryRepository.getAllCategories())
+    }
+    
+    Scaffold { scaffoldPadding ->
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(scaffoldPadding)
+                .padding(16.dp)
+        ) {
+            // Кнопка возврата назад
+            val buttonShape = RoundedCornerShape(100)
+            Icon(
+                painter = painterResource(R.drawable.ic_back),
+                contentDescription = stringResource(R.string.button_back),
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .clip(buttonShape)
+                    .clickable(onClick = { settingsNavigator.navigateUp() })
+                    .background(color = White, shape = buttonShape)
+                    .padding(4.dp)
+                    .size(32.dp)
+            )
+            
+            // Список категорий
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(
+                    items = categories,
+                    key = { it.id ?: it.name }
+                ) { category ->
+                    val visibleState = remember { MutableTransitionState(true) }
+                    
+                    AnimatedVisibility(
+                        visibleState = visibleState,
+                        enter = fadeIn(),
+                        exit = slideOutHorizontally() + fadeOut()
+                    ) {
+                        CategoryItem(
+                            category = category,
+                            onEdit = { newName ->
+                                scope.launch {
+                                    val updatedCategory = category.copy(name = newName)
+                                    val result = categoryRepository.saveCategory(updatedCategory)
+                                    
+                                    // Обновляем категорию в списке
+                                    val index = categories.indexOf(category)
+                                    if (index != -1) {
+                                        categories[index] = result
+                                    }
+                                }
+                            },
+                            onDelete = {
+                                scope.launch {
+                                    visibleState.targetState = false
+                                    categoryRepository.deleteCategory(category)
+                                    categories.remove(category)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun CategoryItem(
+    category: Category,
+    onEdit: (String) -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var isEditing by remember { mutableStateOf(false) }
+    var categoryName by remember(category) { mutableStateOf(category.name) }
+    
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(AccentYellow)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        if (isEditing) {
+            TextField(
+                value = categoryName,
+                onValueChange = { categoryName = it },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
+            )
+        } else {
+            Text(
+                text = category.name,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = Black,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
+            )
+        }
+        
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_edit),
+                contentDescription = null,
+                tint = DarkGray,
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable {
+                        if (isEditing) {
+                            // Сохраняем изменения
+                            onEdit(categoryName)
+                        }
+                        isEditing = !isEditing
+                    }
+            )
+            
+            Icon(
+                painter = painterResource(R.drawable.ic_remove_circle_outline),
+                contentDescription = null,
+                tint = DarkGray,
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onDelete() }
+            )
+        }
+    }
+} 
