@@ -89,6 +89,7 @@ fun BuyPremiumScreen(
         scope.launch {
             try {
                 val status = subscriptionManager.updateStatus()
+                Log.d(TAG, "resume: status=$status")
                 if (status is UserStatus.Premium) navigator.navigateUp()
             } catch (e: Exception) {
                 Log.e(TAG, "error on resume", e)
@@ -108,9 +109,11 @@ fun BuyPremiumScreen(
                 try {
                     val url = subscriptionManager.activate().paymentUrl
                     if (url != null) {
+                        Log.d(TAG, "onBuy: payment URL != null")
                         val intent = CustomTabsIntent.Builder().build()
                         isBuying = true
                         intent.launchUrl(context, url.toUri())
+                        Log.d(TAG, "onBuy: launched custom tab")
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "error on buy", e)
