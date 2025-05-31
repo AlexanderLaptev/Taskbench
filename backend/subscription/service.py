@@ -111,15 +111,15 @@ def handle_message_from_yookassa(data):
 def handle_success(response_object):
     subscription = get_subscription_from_webhook(response_object)
     metadata = response_object.metadata
-    payment = Payment.find_one(payment_id=response_object.payment_id)
+    payment = Payment.find_one(payment_id=response_object.id)
     if metadata.get('payment_type') == "initial_subscription":
-        subscription.activate(response_object.payment_id, payment.payment_method.id)
+        subscription.activate(response_object.id, payment.payment_method.id)
         logger.info(f"Initial subscription {subscription.subscription_id} activated")
     elif metadata.get('payment_type') == "reccurring_subscription":
-        subscription.renew_subscription(response_object.payment_id)
+        subscription.renew_subscription(response_object.id)
         logger.info(f"Initial subscription {subscription.subscription_id} updated")
     else:
-        raise YooKassaError(f"Payment type {response_object.event} not supported")
+        raise YooKassaError(f"Payment type {metadata.get('payment_type')} not supported")
 
 def handle_cancel(response_object):
     subscription = get_subscription_from_webhook(response_object)
@@ -130,6 +130,8 @@ def handle_cancel(response_object):
     elif metadata.get('payment_type') == "reccurring_subscription":
         subscription.deactivate()
         logger.info(f"Initial subscription {subscription.subscription_id} deactivated, recurring payment canceled")
+    else:
+        raise YooKassaError(f"Payment type {metadata.get('payment_type')} not supported")
 
 def create_payment(subscription, description):
     return Payment.create({
