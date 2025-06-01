@@ -141,8 +141,7 @@ def create_payment(subscription, description):
         },
         "confirmation": {
             "type": "redirect",
-            "return_url": f"https://{SERVER_HOST}/payment_return_page/?subscription_id={subscription.subscription_id}"
-            # todo: return url
+            "return_url": f"https://{SERVER_HOST}/payment/return/",
         },
         "capture": True,
         "description": description,
