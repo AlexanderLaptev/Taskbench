@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.subscription.SubscriptionManager
 import cs.vsu.taskbench.domain.model.UserStatus
 import cs.vsu.taskbench.ui.component.Button
@@ -55,6 +56,7 @@ fun ManageSubscriptionScreen(
             onComplete = { confirm ->
                 if (confirm) {
                     scope.handleErrors {
+                        AnalyticsFacade.logEvent("premium_cancelled")
                         subscriptionManager.deactivate()
                         userStatus = subscriptionManager.updateStatus() as UserStatus.Premium
                     }
@@ -96,7 +98,10 @@ fun ManageSubscriptionScreen(
             Button(
                 text = stringResource(R.string.button_cancel_premium),
                 color = ExtraLightGray,
-                onClick = { showConfirmationDialog = true },
+                onClick = {
+                    AnalyticsFacade.logEvent("premium_cancel_clicked")
+                    showConfirmationDialog = true
+                },
             )
         } else {
             Button(
@@ -105,6 +110,7 @@ fun ManageSubscriptionScreen(
                 onClick = {
                     scope.handleErrors {
                         subscriptionManager.activate()
+                        AnalyticsFacade.logEvent("premium_reactivated")
                         userStatus = subscriptionManager.updateStatus() as UserStatus.Premium
                     }
                 },

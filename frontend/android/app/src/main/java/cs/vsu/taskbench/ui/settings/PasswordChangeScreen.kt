@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.TextField
 import cs.vsu.taskbench.ui.theme.AccentYellow
@@ -54,7 +55,9 @@ fun PasswordChangeScreen(
         Button(
             text = stringResource(R.string.button_confirm),
             color = AccentYellow,
-            onClick = {},
+            onClick = {
+                AnalyticsFacade.logEvent("password_changed")
+            },
         )
         Button(
             text = stringResource(R.string.button_back),

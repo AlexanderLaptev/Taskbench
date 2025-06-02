@@ -67,6 +67,7 @@ fun SettingsMainMenu(
             onComplete = { confirmed ->
                 showLogoutConfirmDialog = false
                 if (confirmed) {
+                    AnalyticsFacade.logEvent("logout")
                     scope.launch {
                         authService.logout()
                         globalNavigator.popBackStack()
