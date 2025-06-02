@@ -82,7 +82,7 @@ class TaskListScreenViewModel(
 
     init {
         catchErrorsAsync {
-            refresh()
+            refresh(reload = true)
             Log.d(TAG, "init: success")
         }
     }
@@ -126,12 +126,12 @@ class TaskListScreenViewModel(
         }
     }
 
-    fun refresh(reload: Boolean = true) {
+    fun refresh(reload: Boolean = false) {
         refreshCategories()
         refreshTasks(reload)
     }
 
-    private fun refreshTasks(reload: Boolean = true) {
+    private fun refreshTasks(reload: Boolean = false) {
         if (reload) _tasks.update { null }
         catchErrorsAsync {
             var result: List<Task>
