@@ -41,6 +41,10 @@ class TaskListScreenViewModel(
     private val _tasks = MutableStateFlow<List<Task>?>(null)
     val tasks = _tasks.asStateFlow()
 
+    private var _deletedTask by mutableStateOf<Task?>(null)
+    val deletedTask get() = _deletedTask
+    private var deletedTaskIndex = -1
+
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories = _categories.asStateFlow()
 
@@ -84,11 +88,33 @@ class TaskListScreenViewModel(
     }
 
     fun deleteTask(task: Task) {
+        Log.d(TAG, "deleteTask: enter")
+        confirmTaskDeletion()
+        _deletedTask = task
+        deletedTaskIndex = _tasks.value!!.indexOf(task)
+        _tasks.update { _tasks.value?.minus(task) }
+    }
+
+    fun confirmTaskDeletion() {
+        if (_deletedTask == null) return
+        Log.d(TAG, "confirmTaskDeletion: confirming deletion")
         catchErrorsAsync {
-            taskRepository.deleteTask(task)
+            taskRepository.deleteTask(_deletedTask!!)
             Log.d(TAG, "deleteTask: success")
             refreshTasks(fullRefresh = false)
         }
+        _deletedTask = null
+    }
+
+    fun undoTaskDeletion() {
+        if (_deletedTask == null) return
+        Log.d(TAG, "undoTaskDeletion: undoing deletion (deleted=$_deletedTask)")
+        _tasks.update {
+            val mutable = _tasks.value!!.toMutableList()
+            mutable.add(deletedTaskIndex, _deletedTask!!)
+            mutable
+        }
+        _deletedTask = null
     }
 
     fun setSubtaskChecked(subtask: Subtask, isChecked: Boolean) {

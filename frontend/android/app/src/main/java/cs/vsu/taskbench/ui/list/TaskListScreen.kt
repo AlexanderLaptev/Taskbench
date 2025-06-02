@@ -26,11 +26,15 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -96,7 +100,7 @@ fun TaskListScreen(
     val screenViewModel = koinViewModel<TaskListScreenViewModel>()
     val dialogViewModel = koinViewModel<TaskEditDialogViewModel>()
 
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackState = remember { SnackbarHostState() }
     val tasks by screenViewModel.tasks.collectAsStateWithLifecycle()
     val resources = LocalContext.current.resources
 
@@ -114,8 +118,8 @@ fun TaskListScreen(
                     TaskListScreenViewModel.Error.CouldNotConnect -> R.string.error_could_not_connect
                     TaskListScreenViewModel.Error.Unknown -> R.string.error_unknown
                 }
-                snackbarHostState.currentSnackbarData?.dismiss()
-                snackbarHostState.showSnackbar(
+                snackState.currentSnackbarData?.dismiss()
+                snackState.showSnackbar(
                     message = resources.getString(message),
                     withDismissAction = true,
                 )
@@ -129,8 +133,8 @@ fun TaskListScreen(
                     TaskEditDialogViewModel.Error.Unknown -> R.string.error_unknown
                 }
                 showEditDialog = false
-                snackbarHostState.currentSnackbarData?.dismiss()
-                snackbarHostState.showSnackbar(
+                snackState.currentSnackbarData?.dismiss()
+                snackState.showSnackbar(
                     message = resources.getString(message),
                     withDismissAction = true,
                 )
@@ -144,12 +148,50 @@ fun TaskListScreen(
         }
     }
 
+    LaunchedEffect(screenViewModel.deletedTask) {
+        if (screenViewModel.deletedTask == null) return@LaunchedEffect
+        val deleted = screenViewModel.deletedTask!!
+
+        snackState.currentSnackbarData?.dismiss()
+        val result = snackState.showSnackbar(
+            message = "Deleted task #${deleted.id}",
+            actionLabel = "Undo",
+            duration = SnackbarDuration.Long,
+            withDismissAction = true,
+        )
+
+        when (result) {
+            SnackbarResult.Dismissed -> {
+                screenViewModel.confirmTaskDeletion()
+            }
+
+            SnackbarResult.ActionPerformed -> {
+                screenViewModel.undoTaskDeletion()
+            }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { screenViewModel.confirmTaskDeletion() }
+    }
+
     val taskListState = rememberLazyListState()
     val dateRowListState = rememberLazyListState(TODAY_INDEX)
     val scope = rememberCoroutineScope()
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackState,
+                snackbar = {
+                    Snackbar(
+                        snackbarData = it,
+                        actionColor = AccentYellow,
+                    )
+                }
+            )
+        },
+
         bottomBar = {
             NavigationBar(
                 navController = navController,

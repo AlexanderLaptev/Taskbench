@@ -50,7 +50,10 @@ fun LazyItemScope.TaskCard(
     val threshold = with(LocalDensity.current) { 128.dp.toPx() }
     val state = rememberSwipeToDismissBoxState(positionalThreshold = { threshold })
     LaunchedEffect(state.currentValue) {
-        if (state.currentValue == SwipeToDismissBoxValue.EndToStart) onDismiss()
+        if (state.currentValue == SwipeToDismissBoxValue.EndToStart) {
+            state.snapTo(SwipeToDismissBoxValue.Settled)
+            onDismiss()
+        }
     }
 
     SwipeToDismissBox(
