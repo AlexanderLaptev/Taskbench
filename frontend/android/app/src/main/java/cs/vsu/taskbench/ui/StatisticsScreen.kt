@@ -125,7 +125,10 @@ fun StatisticsScreen(
                         doneToday = stats.doneToday,
                         allTimeHigh = stats.doneAllTimeHigh,
                         userStatus = userStatus,
-                        onBuy = { destinationsNavigator.navigate(BuyPremiumScreenDestination()) },
+                        onBuy = {
+                            AnalyticsFacade.logEvent("buy_premium_ad_clicked")
+                            destinationsNavigator.navigate(BuyPremiumScreenDestination())
+                        },
                         modifier = Modifier.padding(scaffoldPadding),
                     )
                 }
