@@ -50,7 +50,9 @@ fun SplashScreen(navigator: DestinationsNavigator) {
         if (duration < MIN_DURATION) delay(MIN_DURATION - duration)
     }
 
-    when (result!!) {
+    when (result) {
+        null -> Unit
+
         Result.Success -> {
             with(navigator) {
                 popBackStack()

@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.ui
 
 import android.util.Log
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,10 +14,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -60,7 +63,6 @@ import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.koin.compose.koinInject
 import java.net.ConnectException
@@ -84,44 +86,41 @@ fun StatisticsScreen(
     val subscriptionManager = koinInject<SubscriptionManager>()
     val userStatus = runBlocking { subscriptionManager.getStatus() }
 
+    val resources = LocalContext.current.resources
     LaunchedEffect(Unit) {
         AnalyticsFacade.logScreen("StatisticsScreen")
+
+        try {
+            statistics = statisticsRepository.getStatistics(LocalDate.now())
+        } catch (e: ConnectException) {
+            Log.e(TAG, "connection error", e)
+            snackbarHostState.showSnackbar(resources.getString(R.string.error_could_not_connect))
+        } catch (e: Exception) {
+            Log.e(TAG, "unknown error", e)
+            snackbarHostState.showSnackbar(resources.getString(R.string.error_unknown))
+        }
     }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = { NavigationBar(navController) },
-    ) { padding ->
-        val resources = LocalContext.current.resources
-        LaunchedEffect(Unit) {
-            try {
-                statistics = statisticsRepository.getCached()
-                launch {
-                    statistics = statisticsRepository.getActual(LocalDate.now())
+    ) { scaffoldPadding ->
+        AnimatedContent(statistics) { stats ->
+            when (stats) {
+                null -> ContentLoading(modifier = Modifier.padding(scaffoldPadding))
+                else -> {
+                    val graphData = FloatArray(7) { stats.graphData[it] }
+                    Content(
+                        graphLevels = graphData,
+                        doneToday = stats.doneToday,
+                        allTimeHigh = stats.doneAllTimeHigh,
+                        userStatus = userStatus,
+                        onBuy = { destinationsNavigator.navigate(BuyPremiumScreenDestination()) },
+                        modifier = Modifier.padding(scaffoldPadding),
+                    )
                 }
-            } catch (e: ConnectException) {
-                Log.e(TAG, "connection error", e)
-                snackbarHostState.showSnackbar(resources.getString(R.string.error_could_not_connect))
-            } catch (e: Exception) {
-                Log.e(TAG, "unknown error", e)
-                snackbarHostState.showSnackbar(resources.getString(R.string.error_unknown))
             }
         }
-
-        if (statistics == null) return@Scaffold
-        @Suppress("NAME_SHADOWING") val statistics = statistics!!
-        val graphData = FloatArray(7) { statistics.graphData[it] }
-
-        Content(
-            graphLevels = graphData,
-            doneToday = statistics.doneToday,
-            allTimeHigh = statistics.doneAllTimeHigh,
-            userStatus = userStatus,
-            onBuy = { destinationsNavigator.navigate(BuyPremiumScreenDestination()) },
-            modifier = Modifier
-                .padding(16.dp)
-                .padding(padding),
-        )
     }
 }
 
@@ -136,7 +135,9 @@ private fun Content(
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier.verticalScroll(rememberScrollState()),
+        modifier = modifier
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -193,6 +194,28 @@ private fun Content(
             is UserStatus.Premium -> WhenPaid(userStatus = userStatus)
             is UserStatus.Unpaid -> WhenUnpaid(onBuy = onBuy)
         }
+    }
+}
+
+@Composable
+private fun ContentLoading(modifier: Modifier = Modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+            .padding(16.dp)
+            .background(color = White, shape = RoundedCornerShape(10.dp))
+            .padding(16.dp)
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = "Загрузка...",
+            fontSize = 20.sp,
+        )
+        CircularProgressIndicator(
+            color = AccentYellow,
+            modifier = Modifier.size(48.dp),
+        )
     }
 }
 
@@ -339,5 +362,13 @@ private fun PreviewPremium() {
             userStatus = UserStatus.Unpaid(0),
             onBuy = {},
         )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewLoading() {
+    TaskbenchTheme {
+        ContentLoading()
     }
 }
