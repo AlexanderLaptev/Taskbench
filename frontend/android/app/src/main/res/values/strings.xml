@@ -87,4 +87,5 @@
     <string name="wednesday_short">ср</string>
     <string name="label_task_deleted">Задача удалена.</string>
     <string name="button_undo">Отмена</string>
+    <string name="error_password_too_short">Пароль должен содержать не менее 8 символов.</string>
 </resources>

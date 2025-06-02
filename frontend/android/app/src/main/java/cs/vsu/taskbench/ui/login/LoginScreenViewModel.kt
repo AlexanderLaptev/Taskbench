@@ -35,6 +35,7 @@ class LoginScreenViewModel(
             EmptyEmail,
             EmptyPassword,
             InvalidEmail,
+            ShortPassword,
             LoginFailure,
             SignUpFailure,
             PasswordsDoNotMatch,
@@ -70,6 +71,10 @@ class LoginScreenViewModel(
         }
         if (password.isBlank()) {
             _events.tryEmit(Event.Error.EmptyPassword)
+            return false
+        }
+        if (password.length < 8) {
+            _events.tryEmit(Event.Error.ShortPassword)
             return false
         }
         return true
