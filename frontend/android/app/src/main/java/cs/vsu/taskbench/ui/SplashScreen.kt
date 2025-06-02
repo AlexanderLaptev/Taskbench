@@ -37,6 +37,8 @@ import java.net.ConnectException
 
 private class NoConnectionException : RuntimeException()
 
+private const val MIN_DURATION = 300L
+
 @Destination<RootGraph>(start = true, style = ScreenTransitions::class)
 @Composable
 fun SplashScreen(navigator: DestinationsNavigator) {
@@ -44,14 +46,19 @@ fun SplashScreen(navigator: DestinationsNavigator) {
     var exception: Exception? by remember { mutableStateOf(null) }
 
     LaunchedEffect(Unit) {
-        delay(300) // a little delay so the splash screen doesn't disappear instantly
         try {
+            val start = System.currentTimeMillis()
             val result = bootstrapUseCase()
+            val end = System.currentTimeMillis()
+
             val direction = when (result) {
                 Result.Success -> TaskCreationScreenDestination
                 Result.LoginRequired -> LoginScreenDestination
                 Result.NoInternet -> throw NoConnectionException()
             }
+
+            val duration = end - start
+            if (duration < MIN_DURATION) delay(300 - MIN_DURATION)
             with(navigator) {
                 popBackStack()
                 navigate(direction)
