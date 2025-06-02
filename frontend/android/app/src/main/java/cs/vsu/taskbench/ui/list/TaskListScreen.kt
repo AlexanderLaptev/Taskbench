@@ -106,7 +106,7 @@ fun TaskListScreen(
 
     var showEditDialog by remember { mutableStateOf(false) }
     LaunchedEffect(showEditDialog) {
-        if (!showEditDialog) screenViewModel.refresh()
+        if (!showEditDialog) screenViewModel.refresh(reload = false)
     }
 
     LaunchedEffect(Unit) {
