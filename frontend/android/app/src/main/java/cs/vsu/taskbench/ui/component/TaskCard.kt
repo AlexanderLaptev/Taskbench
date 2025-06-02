@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -46,7 +47,8 @@ fun LazyItemScope.TaskCard(
     modifier: Modifier = Modifier,
     swipeEnabled: Boolean = true,
 ) {
-    val state = rememberSwipeToDismissBoxState()
+    val threshold = with(LocalDensity.current) { 128.dp.toPx() }
+    val state = rememberSwipeToDismissBoxState(positionalThreshold = { threshold })
     LaunchedEffect(state.currentValue) {
         if (state.currentValue == SwipeToDismissBoxValue.EndToStart) onDismiss()
     }
