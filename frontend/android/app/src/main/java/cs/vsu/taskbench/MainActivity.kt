@@ -14,8 +14,6 @@ import cs.vsu.taskbench.data.dataModule
 import cs.vsu.taskbench.domain.usecase.useCaseModule
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.uiModule
-import io.appmetrica.analytics.AppMetrica
-import io.appmetrica.analytics.AppMetricaConfig
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.compose.KoinApplication
@@ -24,8 +22,6 @@ import org.koin.core.logger.Level
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        installAppMetrica()
 
         val style = SystemBarStyle.light(
             scrim = Color.TRANSPARENT,
@@ -55,12 +51,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    private fun installAppMetrica() {
-        if (BuildConfig.DEBUG) return // do not send analytics from debug builds
-        val config = AppMetricaConfig.newConfigBuilder(BuildConfig.APPMETRICA_API_KEY).build()
-        AppMetrica.activate(applicationContext, config)
-        AppMetrica.enableActivityAutoTracking(application)
     }
 }
