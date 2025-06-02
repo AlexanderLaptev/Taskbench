@@ -87,7 +87,7 @@ class TaskListScreenViewModel(
         catchErrorsAsync {
             taskRepository.deleteTask(task)
             Log.d(TAG, "deleteTask: success")
-            refreshTasks()
+            refreshTasks(fullRefresh = false)
         }
     }
 
@@ -105,8 +105,8 @@ class TaskListScreenViewModel(
         refreshTasks()
     }
 
-    private fun refreshTasks() {
-        _tasks.update { null }
+    private fun refreshTasks(fullRefresh: Boolean = true) {
+        if (fullRefresh) _tasks.update { null }
         catchErrorsAsync {
             var result: List<Task>
             try {
