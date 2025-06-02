@@ -3,12 +3,15 @@ package cs.vsu.taskbench.domain.usecase
 import android.content.Context
 import android.util.Log
 import cs.vsu.taskbench.data.PreloadRepository
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.auth.AuthService
-import cs.vsu.taskbench.data.auth.UnauthorizedException
+import cs.vsu.taskbench.data.auth.withAuth
 import cs.vsu.taskbench.ui.util.hasInternetConnection
 import cs.vsu.taskbench.util.HttpStatusCodes
 import cs.vsu.taskbench.util.MockRandom
 import retrofit2.HttpException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 
 class BootstrapUseCase(
     private val context: Context,
@@ -19,10 +22,12 @@ class BootstrapUseCase(
         private val TAG = BootstrapUseCase::class.simpleName
     }
 
-    enum class Result {
-        Success,
-        LoginRequired,
-        NoInternet,
+    sealed interface Result {
+        data object Success : Result
+        data object NoInternet : Result
+        data object CouldNotConnect : Result
+        data object LoginRequired : Result
+        data class UnknownError(val error: Exception) : Result
     }
 
     suspend operator fun invoke(): Result {
@@ -39,27 +44,34 @@ class BootstrapUseCase(
             for (repo in preloadRepos) {
                 val repoName = repo::class.simpleName
                 Log.d(TAG, "invoke: preloading $repoName")
-                try {
-                    repo.preload()
-                } catch (e: UnauthorizedException) {
-                    Log.d(TAG, "invoke: preloading $repoName failed, attempting token refresh")
-                    authService.refreshTokens()
-                    repo.preload()
-                }
+                authService.withAuth { repo.preload() }
             }
         } catch (e: HttpException) {
-            if (e.code() == HttpStatusCodes.UNAUTHORIZED) throw UnauthorizedException()
+            if (e.code() == HttpStatusCodes.UNAUTHORIZED) {
+                Log.d(TAG, "invoke: bootstrap failed, authorization required")
+                AnalyticsFacade.logError("bootstrap", e)
+                return Result.LoginRequired
+            }
+
             Log.d(TAG, "invoke: bootstrap failed, HTTP error")
             Log.d(TAG, "invoke: code=${e.code()}")
             Log.d(TAG, "invoke: errorBody=${e.response()?.errorBody()?.string()}")
-            throw e
-        } catch (e: UnauthorizedException) {
-            Log.d(TAG, "invoke: bootstrap failed, authorization required")
-            return Result.LoginRequired
+            AnalyticsFacade.logError("bootstrap", e)
+            return Result.UnknownError(e)
         } catch (e: Exception) {
+            when (e) {
+                is ConnectException, is SocketTimeoutException -> {
+                    Log.e(TAG, "invoke: bootstrap failed, could not connect to the server")
+                    AnalyticsFacade.logError("bootstrap", e)
+                    return Result.CouldNotConnect
+                }
+            }
+
             Log.e(TAG, "invoke: bootstrap failed because of an unknown exception", e)
-            throw e
+            AnalyticsFacade.logError("bootstrap", e)
+            return Result.UnknownError(e)
         }
+
         Log.d(TAG, "invoke: bootstrap success")
         return Result.Success
     }

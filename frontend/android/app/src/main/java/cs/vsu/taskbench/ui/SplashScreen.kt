@@ -1,6 +1,5 @@
 package cs.vsu.taskbench.ui
 
-import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,9 +32,6 @@ import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
-import java.net.ConnectException
-
-private class NoConnectionException : RuntimeException()
 
 private const val MIN_DURATION = 300L
 
@@ -43,58 +39,59 @@ private const val MIN_DURATION = 300L
 @Composable
 fun SplashScreen(navigator: DestinationsNavigator) {
     val bootstrapUseCase = koinInject<BootstrapUseCase>()
-    var exception: Exception? by remember { mutableStateOf(null) }
+    var result by remember { mutableStateOf<Result?>(null) }
 
     LaunchedEffect(Unit) {
-        try {
-            val start = System.currentTimeMillis()
-            val result = bootstrapUseCase()
-            val end = System.currentTimeMillis()
+        val start = System.currentTimeMillis()
+        result = bootstrapUseCase()
+        val end = System.currentTimeMillis()
 
-            val direction = when (result) {
-                Result.Success -> TaskCreationScreenDestination
-                Result.LoginRequired -> LoginScreenDestination
-                Result.NoInternet -> throw NoConnectionException()
-            }
+        val duration = end - start
+        if (duration < MIN_DURATION) delay(MIN_DURATION - duration)
+    }
 
-            val duration = end - start
-            if (duration < MIN_DURATION) delay(300 - MIN_DURATION)
+    when (result!!) {
+        Result.Success -> {
             with(navigator) {
                 popBackStack()
-                navigate(direction)
+                navigate(TaskCreationScreenDestination)
             }
-        } catch (e: Exception) {
-            Log.e("SplashScreen", "exception during bootstrap", e)
-            exception = e
-        }
-    }
-
-    if (exception != null) {
-        val errorMessage = when (exception) {
-            is ConnectException -> stringResource(R.string.error_could_not_connect)
-            is NoConnectionException -> stringResource(R.string.error_no_internet)
-            else -> "N/A"
         }
 
-        val activity = LocalActivity.current
-        AlertDialog(
-            onDismissRequest = { activity!!.finishAffinity() },
-            containerColor = Beige,
-            textContentColor = DarkGray,
-            titleContentColor = Black,
-            title = { Text(text = stringResource(R.string.dialog_title_error)) },
-            text = { Text(text = stringResource(R.string.error_bootstrap_failed, errorMessage)) },
-            confirmButton = {
-                TextButton(
-                    onClick = { activity!!.finishAffinity() }
-                ) { Text(text = "OK", color = Black) }
-            },
-        )
+        Result.LoginRequired -> {
+            with(navigator) {
+                popBackStack()
+                navigate(LoginScreenDestination)
+            }
+        }
+
+        Result.CouldNotConnect -> ErrorMessage(stringResource(R.string.error_could_not_connect))
+        Result.NoInternet -> ErrorMessage(stringResource(R.string.error_no_internet))
+        is Result.UnknownError -> ErrorMessage(stringResource(R.string.error_unknown))
     }
+
     SplashScreenContent()
 }
 
-// Content extracted into a separate function to be easier to preview.
+@Composable
+fun ErrorMessage(message: String, modifier: Modifier = Modifier) {
+    val activity = LocalActivity.current
+    AlertDialog(
+        onDismissRequest = { activity!!.finishAffinity() },
+        containerColor = Beige,
+        textContentColor = DarkGray,
+        titleContentColor = Black,
+        modifier = modifier,
+        title = { Text(text = stringResource(R.string.dialog_title_error)) },
+        text = { Text(text = message) },
+        confirmButton = {
+            TextButton(
+                onClick = { activity!!.finishAffinity() }
+            ) { Text(text = "OK", color = Black) }
+        },
+    )
+}
+
 @Composable
 private fun SplashScreenContent(modifier: Modifier = Modifier) {
     Image(
