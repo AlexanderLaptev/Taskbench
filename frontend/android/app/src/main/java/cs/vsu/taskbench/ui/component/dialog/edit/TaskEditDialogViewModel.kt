@@ -24,6 +24,7 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 
+
 class TaskEditDialogViewModel(
     private val taskRepository: TaskRepository,
     private val categoryRepository: CategoryRepository,
@@ -31,6 +32,8 @@ class TaskEditDialogViewModel(
 ) : ViewModel(), TaskEditDialogStateHolder {
     companion object {
         private val TAG = TaskEditDialogViewModel::class.simpleName
+        private const val MIN_INPUT_LENGTH = 8
+        private const val REQUEST_DELAY = 1200L
     }
 
     enum class Error {
@@ -268,13 +271,19 @@ class TaskEditDialogViewModel(
     private var pendingUpdate: Job? = null
 
     private fun updateSuggestions() {
+        pendingUpdate?.cancel()
+        if (_taskInput.length < MIN_INPUT_LENGTH) {
+            suggestions = emptyList()
+            return
+        }
+
         suggestions = null // clear the current suggestions
-        pendingUpdate?.cancel() // cancel the previous request
         pendingUpdate = catchErrorsAsync {
-            delay(1200)
+            delay(REQUEST_DELAY)
             Log.d(TAG, "updateSuggestions: updating suggestions")
+
             // Do not send empty requests (the server will return HTTP 400 anyway).
-            if (_taskInput.length < 8) {
+            if (_taskInput.length < MIN_INPUT_LENGTH) {
                 suggestions = emptyList()
                 return@catchErrorsAsync
             }
