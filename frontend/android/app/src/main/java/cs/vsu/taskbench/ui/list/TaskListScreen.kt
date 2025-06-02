@@ -154,8 +154,8 @@ fun TaskListScreen(
 
         snackState.currentSnackbarData?.dismiss()
         val result = snackState.showSnackbar(
-            message = "Deleted task #${deleted.id}",
-            actionLabel = "Undo",
+            message = resources.getString(R.string.label_task_deleted),
+            actionLabel = resources.getString(R.string.button_undo),
             duration = SnackbarDuration.Long,
             withDismissAction = true,
         )
