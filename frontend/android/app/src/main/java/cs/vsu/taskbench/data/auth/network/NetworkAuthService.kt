@@ -91,7 +91,11 @@ class NetworkAuthService(
     override suspend fun signUp(email: String, password: String) {
         Log.d(TAG, "signUp: signing up user with email='$email'")
         val request = AuthRegisterRequest(email, password)
-        val response = networkAuthenticator.register(request)
+        val response = try {
+            networkAuthenticator.register(request)
+        } catch (e: HttpException) {
+            if (e.code() == HttpStatusCodes.BAD_REQUEST) throw LoginException() else throw e
+        }
         Log.d(TAG, "signUp: $response")
         dataStore.edit {
             it[ACCESS_KEY] = response.access
