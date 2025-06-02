@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оплата прошла успешно</title>
+    <style>
+        body {
+            background-color: #FFF3DC;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        p {
+            color: #444444;
+            font-size: 16px;
+            margin: 0;
+        }
+        #logo {
+            width: 100%;
+            max-width: 360px;
+            height: auto;
+            padding: 10px; /* Добавляем внутренний отступ вокруг логотипа */
+        }
+        #logo svg {
+            width: 100%;
+            height: auto;
+        }
+        @media (max-width: 600px) {
+            .container {
+                max-width: 90%;
+                padding: 15px;
+            }
+            p {
+                font-size: 14px;
+            }
+            #logo {
+                max-width: 270px;
+                padding: 8px; /* Уменьшаем отступ на мобильных для баланса */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="logo">
+            {% include 'dashboard/res/logo.svg' %}
+        </div>
+        <p>Вы можете вернуться в приложение.</p>
+    </div>
+</body>
+</html>
