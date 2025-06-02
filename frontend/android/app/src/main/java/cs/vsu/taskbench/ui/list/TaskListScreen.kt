@@ -12,13 +12,16 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -104,9 +107,7 @@ fun TaskListScreen(
 
     LaunchedEffect(Unit) {
         AnalyticsFacade.logScreen("TaskList")
-    }
 
-    LaunchedEffect(Unit) {
         launch {
             screenViewModel.errorFlow.collect {
                 val message = when (it) {
@@ -192,34 +193,47 @@ fun TaskListScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.clipToBounds(),
             ) {
-                items(tasks, key = { it.id!! }) { task ->
-                    TaskCard(
-                        deadline = task.deadline,
-                        bodyText = task.content,
-                        subtasks = task.subtasks,
-                        onDismiss = {
-                            AnalyticsFacade.logEvent("task_deleted")
-                            screenViewModel.deleteTask(task) },
-                        swipeEnabled = !taskListState.isScrollInProgress,
+                @Suppress("NAME_SHADOWING") val tasks = tasks
+                if (tasks != null) {
+                    items(tasks, key = { it.id!! }) { task ->
+                        TaskCard(
+                            deadline = task.deadline,
+                            bodyText = task.content,
+                            subtasks = task.subtasks,
+                            onDismiss = {
+                                AnalyticsFacade.logEvent("task_deleted")
+                                screenViewModel.deleteTask(task)
+                            },
+                            swipeEnabled = !taskListState.isScrollInProgress,
 
-                        onClick = {
-                            AnalyticsFacade.logEvent("task_edit")
-                            dialogViewModel.editTask = task
-                            showEditDialog = true
-                        },
+                            onClick = {
+                                AnalyticsFacade.logEvent("task_edit")
+                                dialogViewModel.editTask = task
+                                showEditDialog = true
+                            },
 
-                        onSubtaskCheckedChange = { subtask, checked ->
-                            AnalyticsFacade.logEvent("subtask_done_toggled")
-                            screenViewModel.setSubtaskChecked(subtask, checked)
-                        },
+                            onSubtaskCheckedChange = { subtask, checked ->
+                                AnalyticsFacade.logEvent("subtask_done_toggled")
+                                screenViewModel.setSubtaskChecked(subtask, checked)
+                            },
 
-                        modifier = Modifier
-                            .animateItem()
-                            .fillParentMaxWidth()
-                            .padding(horizontal = 16.dp),
-                    )
+                            modifier = Modifier
+                                .animateItem()
+                                .fillParentMaxWidth()
+                                .padding(horizontal = 16.dp),
+                        )
+                    }
+                } else {
+                    item {
+                        CircularProgressIndicator(
+                            color = AccentYellow,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentSize()
+                                .size(48.dp),
+                        )
+                    }
                 }
-                item { Spacer(Modifier) }
             }
         }
     }

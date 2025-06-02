@@ -38,7 +38,7 @@ class TaskListScreenViewModel(
     private val _errorFlow = mutableEventFlow<Error>()
     val errorFlow = _errorFlow.asSharedFlow()
 
-    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
+    private val _tasks = MutableStateFlow<List<Task>?>(null)
     val tasks = _tasks.asStateFlow()
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
@@ -106,21 +106,28 @@ class TaskListScreenViewModel(
     }
 
     private fun refreshTasks() {
+        _tasks.update { null }
         catchErrorsAsync {
-            _tasks.update {
-                var result = taskRepository.getTasks(
+            var result: List<Task>
+            try {
+                result = taskRepository.getTasks(
                     categoryFilterState,
                     sortByMode,
                     selectedDate,
                 )
-                (_categoryFilterState as? CategoryFilterState.Enabled)?.let { state ->
-                    if (state.category == null) {
-                        result = result.filter { it.categoryId == 0 }
-                    }
-                }
-                Log.d(TAG, "refreshTasks: success")
-                result
+            } catch (e: Exception) {
+                _tasks.update { emptyList() }
+                throw e
             }
+
+            (_categoryFilterState as? CategoryFilterState.Enabled)?.let { state ->
+                if (state.category == null) {
+                    result = result.filter { it.categoryId == 0 }
+                }
+            }
+
+            Log.d(TAG, "refreshTasks: success")
+            _tasks.update { result }
         }
     }
 

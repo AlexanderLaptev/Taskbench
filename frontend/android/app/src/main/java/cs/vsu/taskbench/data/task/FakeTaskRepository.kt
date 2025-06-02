@@ -9,6 +9,7 @@ import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
 import cs.vsu.taskbench.util.Lipsum
 import cs.vsu.taskbench.util.MockRandom
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -100,6 +101,7 @@ class FakeTaskRepository(
         deadline: LocalDate?,
     ): List<Task> {
         Log.d(TAG, "getTasks: enter")
+        delay(800)
         val result = mutableListOf<Task>()
         index.forEachValue { result += it }
 
