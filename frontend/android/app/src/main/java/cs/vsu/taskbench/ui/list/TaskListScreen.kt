@@ -371,7 +371,7 @@ private fun SortModeRow(
                     onClick = {
                         sortModesExpanded = false
                         viewModel.sortByMode = SortByMode.Priority
-                        AnalyticsFacade.logSortChanged("priority")
+                        AnalyticsFacade.logEvent("sort_mode_changed", mapOf("mode" to "priority"))
                         scope.launch { listState.animateScrollToItem(0) }
                     },
                 )
@@ -385,7 +385,7 @@ private fun SortModeRow(
                     onClick = {
                         sortModesExpanded = false
                         viewModel.sortByMode = SortByMode.Deadline
-                        AnalyticsFacade.logSortChanged("deadline")
+                        AnalyticsFacade.logEvent("sort_mode_changed", mapOf("mode" to "deadline"))
                         scope.launch { listState.animateScrollToItem(0) }
                     },
                 )

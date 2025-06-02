@@ -15,6 +15,7 @@ import cs.vsu.taskbench.util.mutableEventFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.net.ConnectException
+import java.net.SocketTimeoutException
 
 class LoginScreenViewModel(
     private val authService: AuthService,
@@ -60,17 +61,14 @@ class LoginScreenViewModel(
     // TODO: password requirements
     private fun validateLogin(): Boolean {
         if (email.isBlank()) {
-            AnalyticsFacade.logLoginFailure("EmptyEmail")
             _events.tryEmit(Event.Error.EmptyEmail)
             return false
         }
         if (!email.isValidEmail()) {
-            AnalyticsFacade.logLoginFailure("InvalidEmail")
             _events.tryEmit(Event.Error.InvalidEmail)
             return false
         }
         if (password.isBlank()) {
-            AnalyticsFacade.logLoginFailure("EmptyPassword")
             _events.tryEmit(Event.Error.EmptyPassword)
             return false
         }
@@ -88,7 +86,6 @@ class LoginScreenViewModel(
     private fun validateSignUp(): Boolean {
         if (!validateLogin()) return false
         if (password != confirmPassword) {
-            AnalyticsFacade.logLoginFailure("PasswordsDoNotMatch")
             _events.tryEmit(Event.Error.PasswordsDoNotMatch)
             return false
         }
@@ -98,23 +95,13 @@ class LoginScreenViewModel(
     private suspend inline fun handleLogin(isSignUp: Boolean) {
         try {
             if (isSignUp) {
-                AnalyticsFacade.logEvent("signup_attempt", mapOf("email" to email))
                 authService.signUp(email, password)
-            } else {
-                AnalyticsFacade.logEvent("login_attempt", mapOf("email" to email))
-                authService.login(email, password)
-            }
-        } catch (e: ConnectException) {
-            AnalyticsFacade.logLoginFailure("NoInternet")
-            AnalyticsFacade.logError("login_no_internet", e)
-            Log.e(TAG, "connection error", e)
-            _events.tryEmit(Event.Error.NoInternet)
-            return
+            } else authService.login(email, password)
         } catch (e: LoginException) {
-            val reason = if (isSignUp) "SignUpFailure" else "LoginFailure"
-            AnalyticsFacade.logLoginFailure(reason)
-            AnalyticsFacade.logError("login_failure", e)
+            val tag = if (isSignUp) "signup_fail" else "login_fail"
+            AnalyticsFacade.logError(tag, e)
             Log.e(TAG, "login error", e)
+
             _events.tryEmit(
                 if (isSignUp) {
                     Event.Error.SignUpFailure
@@ -122,18 +109,22 @@ class LoginScreenViewModel(
             )
             return
         } catch (e: Exception) {
-            AnalyticsFacade.logLoginFailure("Unknown")
-            AnalyticsFacade.logError("login_unknown_error", e)
+            when (e) {
+                is ConnectException, is SocketTimeoutException -> {
+                    AnalyticsFacade.logError("connect", e)
+                    Log.e(TAG, "connection error", e)
+                    _events.tryEmit(Event.Error.NoInternet)
+                    return
+                }
+            }
+
+            AnalyticsFacade.logError("unknown", e)
             Log.e(TAG, "unknown error", e)
             _events.tryEmit(Event.Error.Unknown)
             return
         }
 
-        if (isSignUp) {
-            AnalyticsFacade.logEvent("signup_success", mapOf("email" to email))
-        } else {
-            AnalyticsFacade.logLoginSuccess(email)
-        }
+        AnalyticsFacade.logEvent("login_success")
         bootstrapUseCase()
         _events.tryEmit(Event.LoggedIn)
     }
@@ -151,7 +142,7 @@ class LoginScreenViewModel(
 
     fun forgotPassword() {
         // TODO
-        AnalyticsFacade.logEvent("login_forgot_password_clicked", mapOf("email" to email))
+        AnalyticsFacade.logEvent("forgot_password")
         Log.d(TAG, "forgot password")
     }
 }

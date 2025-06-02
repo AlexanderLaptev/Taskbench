@@ -36,7 +36,6 @@ import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import com.ramcosta.composedestinations.utils.startDestination
 import cs.vsu.taskbench.R
-import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
@@ -85,7 +84,6 @@ fun NavigationBar(
 
                     val fromRoute = currentDestination.route
                     val toRoute = destination.direction.route
-                    AnalyticsFacade.logNavigate(fromRoute ?: "unknown", toRoute ?: "unknown")
 
                     navigator.popBackStack()
                     navigator.navigate(destination.direction) {

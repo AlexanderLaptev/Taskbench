@@ -80,7 +80,7 @@ fun BuyPremiumScreen(
     var isBuying by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        AnalyticsFacade.logPremiumScreenView(source)
+        AnalyticsFacade.logScreen("BuyPremiumScreen")
     }
 
     LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
@@ -103,7 +103,7 @@ fun BuyPremiumScreen(
         onBack = { navigator.navigateUp() },
 
         onBuy = {
-            AnalyticsFacade.logSubscriptionButtonClick()
+            AnalyticsFacade.logEvent("buy_premium_clicked")
 
             scope.launch {
                 try {

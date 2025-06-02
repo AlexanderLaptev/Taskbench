@@ -130,7 +130,6 @@ class TaskEditDialogViewModel(
     override fun onCategoryClick(category: Category) {
         _selectedCategory = category
         _showCategoryDialog = false
-        AnalyticsFacade.logCategorySelected(category.name)
     }
 
     override var editTask: Task? = null
@@ -162,7 +161,7 @@ class TaskEditDialogViewModel(
             )
             taskRepository.saveTask(task)
             if (editTask == null) {
-                AnalyticsFacade.logTaskCreated(task.id?.toLong())
+                AnalyticsFacade.logEvent("task_created")
             } else {
                 AnalyticsFacade.logEvent("task_edited")
             }
