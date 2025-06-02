@@ -63,9 +63,11 @@ import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 import cs.vsu.taskbench.ui.theme.White
+import cs.vsu.taskbench.ui.util.replaceMessage
 import kotlinx.coroutines.runBlocking
 import org.koin.compose.koinInject
 import java.net.ConnectException
+import java.net.SocketTimeoutException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -77,7 +79,7 @@ private const val TAG = "StatisticsScreen"
 fun StatisticsScreen(
     navController: NavController,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackState = remember { SnackbarHostState() }
     val destinationsNavigator = navController.rememberDestinationsNavigator()
 
     val statisticsRepository = koinInject<StatisticsRepository>()
@@ -92,17 +94,25 @@ fun StatisticsScreen(
 
         try {
             statistics = statisticsRepository.getStatistics(LocalDate.now())
-        } catch (e: ConnectException) {
-            Log.e(TAG, "connection error", e)
-            snackbarHostState.showSnackbar(resources.getString(R.string.error_could_not_connect))
         } catch (e: Exception) {
-            Log.e(TAG, "unknown error", e)
-            snackbarHostState.showSnackbar(resources.getString(R.string.error_unknown))
+            when (e) {
+                is ConnectException, is SocketTimeoutException -> {
+                    Log.e(TAG, "connect exception", e)
+                    AnalyticsFacade.logError("connect", e)
+                    snackState.replaceMessage(resources.getString(R.string.error_could_not_connect))
+                }
+
+                else -> {
+                    Log.e(TAG, null, e)
+                    AnalyticsFacade.logError("unknown", e)
+                    snackState.replaceMessage(resources.getString(R.string.error_unknown))
+                }
+            }
         }
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(snackState) },
         bottomBar = { NavigationBar(navController) },
     ) { scaffoldPadding ->
         AnimatedContent(statistics) { stats ->
