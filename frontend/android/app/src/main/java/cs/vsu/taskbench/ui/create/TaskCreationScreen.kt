@@ -31,18 +31,14 @@ import org.koin.androidx.compose.koinViewModel
 fun TaskCreationScreen(navController: NavController) {
     val viewModel = koinViewModel<TaskEditDialogViewModel>()
     val snackbarHostState = remember { SnackbarHostState() }
-    val resources = LocalContext.current.resources
 
+    val resources = LocalContext.current.resources
     LaunchedEffect(Unit) {
         AnalyticsFacade.logScreen("TaskCreation")
-    }
-
-    LaunchedEffect(Unit) {
         viewModel.errorFlow.collect {
             val message = when (it) {
                 Error.CouldNotConnect -> R.string.error_could_not_connect
                 Error.Unknown -> R.string.error_unknown
-                Error.Timeout -> R.string.error_timeout
             }
             snackbarHostState.currentSnackbarData?.dismiss()
             snackbarHostState.showSnackbar(

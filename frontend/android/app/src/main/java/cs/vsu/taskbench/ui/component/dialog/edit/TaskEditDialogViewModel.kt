@@ -36,7 +36,6 @@ class TaskEditDialogViewModel(
     enum class Error {
         CouldNotConnect,
         Unknown,
-        Timeout,
     }
 
     private val _errorFlow = mutableEventFlow<Error>()
@@ -112,10 +111,7 @@ class TaskEditDialogViewModel(
 
     override fun onPriorityChipClick() {
         _isHighPriority = !_isHighPriority
-        AnalyticsFacade.logEvent(
-            "priority_toggled",
-            mapOf("isHighPriority" to _isHighPriority)
-        )
+        AnalyticsFacade.logEvent("priority_toggled")
     }
 
     override fun onDeadlineChipClick() {
@@ -165,10 +161,7 @@ class TaskEditDialogViewModel(
             if (editTask == null) {
                 AnalyticsFacade.logTaskCreated(task.id?.toLong())
             } else {
-                AnalyticsFacade.logEvent(
-                    "task_edited",
-                    mapOf("task_id" to (task.id ?: "new"))
-                )
+                AnalyticsFacade.logEvent("task_edited")
             }
             editTask = null // clear input
             _submitEventFlow.tryEmit(Unit)
@@ -185,7 +178,7 @@ class TaskEditDialogViewModel(
 
         catchErrorsAsync {
             if (subtask.id != null) taskRepository.updateSubtask(updated)
-            AnalyticsFacade.logEvent("subtask_edited", mapOf("subtask_id" to subtask.id, "new_content" to newText))
+            AnalyticsFacade.logEvent("subtask_edited")
         }
 
         Log.d(TAG, "onEditSubtask: success")
@@ -200,14 +193,14 @@ class TaskEditDialogViewModel(
         subtasks = subtasks - subtask
         catchErrorsAsync {
             if (subtask.id != null) taskRepository.deleteSubtask(subtask)
-            AnalyticsFacade.logEvent("subtask_removed", mapOf("subtask_id" to subtask.id))
+            AnalyticsFacade.logEvent("subtask_removed")
         }
         Log.d(TAG, "onRemoveSubtask: success")
     }
 
     override fun onAddSubtask() {
         addSubtask(subtaskInput)
-        AnalyticsFacade.logEvent("subtask_added", mapOf("content" to subtaskInput))
+        AnalyticsFacade.logEvent("subtask_added")
         subtaskInput = ""
         Log.d(TAG, "onAddSubtask: success")
     }
@@ -215,7 +208,7 @@ class TaskEditDialogViewModel(
     override fun onAddSuggestion(suggestion: String) {
         suggestions = suggestions - suggestion
         addSubtask(suggestion)
-        AnalyticsFacade.logEvent("suggestion_added", mapOf("suggestion" to suggestion))
+        AnalyticsFacade.logEvent("suggestion_added")
         Log.d(TAG, "onAddSuggestion: success")
     }
 
@@ -224,7 +217,7 @@ class TaskEditDialogViewModel(
             val category = Category(id = null, name = _categoryInput)
             _selectedCategory = categoryRepository.saveCategory(category)
             showCategoryDialog = false
-            AnalyticsFacade.logEvent("category_created", mapOf("category_name" to _categoryInput))
+            AnalyticsFacade.logEvent("category_created")
             Log.d(TAG, "onAddCategory: success")
         }
     }
@@ -255,16 +248,17 @@ class TaskEditDialogViewModel(
             } catch (e: CancellationException) {
                 // TODO: figure out the root cause
                 // ignoring for now
+                Log.e(TAG, null, e)
             } catch (e: SocketTimeoutException) {
-                AnalyticsFacade.logError("taskedit_timeout", e)
+                AnalyticsFacade.logError("timeout", e)
                 Log.e(TAG, "catchErrorsAsync: socket timeout", e)
                 _errorFlow.tryEmit(Error.CouldNotConnect)
             } catch (e: ConnectException) {
-                AnalyticsFacade.logError("taskedit_connect_error", e)
+                AnalyticsFacade.logError("connect", e)
                 Log.e(TAG, "catchErrors: connection error", e)
-                _errorFlow.tryEmit(Error.Timeout)
+                _errorFlow.tryEmit(Error.CouldNotConnect)
             } catch (e: Exception) {
-                AnalyticsFacade.logError("taskedit_unknown_error", e)
+                AnalyticsFacade.logError("unknown", e)
                 Log.e(TAG, "catchErrors: unknown error", e)
                 _errorFlow.tryEmit(Error.Unknown)
             }
