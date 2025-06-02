@@ -16,7 +16,7 @@ interface TaskEditDialogStateHolder {
     var subtaskInput: String
     var subtasks: List<Subtask>
 
-    var suggestions: List<String>
+    var suggestions: List<String>?
 
     var categories: List<Category>
     var selectedCategory: Category?

@@ -47,7 +47,7 @@ object MockTaskEditDialogStateHolder : TaskEditDialogStateHolder {
         "Lorem ipsum dolor sit amet 11",
         "Lorem ipsum dolor sit amet 12",
     )
-    override var suggestions: List<String> = _suggestions
+    override var suggestions: List<String>? = _suggestions
 
     private var _deadline by mutableStateOf<LocalDateTime?>(null)
     override var deadline: LocalDateTime?

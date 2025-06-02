@@ -77,7 +77,7 @@ class TaskEditDialogViewModel(
         viewModelScope.launch { updateCategories() }
     }
 
-    override var suggestions: List<String> by mutableStateOf(emptyList())
+    override var suggestions: List<String>? by mutableStateOf(emptyList())
 
     private var _deadline by mutableStateOf<LocalDateTime?>(null)
     override var deadline: LocalDateTime?
@@ -206,7 +206,7 @@ class TaskEditDialogViewModel(
     }
 
     override fun onAddSuggestion(suggestion: String) {
-        suggestions = suggestions - suggestion
+        suggestions = suggestions!! - suggestion
         addSubtask(suggestion)
         AnalyticsFacade.logEvent("suggestion_added")
         Log.d(TAG, "onAddSuggestion: success")
@@ -268,19 +268,29 @@ class TaskEditDialogViewModel(
     private var pendingUpdate: Job? = null
 
     private fun updateSuggestions() {
-        suggestions = emptyList() // clear the current suggestions
+        suggestions = null // clear the current suggestions
         pendingUpdate?.cancel() // cancel the previous request
         pendingUpdate = catchErrorsAsync {
             delay(1200)
             Log.d(TAG, "updateSuggestions: updating suggestions")
             // Do not send empty requests (the server will return HTTP 400 anyway).
-            if (_taskInput.length < 8) return@catchErrorsAsync
-            val response = suggestionRepository.getSuggestions(
-                prompt = taskInput,
-                deadline = if (isDeadlineSetManually) _deadline else null,
-                isHighPriority = _isHighPriority,
-                category = _selectedCategory,
-            )
+            if (_taskInput.length < 8) {
+                suggestions = emptyList()
+                return@catchErrorsAsync
+            }
+
+
+            val response = try {
+                suggestionRepository.getSuggestions(
+                    prompt = taskInput,
+                    deadline = if (isDeadlineSetManually) _deadline else null,
+                    isHighPriority = _isHighPriority,
+                    category = _selectedCategory,
+                )
+            } catch (e: Exception) {
+                suggestions = emptyList()
+                throw e
+            }
 
             // Remove duplicates as those will crash the UI.
             val contents = subtasks.map { it.content }
