@@ -5,9 +5,9 @@ import android.util.Log
 import cs.vsu.taskbench.data.PreloadRepository
 import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.auth.AuthService
+import cs.vsu.taskbench.data.auth.UnauthorizedException
 import cs.vsu.taskbench.data.auth.withAuth
 import cs.vsu.taskbench.ui.util.hasInternetConnection
-import cs.vsu.taskbench.util.HttpStatusCodes
 import cs.vsu.taskbench.util.MockRandom
 import retrofit2.HttpException
 import java.net.ConnectException
@@ -47,17 +47,15 @@ class BootstrapUseCase(
                 authService.withAuth { repo.preload() }
             }
         } catch (e: HttpException) {
-            if (e.code() == HttpStatusCodes.UNAUTHORIZED) {
-                Log.d(TAG, "invoke: bootstrap failed, authorization required")
-                AnalyticsFacade.logError("bootstrap", e)
-                return Result.LoginRequired
-            }
-
             Log.d(TAG, "invoke: bootstrap failed, HTTP error")
             Log.d(TAG, "invoke: code=${e.code()}")
             Log.d(TAG, "invoke: errorBody=${e.response()?.errorBody()?.string()}")
             AnalyticsFacade.logError("bootstrap", e)
             return Result.UnknownError(e)
+        } catch (e: UnauthorizedException) {
+            Log.d(TAG, "invoke: bootstrap failed, authorization required")
+            AnalyticsFacade.logError("bootstrap", e)
+            return Result.LoginRequired
         } catch (e: Exception) {
             when (e) {
                 is ConnectException, is SocketTimeoutException -> {
