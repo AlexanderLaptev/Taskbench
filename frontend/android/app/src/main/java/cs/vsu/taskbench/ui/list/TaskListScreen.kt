@@ -125,7 +125,6 @@ fun TaskListScreen(
             dialogViewModel.errorFlow.collect {
                 val message = when (it) {
                     TaskEditDialogViewModel.Error.CouldNotConnect -> R.string.error_could_not_connect
-                    TaskEditDialogViewModel.Error.Timeout -> R.string.error_timeout
                     TaskEditDialogViewModel.Error.Unknown -> R.string.error_unknown
                 }
                 showEditDialog = false
@@ -199,21 +198,18 @@ fun TaskListScreen(
                         bodyText = task.content,
                         subtasks = task.subtasks,
                         onDismiss = {
-                            AnalyticsFacade.logEvent("task_swiped_delete", mapOf("task_id" to task.id))
+                            AnalyticsFacade.logEvent("task_deleted")
                             screenViewModel.deleteTask(task) },
                         swipeEnabled = !taskListState.isScrollInProgress,
 
                         onClick = {
-                            AnalyticsFacade.logEvent("task_clicked", mapOf("task_id" to task.id))
+                            AnalyticsFacade.logEvent("task_edit")
                             dialogViewModel.editTask = task
                             showEditDialog = true
                         },
 
                         onSubtaskCheckedChange = { subtask, checked ->
-                            AnalyticsFacade.logEvent(
-                                "subtask_checked_changed",
-                                mapOf("subtask_id" to subtask.id, "checked" to checked)
-                            )
+                            AnalyticsFacade.logEvent("subtask_done_toggled")
                             screenViewModel.setSubtaskChecked(subtask, checked)
                         },
 
@@ -354,13 +350,7 @@ private fun SortModeRow(
                     }
 
                     override fun onSelect(category: Category) {
-                        AnalyticsFacade.logEvent(
-                            "category_filter_selected",
-                            mapOf(
-                                "category_id" to (category.id ?: "unknown"),
-                                "category_name" to category.name,
-                            )
-                        )
+                        AnalyticsFacade.logEvent("category_filter_enabled")
                         viewModel.categoryFilterState = CategoryFilterState.Enabled(category)
                         postSelect()
                     }
@@ -370,13 +360,13 @@ private fun SortModeRow(
                     }
 
                     override fun onDeselect() {
-                        AnalyticsFacade.logEvent("category_filter_deselected")
+                        AnalyticsFacade.logEvent("category_filter_enabled")
                         viewModel.categoryFilterState = CategoryFilterState.Enabled(null)
                         postSelect()
                     }
 
                     override fun onSelectAll() {
-                        AnalyticsFacade.logEvent("category_filter_all_selected")
+                        AnalyticsFacade.logEvent("category_filter_disabled")
                         viewModel.categoryFilterState = CategoryFilterState.Disabled
                         postSelect()
                     }
