@@ -2,6 +2,7 @@ package cs.vsu.taskbench.ui.settings
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
@@ -159,7 +160,7 @@ fun PasswordChangeScreen(
             onClick = { navigator.navigateUp() },
         )
 
-        if (isProcessing) {
+        AnimatedVisibility(isProcessing) {
             CircularProgressIndicator(
                 color = AccentYellow,
                 modifier = Modifier.size(48.dp),
