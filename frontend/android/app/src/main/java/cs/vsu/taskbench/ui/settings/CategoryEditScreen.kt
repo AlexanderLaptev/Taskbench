@@ -1,11 +1,6 @@
 package cs.vsu.taskbench.ui.settings
 
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,8 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,11 +30,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,117 +51,96 @@ import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.DarkGray
 import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.White
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.ui.graphics.SolidColor
 
+private const val TAG = "CategoryEditScreen"
+
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 @Destination<SettingsGraph>(style = ScreenTransitions::class)
 fun CategoryEditScreen(
     settingsNavigator: DestinationsNavigator,
     modifier: Modifier = Modifier,
 ) {
+    val scope = rememberCoroutineScope()
+    val categoryRepository = koinInject<CategoryRepository>()
+    val categories = remember { mutableStateListOf<Category>() }
+
     LaunchedEffect(Unit) {
         AnalyticsFacade.logScreen("CategoryEditScreen")
-    }
-    
-    val categoryRepository = koinInject<CategoryRepository>()
-    val scope = rememberCoroutineScope()
-    
-    // Состояние категорий
-    val categories = remember { mutableStateListOf<Category>() }
-    
-    // Функция для загрузки категорий
-    val loadCategories = {
         scope.launch {
             categories.clear()
             categories.addAll(categoryRepository.getAllCategories())
         }
     }
-    
-    // Загрузка категорий при запуске и при фокусировке экрана
-    LaunchedEffect(Unit) {
-        loadCategories()
-    }
-    
+
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(White)
+            .background(White),
     ) {
-        // Кнопка возврата назад
-        Spacer(modifier = Modifier.height(20.dp))
-        Icon(
-            painter = painterResource(R.drawable.ic_back),
-            contentDescription = stringResource(R.string.button_back),
-            modifier = Modifier
-                .padding(start = 16.dp)
-                .clickable { 
-                    scope.launch {
-                        categoryRepository.preload()
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row {
+            Icon(
+                painter = painterResource(R.drawable.ic_back),
+                contentDescription = stringResource(R.string.button_back),
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .clip(RoundedCornerShape(100))
+                    .clickable {
+                        GlobalScope.launch { categoryRepository.preload() }
+                        settingsNavigator.navigateUp()
                     }
-                    settingsNavigator.navigateUp() 
-                }
-                .size(32.dp)
-        )
-        
+                    .padding(8.dp)
+                    .size(24.dp)
+            )
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
         
-        // Список категорий
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             items(
                 items = categories,
-                key = { it.id ?: it.name }
+                key = { it.id!! }
             ) { category ->
-                val visibleState = remember { MutableTransitionState(true) }
-                
-                AnimatedVisibility(
-                    visibleState = visibleState,
-                    enter = fadeIn(),
-                    exit = slideOutHorizontally() + fadeOut()
-                ) {
-                    CategoryItem(
-                        category = category,
-                        onEdit = { newName ->
-                            scope.launch {
-                                Log.d("CategoryEditScreen", "Обновление категории: $category -> $newName")
-                                val updatedCategory = category.copy(name = newName)
-                                
-                                try {
-                                    val result = categoryRepository.saveCategory(updatedCategory)
-                                    Log.d("CategoryEditScreen", "Категория успешно обновлена: $result")
-                                    
-                                    // Обновляем категорию в списке
-                                    val index = categories.indexOf(category)
-                                    if (index != -1) {
-                                        categories[index] = result
-                                    }
-                                } catch (e: Exception) {
-                                    Log.e("CategoryEditScreen", "Ошибка при обновлении категории", e)
+                CategoryItem(
+                    category = category,
+                    modifier = Modifier.animateItem(),
+
+                    onEdit = { newName ->
+                        scope.launch {
+                            Log.d(TAG, "updating category $category -> $newName")
+                            val updatedCategory = category.copy(name = newName)
+
+                            try {
+                                val result = categoryRepository.saveCategory(updatedCategory)
+                                Log.d(TAG, "saved category: $result")
+
+                                val index = categories.indexOf(category)
+                                if (index != -1) {
+                                    categories[index] = result
                                 }
-                            }
-                        },
-                        onDelete = {
-                            scope.launch {
-                                visibleState.targetState = false
-                                Log.d("CategoryEditScreen", "Удаление категории: $category")
-                                
-                                // Удаляем категорию
-                                categoryRepository.deleteCategory(category)
-                                
-                                // Через небольшую паузу (для анимации) удаляем из списка
-                                kotlinx.coroutines.delay(300)
-                                categories.remove(category)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "update category error", e)
                             }
                         }
-                    )
-                }
+                    },
+
+                    onDelete = {
+                        scope.launch {
+                            Log.d(TAG, "deleting category $category")
+                            categoryRepository.deleteCategory(category)
+                            categories.remove(category)
+                        }
+                    }
+                )
             }
         }
     }
@@ -179,23 +155,20 @@ private fun CategoryItem(
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var displayedName by remember(category) { mutableStateOf(category.name) }
-    
-    // Используем TextFieldValue вместо String для контроля позиции курсора
-    var textFieldValue by remember(category) { 
+
+    var textFieldValue by remember(category) {
         mutableStateOf(
             TextFieldValue(
                 text = category.name,
-                selection = TextRange(category.name.length) // Курсор в конце текста
+                selection = TextRange(category.name.length)
             )
         ) 
     }
     
     val focusRequester = remember { FocusRequester() }
     
-    // Запрашиваем фокус при активации режима редактирования
     LaunchedEffect(isEditing) {
         if (isEditing) {
-            // Обновляем TextFieldValue с позицией курсора в конце
             textFieldValue = TextFieldValue(
                 text = textFieldValue.text,
                 selection = TextRange(textFieldValue.text.length)
@@ -209,12 +182,11 @@ private fun CategoryItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
             .fillMaxWidth()
-            .height(48.dp) // Фиксированная высота плашки для постоянства размеров
+            .height(48.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(AccentYellow)
             .padding(horizontal = 16.dp)
     ) {
-        // Контейнер для текста
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
@@ -222,7 +194,6 @@ private fun CategoryItem(
                 .padding(end = 8.dp)
         ) {
             if (isEditing) {
-                // Используем BasicTextField, но с правильными настройками выравнивания
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = { textFieldValue = it },
@@ -235,11 +206,10 @@ private fun CategoryItem(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 12.dp) // Важно: одинаковые отступы с текстом!
+                        .padding(vertical = 12.dp)
                         .focusRequester(focusRequester)
                 )
             } else {
-                // Обычный текст в режиме просмотра
                 Text(
                     text = displayedName,
                     fontSize = 16.sp,
@@ -250,13 +220,11 @@ private fun CategoryItem(
             }
         }
         
-        // Кнопки
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (isEditing) {
-                // Кнопка отмены (крестик)
                 Icon(
                     painter = painterResource(R.drawable.ic_remove_circle_outline),
                     contentDescription = null,
@@ -264,7 +232,6 @@ private fun CategoryItem(
                     modifier = Modifier
                         .size(24.dp)
                         .clickable {
-                            // Отменяем редактирование
                             textFieldValue = TextFieldValue(
                                 text = displayedName,
                                 selection = TextRange(displayedName.length)
@@ -273,7 +240,6 @@ private fun CategoryItem(
                         }
                 )
                 
-                // Кнопка подтверждения (галочка) - меняет цвет в зависимости от того, были ли изменения
                 val currentText = textFieldValue.text
                 val isChanged = currentText != displayedName && currentText.isNotBlank()
                 Icon(
@@ -284,17 +250,13 @@ private fun CategoryItem(
                         .size(24.dp)
                         .clickable(enabled = isChanged) {
                             if (isChanged) {
-                                // Сразу обновляем отображаемое имя для мгновенной обратной связи
                                 displayedName = currentText
                                 isEditing = false
-                                
-                                // Затем асинхронно сохраняем в репозиторий
                                 onEdit(currentText)
                             }
                         }
                 )
             } else {
-                // Кнопка редактирования
                 Icon(
                     painter = painterResource(R.drawable.ic_edit),
                     contentDescription = null,
@@ -306,7 +268,6 @@ private fun CategoryItem(
                         }
                 )
                 
-                // Кнопка удаления
                 Icon(
                     painter = painterResource(R.drawable.ic_delete),
                     contentDescription = null,
@@ -318,4 +279,4 @@ private fun CategoryItem(
             }
         }
     }
-} 
+}
