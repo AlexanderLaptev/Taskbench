@@ -78,6 +78,8 @@ import cs.vsu.taskbench.ui.theme.AccentYellow
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.White
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
@@ -92,6 +94,7 @@ private val SORT_OPTIONS = listOf(
 
 private const val TODAY_INDEX = Int.MAX_VALUE / 2
 
+@OptIn(DelicateCoroutinesApi::class)
 @Destination<RootGraph>(style = ScreenTransitions::class)
 @Composable
 fun TaskListScreen(
@@ -171,13 +174,17 @@ fun TaskListScreen(
         }
     }
 
-    DisposableEffect(Unit) {
-        onDispose { screenViewModel.confirmTaskDeletion() }
-    }
-
     val taskListState = rememberLazyListState()
     val dateRowListState = rememberLazyListState(TODAY_INDEX)
     val scope = rememberCoroutineScope()
+
+    DisposableEffect(Unit) {
+        onDispose {
+            // The coroutine must not be cancelled when navigating between screens.
+            GlobalScope.launch { screenViewModel.confirmTaskDeletion() }
+            // TODO: remove when we start keeping VMs between screens
+        }
+    }
 
     Scaffold(
         snackbarHost = {

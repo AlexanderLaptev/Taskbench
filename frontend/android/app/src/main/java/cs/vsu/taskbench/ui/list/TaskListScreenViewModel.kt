@@ -88,17 +88,19 @@ class TaskListScreenViewModel(
     }
 
     fun deleteTask(task: Task) {
-        Log.d(TAG, "deleteTask: enter")
-        confirmTaskDeletion()
-        _deletedTask = task
-        deletedTaskIndex = _tasks.value!!.indexOf(task)
-        _tasks.update { _tasks.value?.minus(task) }
+        viewModelScope.launch {
+            Log.d(TAG, "deleteTask: enter")
+            confirmTaskDeletion()
+            _deletedTask = task
+            deletedTaskIndex = _tasks.value!!.indexOf(task)
+            _tasks.update { _tasks.value?.minus(task) }
+        }
     }
 
-    fun confirmTaskDeletion() {
+    suspend fun confirmTaskDeletion() {
         if (_deletedTask == null) return
         Log.d(TAG, "confirmTaskDeletion: confirming deletion")
-        catchErrorsAsync {
+        catchErrors {
             taskRepository.deleteTask(_deletedTask!!)
             Log.d(TAG, "deleteTask: success")
             refreshTasks(reload = false)
@@ -165,16 +167,18 @@ class TaskListScreenViewModel(
     }
 
     private inline fun catchErrorsAsync(crossinline block: suspend () -> Unit) {
-        viewModelScope.launch {
-            try {
-                block()
-            } catch (e: ConnectException) {
-                Log.e(TAG, "catchErrors: connection error", e)
-                _errorFlow.tryEmit(Error.CouldNotConnect)
-            } catch (e: Exception) {
-                Log.e(TAG, "catchErrors: unknown error", e)
-                _errorFlow.tryEmit(Error.Unknown)
-            }
+        viewModelScope.launch { catchErrors(block) }
+    }
+
+    private suspend inline fun catchErrors(crossinline block: suspend () -> Unit) {
+        try {
+            block()
+        } catch (e: ConnectException) {
+            Log.e(TAG, "catchErrors: connection error", e)
+            _errorFlow.tryEmit(Error.CouldNotConnect)
+        } catch (e: Exception) {
+            Log.e(TAG, "catchErrors: unknown error", e)
+            _errorFlow.tryEmit(Error.Unknown)
         }
     }
 }
