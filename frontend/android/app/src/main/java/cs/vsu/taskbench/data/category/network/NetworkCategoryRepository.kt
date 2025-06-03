@@ -12,8 +12,7 @@ class NetworkCategoryRepository(
 ) : CategoryRepository {
     companion object {
         private val TAG = NetworkCategoryRepository::class.simpleName
-        
-        // Статический набор для хранения ID удаленных категорий
+
         private val deletedCategoryIds = mutableSetOf<Int>()
     }
 
@@ -24,20 +23,21 @@ class NetworkCategoryRepository(
             cache.clear()
             val allCategories = dataSource.getAllCategories(it)
             
-            // Фильтруем категории, исключая те, которые были удалены
             val filteredCategories = allCategories.filter { category ->
                 category.id == null || category.id !in deletedCategoryIds
             }
             
             cache.addAll(filteredCategories)
         }
-        Log.d(TAG, "preload: cache size: ${cache.size}, исключено категорий: ${deletedCategoryIds.size}")
+        Log.d(
+            TAG,
+            "preload: cache size: ${cache.size}, excluded categories: ${deletedCategoryIds.size}"
+        )
     }
 
     override suspend fun getAllCategories(query: String): List<Category> {
         Log.d(TAG, "getAllCategories: searching categories with query='$query'")
         
-        // Фильтруем результаты, исключая удаленные категории
         val filteredCategories = if (query.isBlank()) {
             cache.filter { it.id == null || it.id !in deletedCategoryIds }
         } else {
@@ -54,12 +54,10 @@ class NetworkCategoryRepository(
     override suspend fun saveCategory(category: Category): Category {
         Log.d(TAG, "saveCategory: saving category $category")
         
-        // Если у категории есть ID, используем метод обновления
         if (category.id != null) {
             return updateCategory(category)
         }
         
-        // Если ID нет, создаем новую категорию
         var saved: Category? = null
         authService.withAuth {
             saved = dataSource.createCategory(it, CategoryCreateRequest(category.name))
@@ -82,14 +80,12 @@ class NetworkCategoryRepository(
                 updated = dataSource.updateCategory(it, category.id, CategoryUpdateRequest(category.name))
             }
             
-            // Обновляем категорию в кэше
             if (updated != null) {
                 val index = cache.indexOfFirst { it.id == category.id }
                 if (index != -1) {
                     cache[index] = updated!!
                     Log.d(TAG, "updateCategory: updated cache at index $index with $updated")
                 } else {
-                    // Если категории нет в кэше, добавляем её
                     cache.add(updated!!)
                     Log.d(TAG, "updateCategory: added updated category to cache: $updated")
                 }
@@ -111,31 +107,17 @@ class NetworkCategoryRepository(
         }
         
         try {
-            // Вызываем API для удаления категории
             authService.withAuth {
                 dataSource.deleteCategory(it, category.id)
             }
-            
-            // Удаляем из кэша после успешного удаления на сервере
             cache.removeAll { it.id == category.id }
-            
-            // Добавляем ID в список удаленных категорий
             deletedCategoryIds.add(category.id)
-            
             Log.d(TAG, "deleteCategory: successfully deleted category $category")
         } catch (e: Exception) {
-            // Даже если API запрос не удался, всё равно удаляем категорию локально
             Log.e(TAG, "deleteCategory: failed to delete category via API, using local deletion", e)
-            
-            if (category.id != null) {
-                // Удаляем из кэша
-                cache.removeAll { it.id == category.id }
-                
-                // Добавляем ID в список удаленных категорий
-                deletedCategoryIds.add(category.id)
-                
-                Log.d(TAG, "deleteCategory: locally deleted category $category")
-            }
+            cache.removeAll { it.id == category.id }
+            deletedCategoryIds.add(category.id)
+            Log.d(TAG, "deleteCategory: locally deleted category $category")
         }
     }
 }
