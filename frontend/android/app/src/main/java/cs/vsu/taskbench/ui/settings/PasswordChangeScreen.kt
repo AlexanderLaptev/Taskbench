@@ -4,6 +4,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,12 +55,14 @@ fun PasswordChangeScreen(
     }
 
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.CenterVertically),
         modifier = modifier,
     ) {
         var oldPassword by remember { mutableStateOf("") }
         var newPassword by remember { mutableStateOf("") }
         var confirmPassword by remember { mutableStateOf("") }
+        var isProcessing by remember { mutableStateOf(false) }
 
         val context = LocalContext.current
         val resources = context.resources
@@ -105,15 +109,21 @@ fun PasswordChangeScreen(
 
                 scope.launch {
                     try {
-                        authService.changePassword(oldPassword, newPassword)
-                        AnalyticsFacade.logEvent("password_changed")
+                        isProcessing = true
 
+                        try {
+                            authService.changePassword(oldPassword, newPassword)
+                        } catch (e: Exception) {
+                            isProcessing = false
+                            throw e
+                        }
+
+                        AnalyticsFacade.logEvent("password_changed")
                         Toast.makeText(
                             context,
                             R.string.message_password_changed,
                             Toast.LENGTH_SHORT,
                         ).show()
-
                         navigator.navigateUp()
                         Log.d(TAG, "success!")
                     } catch (e: HttpException) {
@@ -148,5 +158,12 @@ fun PasswordChangeScreen(
             color = ExtraLightGray,
             onClick = { navigator.navigateUp() },
         )
+
+        if (isProcessing) {
+            CircularProgressIndicator(
+                color = AccentYellow,
+                modifier = Modifier.size(48.dp),
+            )
+        }
     }
 }
