@@ -1,6 +1,7 @@
 package cs.vsu.taskbench.ui.settings
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -68,6 +70,7 @@ fun CategoryEditScreen(
     val scope = rememberCoroutineScope()
     val categoryRepository = koinInject<CategoryRepository>()
     val categories = remember { mutableStateListOf<Category>() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         AnalyticsFacade.logScreen("CategoryEditScreen")
@@ -92,7 +95,14 @@ fun CategoryEditScreen(
                     .padding(start = 16.dp)
                     .clip(RoundedCornerShape(100))
                     .clickable {
-                        GlobalScope.launch { categoryRepository.preload() }
+                        GlobalScope.launch {
+                            try {
+                                categoryRepository.preload()
+                            } catch (e: Exception) {
+                                AnalyticsFacade.logError("unknown", e)
+                                Log.e(TAG, "update category error", e)
+                            }
+                        }
                         settingsNavigator.navigateUp()
                     }
                     .padding(8.dp)
@@ -101,7 +111,7 @@ fun CategoryEditScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth(),
@@ -128,16 +138,26 @@ fun CategoryEditScreen(
                                     categories[index] = result
                                 }
                             } catch (e: Exception) {
+                                AnalyticsFacade.logError("unknown", e)
                                 Log.e(TAG, "update category error", e)
+                                Toast.makeText(context, R.string.error_unknown, Toast.LENGTH_SHORT)
+                                    .show()
                             }
                         }
                     },
 
                     onDelete = {
                         scope.launch {
-                            Log.d(TAG, "deleting category $category")
-                            categoryRepository.deleteCategory(category)
-                            categories.remove(category)
+                            try {
+                                Log.d(TAG, "deleting category $category")
+                                categoryRepository.deleteCategory(category)
+                                categories.remove(category)
+                            } catch (e: Exception) {
+                                AnalyticsFacade.logError("unknown", e)
+                                Log.e(TAG, "update category error", e)
+                                Toast.makeText(context, R.string.error_unknown, Toast.LENGTH_SHORT)
+                                    .show()
+                            }
                         }
                     }
                 )
@@ -162,11 +182,11 @@ private fun CategoryItem(
                 text = category.name,
                 selection = TextRange(category.name.length)
             )
-        ) 
+        )
     }
-    
+
     val focusRequester = remember { FocusRequester() }
-    
+
     LaunchedEffect(isEditing) {
         if (isEditing) {
             textFieldValue = TextFieldValue(
@@ -176,7 +196,7 @@ private fun CategoryItem(
             focusRequester.requestFocus()
         }
     }
-    
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -219,7 +239,7 @@ private fun CategoryItem(
                 )
             }
         }
-        
+
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -239,7 +259,7 @@ private fun CategoryItem(
                             isEditing = false
                         }
                 )
-                
+
                 val currentText = textFieldValue.text
                 val isChanged = currentText != displayedName && currentText.isNotBlank()
                 Icon(
@@ -267,7 +287,7 @@ private fun CategoryItem(
                             isEditing = true
                         }
                 )
-                
+
                 Icon(
                     painter = painterResource(R.drawable.ic_delete),
                     contentDescription = null,
