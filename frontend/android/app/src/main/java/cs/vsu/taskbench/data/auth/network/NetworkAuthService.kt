@@ -123,5 +123,6 @@ class NetworkAuthService(
             networkAuthenticator.changePassword(access, request)
             Log.d(TAG, "changePassword: success")
         }
+        refreshTokens()
     }
 }
