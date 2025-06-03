@@ -73,7 +73,7 @@ class LoginScreenViewModel(
             _events.tryEmit(Event.Error.EmptyPassword)
             return false
         }
-        if (password.length < 8) {
+        if (password.length < AuthService.MIN_PASSWORD_LENGTH) {
             _events.tryEmit(Event.Error.ShortPassword)
             return false
         }

@@ -55,4 +55,6 @@ class FakeAuthService(
             prefs[EMAIL_PREFERENCES_KEY] = ""
         }
     }
+
+    override suspend fun changePassword(old: String, new: String) = Unit
 }

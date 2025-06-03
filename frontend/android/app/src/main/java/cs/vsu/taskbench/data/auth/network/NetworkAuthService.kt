@@ -10,6 +10,7 @@ import cs.vsu.taskbench.data.auth.AuthTokens
 import cs.vsu.taskbench.data.auth.EMAIL_PREFERENCES_KEY
 import cs.vsu.taskbench.data.auth.LoginException
 import cs.vsu.taskbench.data.auth.UnauthorizedException
+import cs.vsu.taskbench.data.auth.withAuth
 import cs.vsu.taskbench.util.HttpStatusCodes
 import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
@@ -112,6 +113,15 @@ class NetworkAuthService(
             it[ACCESS_KEY] = ""
             it[REFRESH_KEY] = ""
             it[EMAIL_PREFERENCES_KEY] = ""
+        }
+    }
+
+    override suspend fun changePassword(old: String, new: String) {
+        Log.d(TAG, "changePassword: changing password")
+        withAuth { access ->
+            val request = AuthChangePasswordRequest(old, new)
+            networkAuthenticator.changePassword(access, request)
+            Log.d(TAG, "changePassword: success")
         }
     }
 }

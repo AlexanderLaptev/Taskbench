@@ -31,9 +31,14 @@ suspend inline fun AuthService.withAuth(block: (String) -> Unit) {
 }
 
 interface AuthService {
+    companion object {
+        const val MIN_PASSWORD_LENGTH = 8
+    }
+
     suspend fun getSavedTokens(): AuthTokens
     suspend fun refreshTokens()
     suspend fun login(email: String, password: String)
     suspend fun signUp(email: String, password: String)
+    suspend fun changePassword(old: String, new: String)
     suspend fun logout()
 }

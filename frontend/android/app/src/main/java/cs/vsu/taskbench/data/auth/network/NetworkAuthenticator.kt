@@ -3,7 +3,10 @@
 package cs.vsu.taskbench.data.auth.network
 
 import com.squareup.moshi.JsonClass
+import cs.vsu.taskbench.util.HttpHeaders
 import retrofit2.http.Body
+import retrofit2.http.Header
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 
 @JsonClass(generateAdapter = true)
@@ -43,6 +46,12 @@ data class AuthRefreshTokensResponse(
     val refresh: String,
 )
 
+@JsonClass(generateAdapter = true)
+data class AuthChangePasswordRequest(
+    val old_password: String,
+    val new_password: String,
+)
+
 interface NetworkAuthenticator {
     @POST("user/register/")
     suspend fun register(@Body request: AuthRegisterRequest): AuthRegisterResponse
@@ -52,4 +61,10 @@ interface NetworkAuthenticator {
 
     @POST("token/refresh/")
     suspend fun refreshTokens(@Body request: AuthRefreshTokensRequest): AuthRefreshTokensResponse
+
+    @PATCH("user/password/")
+    suspend fun changePassword(
+        @Header(HttpHeaders.AUTHORIZATION) auth: String,
+        @Body request: AuthChangePasswordRequest,
+    )
 }

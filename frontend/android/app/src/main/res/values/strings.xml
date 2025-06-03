@@ -88,4 +88,6 @@
     <string name="label_task_deleted">Задача удалена.</string>
     <string name="button_undo">Отмена</string>
     <string name="error_password_too_short">Пароль должен содержать не менее 8 символов.</string>
+    <string name="error_change_password_failed">Не удалось сменить пароль. Проверьте правильность старого пароля.</string>
+    <string name="message_password_changed">Пароль успешно изменён!</string>
 </resources>

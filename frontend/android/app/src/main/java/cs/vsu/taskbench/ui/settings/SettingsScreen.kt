@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -15,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.PasswordChangeScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsMainMenuDestination
 import com.ramcosta.composedestinations.generated.navgraphs.SettingsNavGraph
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
@@ -30,14 +34,19 @@ import cs.vsu.taskbench.ui.theme.White
 fun SettingsScreen(
     navController: NavController,
 ) {
+    val snackState = remember { SnackbarHostState() }
+
     LaunchedEffect(Unit) {
         AnalyticsFacade.logScreen("SettingsScreen")
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackState) },
         bottomBar = { NavigationBar(navController) }
     ) { scaffoldPadding ->
         val settingsNavController = rememberNavController()
+        val settingsNavigator = settingsNavController.rememberDestinationsNavigator()
+
         DestinationsNavHost(
             navGraph = SettingsNavGraph,
             navController = settingsNavController,
@@ -56,7 +65,14 @@ fun SettingsScreen(
             composable(SettingsMainMenuDestination) {
                 SettingsMainMenu(
                     globalNavigator = navController.rememberDestinationsNavigator(),
-                    settingsNavigator = settingsNavController.rememberDestinationsNavigator(),
+                    settingsNavigator = settingsNavigator,
+                )
+            }
+
+            composable(PasswordChangeScreenDestination) {
+                PasswordChangeScreen(
+                    navigator = settingsNavigator,
+                    snackState = snackState,
                 )
             }
         }
