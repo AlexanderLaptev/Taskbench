@@ -107,6 +107,10 @@ fun TaskListScreen(
     val tasks by screenViewModel.tasks.collectAsStateWithLifecycle()
     val resources = LocalContext.current.resources
 
+    val taskListState = rememberLazyListState()
+    val dateRowListState = rememberLazyListState(TODAY_INDEX)
+    val scope = rememberCoroutineScope()
+
     var showEditDialog by remember { mutableStateOf(false) }
     LaunchedEffect(showEditDialog) {
         if (!showEditDialog) screenViewModel.refresh(reload = false)
@@ -126,6 +130,24 @@ fun TaskListScreen(
                     message = resources.getString(message),
                     withDismissAction = true,
                 )
+            }
+        }
+
+        launch {
+            screenViewModel.taskDeletionEventFlow.collect {
+                scope.launch {
+                    snackState.currentSnackbarData?.dismiss()
+                    val result = snackState.showSnackbar(
+                        message = resources.getString(R.string.label_task_deleted),
+                        actionLabel = resources.getString(R.string.button_undo),
+                        duration = SnackbarDuration.Long,
+                    )
+
+                    when (result) {
+                        SnackbarResult.ActionPerformed -> screenViewModel.undoTaskDeletion()
+                        SnackbarResult.Dismissed -> Unit
+                    }
+                }
             }
         }
 
@@ -150,33 +172,6 @@ fun TaskListScreen(
             }
         }
     }
-
-    LaunchedEffect(screenViewModel.deletedTask) {
-        if (screenViewModel.deletedTask == null) return@LaunchedEffect
-        val deleted = screenViewModel.deletedTask!!
-
-        snackState.currentSnackbarData?.dismiss()
-        val result = snackState.showSnackbar(
-            message = resources.getString(R.string.label_task_deleted),
-            actionLabel = resources.getString(R.string.button_undo),
-            duration = SnackbarDuration.Long,
-            withDismissAction = true,
-        )
-
-        when (result) {
-            SnackbarResult.Dismissed -> {
-                screenViewModel.confirmTaskDeletion()
-            }
-
-            SnackbarResult.ActionPerformed -> {
-                screenViewModel.undoTaskDeletion()
-            }
-        }
-    }
-
-    val taskListState = rememberLazyListState()
-    val dateRowListState = rememberLazyListState(TODAY_INDEX)
-    val scope = rememberCoroutineScope()
 
     DisposableEffect(Unit) {
         onDispose {

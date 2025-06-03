@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.math.MathUtils
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cs.vsu.taskbench.data.category.CategoryRepository
@@ -41,9 +42,10 @@ class TaskListScreenViewModel(
     private val _tasks = MutableStateFlow<List<Task>?>(null)
     val tasks = _tasks.asStateFlow()
 
-    private var _deletedTask by mutableStateOf<Task?>(null)
-    val deletedTask get() = _deletedTask
+    private val _deletedTasks = mutableListOf<Task>()
     private var deletedTaskIndex = -1
+    private val _taskDeletionEventFlow = mutableEventFlow<Unit>()
+    val taskDeletionEventFlow = _taskDeletionEventFlow.asSharedFlow()
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories = _categories.asStateFlow()
@@ -90,33 +92,44 @@ class TaskListScreenViewModel(
     fun deleteTask(task: Task) {
         viewModelScope.launch {
             Log.d(TAG, "deleteTask: enter")
-            confirmTaskDeletion()
-            _deletedTask = task
-            deletedTaskIndex = _tasks.value!!.indexOf(task)
-            _tasks.update { _tasks.value?.minus(task) }
+            val updated = _tasks.value?.toMutableList() ?: mutableListOf()
+            _deletedTasks += task
+            deletedTaskIndex = updated.indexOf(task)
+            updated.removeAt(deletedTaskIndex)
+            _tasks.update { updated }
+            _taskDeletionEventFlow.tryEmit(Unit)
+            Log.d(TAG, "deleteTask: exit")
         }
     }
 
     suspend fun confirmTaskDeletion() {
-        if (_deletedTask == null) return
-        Log.d(TAG, "confirmTaskDeletion: confirming deletion")
+        Log.d(TAG, "confirmTaskDeletion: enter")
         catchErrors {
-            taskRepository.deleteTask(_deletedTask!!)
-            Log.d(TAG, "deleteTask: success")
-            refreshTasks(reload = false)
+            for (task in _deletedTasks) {
+                taskRepository.deleteTask(task)
+            }
+            _deletedTasks.clear()
+            Log.d(TAG, "confirmTaskDeletion: success")
         }
-        _deletedTask = null
     }
 
     fun undoTaskDeletion() {
-        if (_deletedTask == null) return
-        Log.d(TAG, "undoTaskDeletion: undoing deletion (deleted=$_deletedTask)")
-        _tasks.update {
-            val mutable = _tasks.value!!.toMutableList()
-            mutable.add(deletedTaskIndex, _deletedTask!!)
-            mutable
+        if (_deletedTasks.isEmpty()) {
+            Log.d(TAG, "undoTaskDeletion: empty, returning")
+            return
         }
-        _deletedTask = null
+
+        Log.d(TAG, "undoTaskDeletion: enter")
+        val restored = _deletedTasks.last()
+        val updated = _tasks.value?.toMutableList() ?: mutableListOf()
+
+        val clamped = MathUtils.clamp(deletedTaskIndex, 0, updated.size)
+        updated.add(clamped, restored)
+
+        _tasks.update { updated }
+        _deletedTasks.removeAt(_deletedTasks.lastIndex)
+        viewModelScope.launch { confirmTaskDeletion() }
+        Log.d(TAG, "undoTaskDeletion: exit")
     }
 
     fun setSubtaskChecked(subtask: Subtask, isChecked: Boolean) {
