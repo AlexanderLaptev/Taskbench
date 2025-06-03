@@ -62,7 +62,7 @@
     <string name="menu_settings_change_password">Сменить пароль</string>
     <string name="menu_settings_logout">Выйти из аккаунта</string>
     <string name="menu_settings_subscription">Управление подпиской</string>
-    <string name="menu_settings_categories">Категории</string>
+    <string name="menu_settings_categories">Редактировать категории</string>
     <string name="monday_short">пн</string>
     <string name="pattern_date">d MMMM YYYY \'г.\'</string>
     <string name="pattern_time">HH:mm</string>
