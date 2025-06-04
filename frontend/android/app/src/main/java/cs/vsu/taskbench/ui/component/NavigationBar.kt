@@ -37,8 +37,6 @@ import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import com.ramcosta.composedestinations.utils.startDestination
 import cs.vsu.taskbench.R
 import cs.vsu.taskbench.ui.theme.Black
-import cs.vsu.taskbench.ui.theme.DarkGray
-import cs.vsu.taskbench.ui.theme.LightGray
 import cs.vsu.taskbench.ui.theme.LightYellow
 import cs.vsu.taskbench.ui.theme.TaskbenchTheme
 
@@ -57,6 +55,7 @@ fun NavigationBar(
     navController: NavController,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource? = null,
+    onReset: () -> Boolean = { true },
 ) {
     val currentDestination = navController
         .currentDestinationAsState()
@@ -79,7 +78,13 @@ fun NavigationBar(
                 selected = currentDestination == destination.direction,
                 interactionSource = interactionSource,
                 onClick = {
-                    if (currentDestination == destination.direction) return@NavigationBarItem
+                    if (currentDestination == destination.direction) {
+                        if (onReset()) return@NavigationBarItem
+                    }
+
+                    val fromRoute = currentDestination.route
+                    val toRoute = destination.direction.route
+
                     navigator.popBackStack()
                     navigator.navigate(destination.direction) {
                         launchSingleTop = true

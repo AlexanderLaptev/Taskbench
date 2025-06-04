@@ -1,7 +1,6 @@
 package cs.vsu.taskbench.data.task
 
 import android.util.Log
-import androidx.collection.MutableIntObjectMap
 import androidx.collection.mutableIntObjectMapOf
 import cs.vsu.taskbench.data.PreloadRepository
 import cs.vsu.taskbench.data.category.CategoryRepository
@@ -10,6 +9,7 @@ import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
 import cs.vsu.taskbench.util.Lipsum
 import cs.vsu.taskbench.util.MockRandom
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -23,9 +23,9 @@ class FakeTaskRepository(
 
     private val random = MockRandom
 
-    private lateinit var index: MutableIntObjectMap<Task>
-    private var taskId = -1
-    private var subtaskId = -1
+    private var index = mutableIntObjectMapOf<Task>()
+    private var taskId = 1
+    private var subtaskId = 1
 
     private var categories = listOf<Category>()
 
@@ -101,6 +101,7 @@ class FakeTaskRepository(
         deadline: LocalDate?,
     ): List<Task> {
         Log.d(TAG, "getTasks: enter")
+        delay(800)
         val result = mutableListOf<Task>()
         index.forEachValue { result += it }
 
@@ -166,19 +167,42 @@ class FakeTaskRepository(
         return saveTaskInternal(task)
     }
 
-    override suspend fun saveSubtask(subtask: Subtask): Subtask {
+    override suspend fun createSubtask(owner: Task, subtask: Subtask): Subtask {
+        val saved = subtask.copy(id = subtaskId)
+        subtaskId++
+
+        val updated = owner.subtasks.toMutableList()
+        updated += saved
+        index[owner.id!!] = owner.copy(subtasks = updated)
+        return saved
+    }
+
+    override suspend fun updateSubtask(subtask: Subtask): Subtask {
         index.forEachKey { taskId ->
             val task = index[taskId]!!
             val index = task.subtasks.indexOfFirst { subtask.id == it.id }
-            if (index > 0) {
+            if (index >= 0) {
                 val updated = task.subtasks.toMutableList()
                 updated[index] = subtask
                 this.index[taskId] = task.copy(subtasks = updated)
-                Log.d(TAG, "saveSubtask: success")
+                Log.d(TAG, "updateSubtask: success")
                 return subtask
             }
         }
-        error("Could not find subtask ID")
+        error("Could not find subtask with ID ${subtask.id}")
+    }
+
+    override suspend fun deleteSubtask(subtask: Subtask) {
+        index.forEachKey { taskId ->
+            val task = index[taskId]!!
+            val index = task.subtasks.indexOfFirst { subtask.id == it.id }
+            if (index >= 0) {
+                val updated = task.subtasks.toMutableList()
+                updated.removeAt(index)
+                this.index[taskId] = task.copy(subtasks = updated)
+                Log.d(TAG, "saveSubtask: success")
+            }
+        }
     }
 
     private fun saveTaskInternal(task: Task): Task {

@@ -5,9 +5,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +44,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,6 +52,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.TaskCreationScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import cs.vsu.taskbench.R
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.ui.ScreenTransitions
 import cs.vsu.taskbench.ui.component.Button
 import cs.vsu.taskbench.ui.component.TextField
@@ -63,8 +60,6 @@ import cs.vsu.taskbench.ui.login.LoginScreenViewModel.Event.Error
 import cs.vsu.taskbench.ui.theme.Beige
 import cs.vsu.taskbench.ui.theme.Black
 import cs.vsu.taskbench.ui.theme.LightYellow
-import cs.vsu.taskbench.ui.theme.Link
-import cs.vsu.taskbench.ui.theme.LinkPressed
 import cs.vsu.taskbench.ui.theme.White
 import cs.vsu.taskbench.ui.theme.swapTransition
 import kotlinx.coroutines.launch
@@ -97,6 +92,11 @@ fun LoginScreen(
 
     val scope = rememberCoroutineScope()
     val resources = LocalContext.current.resources
+
+    LaunchedEffect(Unit) {
+        AnalyticsFacade.logScreen("LoginScreen")
+    }
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -104,12 +104,13 @@ fun LoginScreen(
                     val messageId = when (event) {
                         Error.EmptyEmail -> R.string.error_empty_email
                         Error.InvalidEmail -> R.string.error_invalid_email
+                        Error.ShortPassword -> R.string.error_password_too_short
                         Error.LoginFailure -> R.string.error_login_failure
                         Error.EmptyPassword -> R.string.error_empty_password
                         Error.PasswordsDoNotMatch -> R.string.error_passwords_do_not_match
                         Error.NoInternet -> R.string.error_no_internet
                         Error.Unknown -> R.string.error_unknown
-                        Error.SignUpFailure -> TODO()
+                        Error.SignUpFailure -> R.string.error_signup_failure
                     }
                     with(snackbarHostState) {
                         currentSnackbarData?.dismiss()
@@ -241,7 +242,7 @@ private fun LoginControls(
         TextField(
             value = screenState.password,
             color = Beige,
-            placeholder = stringResource(R.string.label_password),
+            placeholder = stringResource(R.string.placeholder_password),
             password = true,
             onValueChange = screenState.onPasswordChange,
         )
@@ -254,7 +255,7 @@ private fun LoginControls(
                 TextField(
                     value = screenState.confirmPassword,
                     color = Beige,
-                    placeholder = stringResource(R.string.label_confirm_password),
+                    placeholder = stringResource(R.string.placeholder_confirm_password),
                     password = true,
                     onValueChange = screenState.onConfirmPasswordChange,
                 )
@@ -289,31 +290,32 @@ private fun LoginControls(
             White,
         )
 
-        AnimatedVisibility(
-            visible = screenState.loginState == LoginState.Login,
-        ) {
-            val interactionSource = remember { MutableInteractionSource() }
-            val isLinkPressed by interactionSource.collectIsPressedAsState()
-
-            Column {
-                Spacer(Modifier.height(LOGIN_CONTROLS_ITEM_SPACING))
-                Text(
-                    text = stringResource(R.string.label_forgot_password),
-                    fontSize = 14.sp,
-                    color = if (isLinkPressed) LinkPressed else Link,
-                    textDecoration = TextDecoration.Underline,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .clickable(
-                            onClick = screenState.onForgotPassword,
-                            interactionSource = interactionSource,
-                            indication = null,
-                        )
-                        .height(32.dp)
-                        .fillMaxWidth(0.5f),
-                )
-            }
-        }
+        // TODO! Taking this out temporarily 'cause we can't send emails (still)
+//        AnimatedVisibility(
+//            visible = screenState.loginState == LoginState.Login,
+//        ) {
+//            val interactionSource = remember { MutableInteractionSource() }
+//            val isLinkPressed by interactionSource.collectIsPressedAsState()
+//
+//            Column {
+//                Spacer(Modifier.height(LOGIN_CONTROLS_ITEM_SPACING))
+//                Text(
+//                    text = stringResource(R.string.label_forgot_password),
+//                    fontSize = 14.sp,
+//                    color = if (isLinkPressed) LinkPressed else Link,
+//                    textDecoration = TextDecoration.Underline,
+//                    textAlign = TextAlign.Center,
+//                    modifier = Modifier
+//                        .clickable(
+//                            onClick = screenState.onForgotPassword,
+//                            interactionSource = interactionSource,
+//                            indication = null,
+//                        )
+//                        .height(32.dp)
+//                        .fillMaxWidth(0.5f),
+//                )
+//            }
+//        }
     }
 }
 

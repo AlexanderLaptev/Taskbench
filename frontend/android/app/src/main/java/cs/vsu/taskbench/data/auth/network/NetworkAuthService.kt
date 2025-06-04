@@ -10,6 +10,7 @@ import cs.vsu.taskbench.data.auth.AuthTokens
 import cs.vsu.taskbench.data.auth.EMAIL_PREFERENCES_KEY
 import cs.vsu.taskbench.data.auth.LoginException
 import cs.vsu.taskbench.data.auth.UnauthorizedException
+import cs.vsu.taskbench.data.auth.withAuth
 import cs.vsu.taskbench.util.HttpStatusCodes
 import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
@@ -91,7 +92,11 @@ class NetworkAuthService(
     override suspend fun signUp(email: String, password: String) {
         Log.d(TAG, "signUp: signing up user with email='$email'")
         val request = AuthRegisterRequest(email, password)
-        val response = networkAuthenticator.register(request)
+        val response = try {
+            networkAuthenticator.register(request)
+        } catch (e: HttpException) {
+            if (e.code() == HttpStatusCodes.BAD_REQUEST) throw LoginException() else throw e
+        }
         Log.d(TAG, "signUp: $response")
         dataStore.edit {
             it[ACCESS_KEY] = response.access
@@ -109,5 +114,15 @@ class NetworkAuthService(
             it[REFRESH_KEY] = ""
             it[EMAIL_PREFERENCES_KEY] = ""
         }
+    }
+
+    override suspend fun changePassword(old: String, new: String) {
+        Log.d(TAG, "changePassword: changing password")
+        withAuth { access ->
+            val request = AuthChangePasswordRequest(old, new)
+            networkAuthenticator.changePassword(access, request)
+            Log.d(TAG, "changePassword: success")
+        }
+        refreshTokens()
     }
 }

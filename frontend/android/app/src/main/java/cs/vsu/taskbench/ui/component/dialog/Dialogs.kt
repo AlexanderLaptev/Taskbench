@@ -96,10 +96,10 @@ fun ConfirmationDialog(
 fun TimePickerDialog(
     onComplete: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
+    initialTime: LocalTime = LocalTime.now(),
     onDismiss: () -> Unit = {},
 ) {
-    val now = LocalTime.now()
-    val pickerState = rememberTimePickerState(now.hour, now.minute)
+    val pickerState = rememberTimePickerState(initialTime.hour, initialTime.minute)
 
     var first by remember { mutableStateOf(true) }
     val view = LocalView.current

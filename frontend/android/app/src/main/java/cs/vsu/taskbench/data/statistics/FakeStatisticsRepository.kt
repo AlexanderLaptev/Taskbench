@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.collection.mutableFloatListOf
 import cs.vsu.taskbench.domain.model.Statistics
 import cs.vsu.taskbench.util.MockRandom
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 
 object FakeStatisticsRepository : StatisticsRepository {
@@ -18,6 +19,7 @@ object FakeStatisticsRepository : StatisticsRepository {
 
     override suspend fun getStatistics(date: LocalDate): Statistics {
         Log.d(TAG, "requested statistics")
+        delay(400)
         return cached ?: let {
             generate()
             cached!!

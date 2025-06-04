@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.math.MathUtils
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cs.vsu.taskbench.data.category.CategoryRepository
@@ -13,7 +14,6 @@ import cs.vsu.taskbench.data.task.TaskRepository.SortByMode
 import cs.vsu.taskbench.domain.model.Category
 import cs.vsu.taskbench.domain.model.Subtask
 import cs.vsu.taskbench.domain.model.Task
-import cs.vsu.taskbench.ui.create.TaskCreationScreenViewModel.Error
 import cs.vsu.taskbench.util.mutableEventFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -39,8 +39,13 @@ class TaskListScreenViewModel(
     private val _errorFlow = mutableEventFlow<Error>()
     val errorFlow = _errorFlow.asSharedFlow()
 
-    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
+    private val _tasks = MutableStateFlow<List<Task>?>(null)
     val tasks = _tasks.asStateFlow()
+
+    private val _deletedTasks = mutableListOf<Task>()
+    private var deletedTaskIndex = -1
+    private val _taskDeletionEventFlow = mutableEventFlow<Unit>()
+    val taskDeletionEventFlow = _taskDeletionEventFlow.asSharedFlow()
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories = _categories.asStateFlow()
@@ -79,45 +84,91 @@ class TaskListScreenViewModel(
 
     init {
         catchErrorsAsync {
-            refreshCategories()
-            refreshTasks()
+            refresh(reload = true)
             Log.d(TAG, "init: success")
         }
     }
 
     fun deleteTask(task: Task) {
-        catchErrorsAsync {
-            taskRepository.deleteTask(task)
-            Log.d(TAG, "deleteTask: success")
-            refreshTasks()
+        viewModelScope.launch {
+            Log.d(TAG, "deleteTask: enter")
+            val updated = _tasks.value?.toMutableList() ?: mutableListOf()
+            _deletedTasks += task
+            deletedTaskIndex = updated.indexOf(task)
+            updated.removeAt(deletedTaskIndex)
+            _tasks.update { updated }
+            _taskDeletionEventFlow.tryEmit(Unit)
+            Log.d(TAG, "deleteTask: exit")
         }
+    }
+
+    suspend fun confirmTaskDeletion() {
+        Log.d(TAG, "confirmTaskDeletion: enter")
+        catchErrors {
+            for (task in _deletedTasks) {
+                taskRepository.deleteTask(task)
+            }
+            _deletedTasks.clear()
+            Log.d(TAG, "confirmTaskDeletion: success")
+        }
+    }
+
+    fun undoTaskDeletion() {
+        if (_deletedTasks.isEmpty()) {
+            Log.d(TAG, "undoTaskDeletion: empty, returning")
+            return
+        }
+
+        Log.d(TAG, "undoTaskDeletion: enter")
+        val restored = _deletedTasks.last()
+        val updated = _tasks.value?.toMutableList() ?: mutableListOf()
+
+        val clamped = MathUtils.clamp(deletedTaskIndex, 0, updated.size)
+        updated.add(clamped, restored)
+
+        _tasks.update { updated }
+        _deletedTasks.removeAt(_deletedTasks.lastIndex)
+        viewModelScope.launch { confirmTaskDeletion() }
+        Log.d(TAG, "undoTaskDeletion: exit")
     }
 
     fun setSubtaskChecked(subtask: Subtask, isChecked: Boolean) {
         catchErrorsAsync {
             val changed = subtask.copy(isDone = isChecked)
-            taskRepository.saveSubtask(changed)
+            taskRepository.updateSubtask(changed)
             Log.d(TAG, "setSubtaskChecked: saved task")
             refreshTasks()
         }
     }
 
-    private fun refreshTasks() {
+    fun refresh(reload: Boolean = false) {
+        refreshCategories()
+        refreshTasks(reload)
+    }
+
+    private fun refreshTasks(reload: Boolean = false) {
+        if (reload) _tasks.update { null }
         catchErrorsAsync {
-            _tasks.update {
-                var result = taskRepository.getTasks(
+            var result: List<Task>
+            try {
+                result = taskRepository.getTasks(
                     categoryFilterState,
                     sortByMode,
                     selectedDate,
                 )
-                (_categoryFilterState as? CategoryFilterState.Enabled)?.let { state ->
-                    if (state.category == null) {
-                        result = result.filter { it.categoryId == 0 }
-                    }
-                }
-                Log.d(TAG, "refreshTasks: success")
-                result
+            } catch (e: Exception) {
+                _tasks.update { emptyList() }
+                throw e
             }
+
+            (_categoryFilterState as? CategoryFilterState.Enabled)?.let { state ->
+                if (state.category == null) {
+                    result = result.filter { it.categoryId == 0 }
+                }
+            }
+
+            Log.d(TAG, "refreshTasks: success")
+            _tasks.update { result }
         }
     }
 
@@ -129,16 +180,18 @@ class TaskListScreenViewModel(
     }
 
     private inline fun catchErrorsAsync(crossinline block: suspend () -> Unit) {
-        viewModelScope.launch {
-            try {
-                block()
-            } catch (e: ConnectException) {
-                Log.e(TAG, "catchErrors: connection error", e)
-                _errorFlow.tryEmit(Error.CouldNotConnect)
-            } catch (e: Exception) {
-                Log.e(TAG, "catchErrors: unknown error", e)
-                _errorFlow.tryEmit(Error.Unknown)
-            }
+        viewModelScope.launch { catchErrors(block) }
+    }
+
+    private suspend inline fun catchErrors(crossinline block: suspend () -> Unit) {
+        try {
+            block()
+        } catch (e: ConnectException) {
+            Log.e(TAG, "catchErrors: connection error", e)
+            _errorFlow.tryEmit(Error.CouldNotConnect)
+        } catch (e: Exception) {
+            Log.e(TAG, "catchErrors: unknown error", e)
+            _errorFlow.tryEmit(Error.Unknown)
         }
     }
 }

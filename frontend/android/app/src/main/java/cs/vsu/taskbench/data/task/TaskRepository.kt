@@ -23,6 +23,8 @@ interface TaskRepository {
     ): List<Task>
 
     suspend fun saveTask(task: Task): Task
-    suspend fun saveSubtask(subtask: Subtask): Subtask
+    suspend fun createSubtask(owner: Task, subtask: Subtask): Subtask
+    suspend fun updateSubtask(subtask: Subtask): Subtask
+    suspend fun deleteSubtask(subtask: Subtask)
     suspend fun deleteTask(task: Task)
 }

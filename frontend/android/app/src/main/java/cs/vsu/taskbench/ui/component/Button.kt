@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -39,7 +39,7 @@ fun Button(
         ),
         shape = RoundedCornerShape(10.dp),
         modifier = modifier
-            .height(52.dp)
+            .defaultMinSize(minHeight = 52.dp)
             .let { if (fillWidth) it.fillMaxWidth() else it },
         content = content,
     )

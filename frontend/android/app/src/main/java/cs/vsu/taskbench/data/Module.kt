@@ -15,6 +15,10 @@ import cs.vsu.taskbench.data.statistics.FakeStatisticsRepository
 import cs.vsu.taskbench.data.statistics.StatisticsRepository
 import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsDataSource
 import cs.vsu.taskbench.data.statistics.network.NetworkStatisticsRepository
+import cs.vsu.taskbench.data.subscription.FakeSubscriptionManager
+import cs.vsu.taskbench.data.subscription.SubscriptionManager
+import cs.vsu.taskbench.data.subscription.network.NetworkSubscriptionManager
+import cs.vsu.taskbench.data.subscription.network.SubscriptionNetworkInterface
 import cs.vsu.taskbench.data.task.FakeTaskRepository
 import cs.vsu.taskbench.data.task.TaskRepository
 import cs.vsu.taskbench.data.task.network.NetworkTaskDataSource
@@ -23,8 +27,7 @@ import cs.vsu.taskbench.data.task.suggestions.FakeSuggestionRepository
 import cs.vsu.taskbench.data.task.suggestions.SuggestionRepository
 import cs.vsu.taskbench.data.task.suggestions.network.NetworkSuggestionDataSource
 import cs.vsu.taskbench.data.task.suggestions.network.NetworkSuggestionRepository
-import cs.vsu.taskbench.data.user.FakeUserRepository
-import cs.vsu.taskbench.data.user.UserRepository
+import okhttp3.OkHttpClient
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -33,10 +36,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 private val Context.dataStore by preferencesDataStore("settings")
-
-private fun Module.fakeUser() {
-    singleOf(::FakeUserRepository) bind UserRepository::class
-}
 
 private fun Module.fakeAuth() {
     singleOf(::FakeAuthService) bind AuthService::class
@@ -83,32 +82,46 @@ private fun Module.netTasks() {
     singleOf(::NetworkTaskRepository) bind TaskRepository::class
 }
 
-private fun Module.allFake() {
-    fakeAuth()
-    fakeUser()
-    fakeSuggestions()
-    fakeCategories()
-    fakeStatistics()
-    fakeTasks()
+private fun Module.fakeSubscription() {
+    single { FakeSubscriptionManager } bind SubscriptionManager::class
 }
 
-private fun Module.allNet() {
-    netAuth()
-    fakeUser() // TODO!
-    netSuggestions()
-    netCategories()
-    netStatistics()
-    netTasks()
+private fun Module.netSubscription() {
+    single { get<Retrofit>().create(SubscriptionNetworkInterface::class.java) }
+    singleOf(::NetworkSubscriptionManager) bind SubscriptionManager::class
 }
+
+private const val SERVER_ADDRESS = "193.135.137.154"
 
 val dataModule = module {
     single { get<Context>().dataStore }
     single { Moshi.Builder().build() }
     single {
+        OkHttpClient.Builder()
+            .hostnameVerifier { hostname, _ ->
+                hostname == SERVER_ADDRESS
+            }
+            .build()
+    }
+    single {
         Retrofit.Builder()
-            .baseUrl("http://193.135.137.154:8000/")
+            .client(get())
+            .baseUrl("https://$SERVER_ADDRESS/")
             .addConverterFactory(MoshiConverterFactory.create(get()))
             .build()
     }
-    allNet()
+
+//    fakeAuth()
+//    fakeCategories()
+//    fakeSuggestions()
+//    fakeTasks()
+//    fakeStatistics()
+//    fakeSubscription()
+
+    netAuth()
+    netCategories()
+    netSuggestions()
+    netTasks()
+    netStatistics()
+    netSubscription()
 }

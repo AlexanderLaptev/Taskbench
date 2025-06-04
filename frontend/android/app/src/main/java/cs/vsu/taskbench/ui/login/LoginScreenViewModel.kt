@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cs.vsu.taskbench.data.analytics.AnalyticsFacade
 import cs.vsu.taskbench.data.auth.AuthService
 import cs.vsu.taskbench.data.auth.LoginException
 import cs.vsu.taskbench.domain.usecase.BootstrapUseCase
@@ -14,6 +15,7 @@ import cs.vsu.taskbench.util.mutableEventFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.net.ConnectException
+import java.net.SocketTimeoutException
 
 class LoginScreenViewModel(
     private val authService: AuthService,
@@ -33,6 +35,7 @@ class LoginScreenViewModel(
             EmptyEmail,
             EmptyPassword,
             InvalidEmail,
+            ShortPassword,
             LoginFailure,
             SignUpFailure,
             PasswordsDoNotMatch,
@@ -70,6 +73,10 @@ class LoginScreenViewModel(
             _events.tryEmit(Event.Error.EmptyPassword)
             return false
         }
+        if (password.length < AuthService.MIN_PASSWORD_LENGTH) {
+            _events.tryEmit(Event.Error.ShortPassword)
+            return false
+        }
         return true
     }
 
@@ -92,14 +99,14 @@ class LoginScreenViewModel(
 
     private suspend inline fun handleLogin(isSignUp: Boolean) {
         try {
-            if (isSignUp) authService.signUp(email, password)
-            else authService.login(email, password)
-        } catch (e: ConnectException) {
-            Log.e(TAG, "connection error", e)
-            _events.tryEmit(Event.Error.NoInternet)
-            return
+            if (isSignUp) {
+                authService.signUp(email, password)
+            } else authService.login(email, password)
         } catch (e: LoginException) {
+            val tag = if (isSignUp) "signup_fail" else "login_fail"
+            AnalyticsFacade.logError(tag, e)
             Log.e(TAG, "login error", e)
+
             _events.tryEmit(
                 if (isSignUp) {
                     Event.Error.SignUpFailure
@@ -107,11 +114,22 @@ class LoginScreenViewModel(
             )
             return
         } catch (e: Exception) {
+            when (e) {
+                is ConnectException, is SocketTimeoutException -> {
+                    AnalyticsFacade.logError("connect", e)
+                    Log.e(TAG, "connection error", e)
+                    _events.tryEmit(Event.Error.NoInternet)
+                    return
+                }
+            }
+
+            AnalyticsFacade.logError("unknown", e)
             Log.e(TAG, "unknown error", e)
             _events.tryEmit(Event.Error.Unknown)
             return
         }
 
+        AnalyticsFacade.logEvent("login_success")
         bootstrapUseCase()
         _events.tryEmit(Event.LoggedIn)
     }
@@ -129,6 +147,7 @@ class LoginScreenViewModel(
 
     fun forgotPassword() {
         // TODO
+        AnalyticsFacade.logEvent("forgot_password")
         Log.d(TAG, "forgot password")
     }
 }
