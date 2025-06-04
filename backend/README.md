@@ -11,9 +11,14 @@
     > DATABASE_PASSWORD - пароль от базы данных
 
     > GIGACHAT_AUTH_KEY - API ключ от Gigachat
-   - Используются в github actions
+    
+    > YOOKASSA_AUTH_KEY - API ключ от ЮKassa
+    
+    > YOOKASSA_STORE_ID - идентификатор от магазина в ЮKassa
+   
     > SERVER_HOST - ip сервера
 
+   - Используются в github actions
     > SERVER_USER - ssh пользователь
 
     > SERVER_PASSWORD - пароль от ssh пользователя
@@ -49,3 +54,12 @@
 ```
    docker logs taskbench-backend -f
 ```
+
+# Создание резервных копий базы данных
+Версия postgresql: 17
+
+В директории [/scripts/database_backup_service](https://github.com/AlexanderLaptev/Taskbench/tree/backend-django/backend/scripts/database_backup_service) находится bash-скрипт, добавляющий задачу создания резервных копий в crontab. 
+
+`install.sh` - установка задачи 
+`restore.sh` - восстановление резервной копии
+`uninstall.sh` - удаление задачи, очистка сохраненных копий.
