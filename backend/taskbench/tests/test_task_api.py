@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
-from ..models.models import User, Task, Subtask, Category, TaskCategory
+from taskbench.models.models import User, Task, Subtask, Category, TaskCategory  # Абсолютный импорт
 import json
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
@@ -148,8 +148,7 @@ class TaskAPITests(TestCase):
     def test_invalid_date_filter(self):
         url = f"{reverse('task_list')}?date=invalid-date"
         response = self.client.get(url, **self.get_auth_headers())
-        # Либо ожидаем 500 (если это текущее поведение), либо изменяем view чтобы возвращал 400
-        self.assertEqual(response.status_code, 500)  # или 400, в зависимости от того, что возвращает ваш API
+        self.assertEqual(response.status_code, 400)
 
     def test_update_task(self):
         url = reverse('task_detail', args=[self.task1.task_id])
@@ -224,8 +223,7 @@ class TaskAPITests(TestCase):
     def test_invalid_date_filter(self):
         url = f"{reverse('task_list')}?date=invalid-date"
         response = self.client.get(url, **self.get_auth_headers())
-        # Поскольку view возвращает 500 при невалидной дате, меняем ожидание
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
         self.assertIn('error', response.json())
 
     def test_create_task_invalid_data(self):
@@ -350,6 +348,15 @@ class CategoryAPITests(TestCase):
             user=self.user
         )
 
+        # Создаем задачу и связываем её с категорией
+        self.task = Task.objects.create(
+            title='Task 1',
+            priority=1,
+            user=self.user,
+            is_completed=False
+        )
+        TaskCategory.objects.create(task=self.task, category=self.category1)
+
         # Создаем другого пользователя с категорией
         self.other_user = User.objects.create(email='other@example.com')
         self.other_user.set_password('testpass123')
@@ -446,11 +453,11 @@ class CategoryAPITests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
 
-        # POST без токена (исправленная версия)
+        # POST без токена
         response = self.client.post(
             url,
             data=json.dumps({"name": "Test"}),
-            content_type='application/json'  # Добавьте этот параметр
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 401)
 
@@ -462,4 +469,60 @@ class CategoryAPITests(TestCase):
             **self.get_auth_headers()
         )
         self.assertEqual(response.status_code, 400)
+        self.assertIn('error', response.json())
+
+    def test_update_category_success(self):
+        url = reverse('category_detail', args=[self.category1.category_id])
+        data = {
+            "name": "Updated Category"
+        }
+        response = self.client.patch(
+            url,
+            data=json.dumps(data),
+            **self.get_auth_headers()
+        )
+        self.assertEqual(response.status_code, 200)
+        self.category1.refresh_from_db()
+        self.assertEqual(self.category1.name, "Updated Category")
+
+    def test_update_category_duplicate_name(self):
+        url = reverse('category_detail', args=[self.category1.category_id])
+        data = {
+            "name": "Category 2"  # Уже существует у пользователя
+        }
+        response = self.client.patch(
+            url,
+            data=json.dumps(data),
+            **self.get_auth_headers()
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertIn('error', response.json())
+
+    def test_update_category_not_found(self):
+        url = reverse('category_detail', args=[999])  # Несуществующий ID
+        data = {
+            "name": "Updated Category"
+        }
+        response = self.client.patch(
+            url,
+            data=json.dumps(data),
+            **self.get_auth_headers()
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertIn('error', response.json())
+
+    def test_delete_category_success(self):
+        url = reverse('category_detail', args=[self.category1.category_id])
+        response = self.client.delete(url, **self.get_auth_headers())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Category.objects.filter(category_id=self.category1.category_id).count(), 0)
+        # Проверяем, что задача осталась, но связь удалена
+        self.task.refresh_from_db()
+        self.assertEqual(TaskCategory.objects.filter(task=self.task, category=self.category1).count(), 0)
+        self.assertTrue(Task.objects.filter(task_id=self.task.task_id).exists())
+
+    def test_delete_category_not_found(self):
+        url = reverse('category_detail', args=[999])  # Несуществующий ID
+        response = self.client.delete(url, **self.get_auth_headers())
+        self.assertEqual(response.status_code, 404)
         self.assertIn('error', response.json())

@@ -56,8 +56,84 @@
             width: 500px;
         }
     </style>
+</head>
+<body>
+{#<h1>Добро пожаловать, {{ request.user.username }}</h1>#}
+<div id="logo">
+    {% include 'dashboard/res/logo.svg' %}
+</div>
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-title">Пользователей всего:</div>
+        <div class="stat-value" id="total-users"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Подписчиков всего:</div>
+        <div class="stat-value" id="total-subscribers"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Новых пользователей<br>за неделю:</div>
+        <div class="stat-value" id="new-users-week"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Новых пользователей<br>сегодня:</div>
+        <div class="stat-value" id="new-users-today"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Новых подписчиков<br>за неделю:</div>
+        <div class="stat-value" id="new-subs-week"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Новых подписчиков<br>сегодня:</div>
+        <div class="stat-value" id="new-subs-today"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Активных пользователей<br>за неделю:</div>
+        <div class="stat-value" id="active-users-week"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Активных пользователей<br>сегодня:</div>
+        <div class="stat-value" id="active-users-today"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Создано задач всего:</div>
+        <div class="stat-value" id="total-tasks"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Создано задач<br>за неделю:</div>
+        <div class="stat-value" id="tasks-week"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Создано задач<br>сегодня:</div>
+        <div class="stat-value" id="tasks-today"></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Создано подзадач всего:</div>
+        <div class="stat-value" id="total-subtasks"></div>
+    </div>
+
+</div>
+
+<div style="text-align: center; margin-bottom: 30px;">
+  <a href="/admin/subscriptions/" style="
+    display: inline-block;
+    background-color: #FFE375;
+    color: #000;
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.2s;
+  " onmouseover="this.style.backgroundColor='#fae48e'" onmouseout="this.style.backgroundColor='#FFE375'">
+    Список подписок
+  </a>
+</div>
+
+</body>
     <script>
-        fetch("/admin/api/dashboard-stats/")
+        fetch("stats/")
             .then(res => res.json())
             .then(data => {
                 const map = {
@@ -82,80 +158,4 @@
             })
             .catch(err => console.error("Ошибка загрузки статистики:", err));
     </script>
-</head>
-<body>
-{#<h1>Добро пожаловать, {{ request.user.username }}</h1>#}
-<div id="logo">
-    {% include 'dashboard/res/logo.svg' %}
-</div>
-<div class="stats-grid">
-
-    <div class="stat-card">
-        <div class="stat-title">Пользователей всего:</div>
-        <div class="stat-value" id="total-users">280</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Подписчиков всего:</div>
-        <div class="stat-value" id="total-subscribers">28</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Новых пользователей<br>за неделю:</div>
-        <div class="stat-value" id="new-users-week">40</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Новых пользователей<br>сегодня:</div>
-        <div class="stat-value" id="new-users-today">10</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Новых подписчиков<br>за неделю:</div>
-        <div class="stat-value" id="new-subs-week">6</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Новых подписчиков<br>сегодня:</div>
-        <div class="stat-value" id="new-subs-today">2</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Активных пользователей<br>за неделю:</div>
-        <div class="stat-value" id="active-users-week">144</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Активных пользователей<br>сегодня:</div>
-        <div class="stat-value" id="active-users-today">67</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Создано задач всего:</div>
-        <div class="stat-value" id="total-tasks">20509</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Создано задач<br>за неделю:</div>
-        <div class="stat-value" id="tasks-week">1563</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Создано задач<br>сегодня:</div>
-        <div class="stat-value" id="tasks-today">250</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-title">Создано подзадач всего:</div>
-        <div class="stat-value" id="total-subtasks">48524</div>
-    </div>
-
-</div>
-
-<div style="text-align: center; margin-bottom: 30px;">
-  <a href="/admin/subscriptions/" style="
-    display: inline-block;
-    background-color: #FFE375;
-    color: #000;
-    text-decoration: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: background-color 0.2s;
-  " onmouseover="this.style.backgroundColor='#fae48e'" onmouseout="this.style.backgroundColor='#FFE375'">
-    Список подписок
-  </a>
-</div>
-
-</body>
 </html>

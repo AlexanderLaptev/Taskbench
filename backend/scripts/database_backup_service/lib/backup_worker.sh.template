@@ -1,0 +1,69 @@
+#!/bin/bash
+
+DB_NAME="__DB_NAME__"
+DB_USER="__DB_USER__"
+DB_HOST="__DB_HOST__"
+DB_PORT="__DB_PORT__"
+
+BACKUP_DIR="__BACKUP_DIR__"
+DAYS_TO_KEEP="__DAYS_TO_KEEP__"
+
+set -e
+set -o pipefail
+
+LOG_FILE="${BACKUP_DIR}/_backup.log"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+SAFE_DB_NAME=$(echo "${DB_NAME}" | tr -cd '[:alnum:]._-')
+FILENAME="${SAFE_DB_NAME}_${TIMESTAMP}.dump"
+BACKUP_FILE_FULL_PATH="${BACKUP_DIR}/${FILENAME}"
+COMPRESSED_BACKUP_FILE="${BACKUP_FILE_FULL_PATH}.gz"
+
+PG_DUMP_OPTIONS="-Fc -Z0"
+
+CONNECT_OPTS=""
+if [ -n "$DB_HOST" ] && [ "$DB_HOST" != "localhost" ] && [ "$DB_HOST" != "127.0.0.1" ]; then
+    CONNECT_OPTS="$CONNECT_OPTS -h $DB_HOST"
+fi
+if [ -n "$DB_PORT" ] && [ "$DB_PORT" != "5432" ]; then
+    CONNECT_OPTS="$CONNECT_OPTS -p $DB_PORT"
+fi
+
+log_msg() {
+    echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
+}
+
+log_msg "--------------------------------------------"
+log_msg "Начало бэкапа для БД: ${DB_NAME}"
+log_msg "Пользователь: ${DB_USER}, Хост: ${DB_HOST:-localhost}, Порт: ${DB_PORT:-5432}"
+log_msg "Директория бэкапов: ${BACKUP_DIR}, Хранить дней: ${DAYS_TO_KEEP}"
+
+mkdir -p "$BACKUP_DIR"
+if [ ! -d "$BACKUP_DIR" ]; then
+  log_msg "ОШИБКА: Не удалось создать директорию ${BACKUP_DIR}"
+  exit 1
+fi
+
+log_msg "Создание дампа: ${BACKUP_FILE_FULL_PATH}"
+pg_dump $PG_DUMP_OPTIONS $CONNECT_OPTS -U "$DB_USER" -d "$DB_NAME" -w -f "$BACKUP_FILE_FULL_PATH"
+
+if [ $? -ne 0 ]; then
+    log_msg "ОШИБКА при создании дампа ${DB_NAME}!"
+    rm -f "$BACKUP_FILE_FULL_PATH" 2>/dev/null
+    exit 1
+fi
+log_msg "Дамп успешно создан."
+
+log_msg "Сжатие дампа: ${COMPRESSED_BACKUP_FILE}"
+gzip "$BACKUP_FILE_FULL_PATH"
+if [ $? -ne 0 ]; then
+    log_msg "ОШИБКА при сжатии файла ${BACKUP_FILE_FULL_PATH}!"
+    exit 1
+fi
+log_msg "Дамп успешно сжат."
+
+log_msg "Удаление старых бэкапов (старше ${DAYS_TO_KEEP} дней)..."
+find "$BACKUP_DIR" -maxdepth 1 -type f -name "${SAFE_DB_NAME}_*.dump.gz" -mtime "+${DAYS_TO_KEEP}" -print -delete | while IFS= read -r line; do log_msg "Удален старый бэкап: $line"; done
+
+log_msg "Бэкап успешно завершен."
+log_msg "--------------------------------------------"
+exit 0

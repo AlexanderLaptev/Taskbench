@@ -1,27 +1,34 @@
 from datetime import datetime
 
-from rest_framework.exceptions import ValidationError
+from django.http import JsonResponse
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import UntypedToken
 
 from backend import settings
 from ..models.models import User
 
+def user_response(user, refresh: str, access: str, status):
+    return JsonResponse({
+        'user_id': user.user_id,
+        'access': access,
+        'refresh': refresh,
+    }, status=status)
 
-class UserRegisterSerializer(serializers.ModelSerializer):
+class UserRegisterSerializer(serializers.Serializer):
+    email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
-    class Meta:
-        model = User
-        fields = ['email', 'password']
-
-    def create(self, validated_data):
-        password = validated_data.pop('password')
-        user = User.objects.create(**validated_data)
-        user.set_password(password)
-        user.username = user.email
-        user.save()
-        return user
+    def validate(self, data):
+        email = data['email']
+        password = data['password']
+        if (email is None) or (password is None):
+            raise ValidationError('Both email and password are required')
+        if User.objects.filter(email=email).exists():
+            raise ValidationError('Email already registered')
+        if len(password) < 8:
+            raise ValidationError('Password must be at least 8 characters')
+        return data
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()

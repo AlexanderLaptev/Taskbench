@@ -1,6 +1,7 @@
 services:
   database:
     image: postgres:17
+    restart: always
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USERNAME}
@@ -18,11 +19,11 @@ services:
       - .env
 
   taskbench-backend:
-#    build: .
     image: taskbench/taskbench-backend:latest
     container_name: taskbench-backend
+    restart: always
     ports:
-      - "8000:8000"
+      - "8000"
     depends_on:
       database:
         condition: service_healthy
@@ -37,6 +38,19 @@ services:
       timeout: 2s
       retries: 10
 
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./taskbench.crt:/etc/ssl/certs/taskbench.crt:ro
+      - ./taskbench.key:/etc/ssl/private/taskbench.key:ro
+      - ./nginx-logs:/var/log/nginx
+    depends_on:
+      - taskbench-backend
 
 volumes:
   postgres_data:
