@@ -1,6 +1,6 @@
 # Taskbench
 
-## Тема: "Умное приложение для организации по методике GTD"
+## Тема: "Умное приложение для самоорганизации с выделением подзадач с помощью ИИ"
 
 Приложение создаётся для курса "Технологии программирования" студентами команды 6.2:
  - [Косенко Алексей](https://github.com/imbeer)           - PM, бэкенд-разработчик, инженер DevOps, бизнес-аналитик.
@@ -11,12 +11,12 @@
  - [Шульга Никита](https://github.com/DwightTopik)        - Дизайнер, фронтенд-разработчик, инженер DevOps.
 
 ## Описание проекта
-Цель приложения — помочь пользователям эффективно управлять своими задачами, автоматически структурируя в удобную систему.
+Цель приложения — помочь пользователям эффективно управлять своими задачами, автоматически структурируя их в удобную систему.
 
-Особенностью проекта является умная обработка вводимых данных, позволяющая быстро и легко определить задачу в нужную категорию, подобрать для неё подходящее время и даже разбить её на подзадачи.
+Особенностью проекта является умная обработка вводимых данных, позволяющая автоматически выделять категорию задачи, подбирать для неё подходящее время и даже разбивать её на подзадачи.
 
 ## Релизы
-Android: [v1.0.0-alpha1](https://github.com/AlexanderLaptev/Taskbench/releases/tag/v1.0.0-alpha1)
+[Android](https://github.com/AlexanderLaptev/Taskbench/releases/tag/v1.3.0) (v1.3.0)
 
 ## Панель администрирования
 
@@ -42,13 +42,13 @@ Android: [v1.0.0-alpha1](https://github.com/AlexanderLaptev/Taskbench/releases/t
 
 Презентация MVP: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F%20MVP.pdf)
 
-Отчет по тестированию: [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9E%D1%82%D1%87%D0%B5%D1%82_%D0%BE_%D1%82%D0%B5%D1%81%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B8.pdf) [docx](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9E%D1%82%D1%87%D0%B5%D1%82_%D0%BE_%D1%82%D0%B5%D1%81%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B8.docx)
+Отчет по тестированию: [docx](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9E%D1%82%D1%87%D0%B5%D1%82_%D0%BE_%D1%82%D0%B5%D1%81%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B8.docx) [pdf](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/%D0%9E%D1%82%D1%87%D0%B5%D1%82_%D0%BE_%D1%82%D0%B5%D1%81%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B8.pdf)
 
-[UML-диаграммы](https://github.com/AlexanderLaptev/Taskbench/tree/main/docs/uml)
+[UML-диаграммы](https://github.com/AlexanderLaptev/Taskbench/tree/main/docs/diagrams)
 
-[ER-диаграмма](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/entity-relationship.png)
+[ER-диаграмма](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/diagrams/database.png)
 
-[Действительная ER-диаграмма](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/entity-relationship-real.png)
+[Действительная ER-диаграмма](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/diagrams/database-new.png)
 
 [OpenAPI](https://github.com/AlexanderLaptev/Taskbench/blob/main/docs/openapi.yaml)
 
